@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="auto">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIPEDASI — Dashboard</title>
+  <link rel="stylesheet" href="assets/icons/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="assets/tailwind.js"></script>
+
+  <style>
+    :root{
+      --bg:#f8fafc;
+      --surface:#ffffff;
+      --muted:#6b7280;
+      --text:#0f172a;
+      --accent:#1d9bf0;
+      --card-border:rgba(15,23,42,0.04);
+    }
+    [data-theme="dark"]{
+      --bg:#071026;
+      --surface:#071022;
+      --muted:#9ca3b3;
+      --text:#e6eef8;
+      --accent:#1d9bf0;
+      --card-border:rgba(255,255,255,0.06);
+    }
+
+    html,body{height:100%;margin:0;font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,Arial;background:linear-gradient(180deg,var(--bg) 0%, color-mix(in srgb,var(--bg) 90%, transparent) 100%);color:var(--text);-webkit-font-smoothing:antialiased;}
+
+    /* layout containers: header and main share same centered width */
+    .site-inner{max-width:1280px;margin:0 auto;padding:0 16px;}
+
+    /* HEADER: align width/spacing with main container */
+    header.topbar{position:sticky;top:0;z-index:40;background:transparent;padding:0;}
+    .bar-inner{
+      display:flex;align-items:center;gap:12px;justify-content:space-between;height:64px;
+      background: linear-gradient(180deg,color-mix(in srgb,var(--surface) 96%, transparent), transparent);
+      border-radius:12px; padding:8px; box-shadow: 0 6px 18px rgba(2,6,23,0.03);
+      border:1px solid var(--card-border);
+      /* gunakan margin-top yang sama seperti .container sehingga lebarnya sejajar */
+      margin:18px auto 0;
+      width:100%;
+      box-sizing:border-box;
+    }
+
+    .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);min-width:0;}
+    .logo{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;flex:0 0 40px;box-shadow:0 8px 22px rgba(29,155,240,0.09);}
+    .brand .meta{display:flex;flex-direction:column;line-height:1;min-width:0;overflow:hidden;}
+    .brand .meta strong{font-size:15px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
+    .brand .meta .sub{font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;opacity:0.95;}
+
+    /* right actions */
+    .actions{display:flex;align-items:center;gap:10px;margin-left:auto;}
+
+    .search{
+      display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--card-border);
+      padding:8px 12px;border-radius:999px;box-shadow:0 6px 18px rgba(2,6,23,0.03);height:44px;min-width:260px;max-width:640px;transition:all .18s ease;
+    }
+    .search .input{border:0;outline:0;background:transparent;width:100%;color:var(--text);font-size:14px;}
+    .search .btn{background:transparent;border:0;display:inline-flex;align-items:center;justify-content:center;color:var(--muted);cursor:pointer;padding:6px;border-radius:8px;}
+    .icon-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:10px;background:var(--surface);border:1px solid var(--card-border);color:var(--muted);cursor:pointer}
+    .icon-btn:hover{color:var(--accent);transform:translateY(-1px)}
+
+    /* mobile: collapse search to icon, expand on .search.expanded */
+    @media (max-width:720px){
+      .bar-inner{height:56px;padding:8px;}
+      .brand .meta .sub{display:none}
+      .search{min-width:44px;max-width:44px;padding:6px;border-radius:10px;height:40px}
+      .search .input{display:none}
+      .search.expanded{min-width:200px;max-width:420px;padding:8px 12px}
+      .search.expanded .input{display:block}
+    }
+
+    /* MAIN / CARDS */
+    .container{max-width:1100px;margin:18px auto;padding:0 16px 64px;}
+    .hero{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;}
+    .hero .title h2{margin:0;font-size:20px}
+    .hero .title p{margin:6px 0 0;color:var(--muted);font-size:13px}
+
+    .grid{display:grid;grid-template-columns:repeat(1,1fr);gap:18px}
+    @media (min-width:640px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (min-width:1024px){.grid{grid-template-columns:repeat(4,1fr)}}
+
+    .card{background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 96%, transparent), transparent);border:1px solid var(--card-border);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center;min-height:160px;transition:transform .14s ease,box-shadow .14s ease}
+    .card:hover{transform:translateY(-8px);box-shadow:0 26px 60px rgba(2,6,23,0.06)}
+    .card-top{display:flex;align-items:center;gap:12px;justify-content:center;width:100%}
+    .card .icon{width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;background:linear-gradient(90deg,var(--accent),#7c3aed);box-shadow:0 10px 28px rgba(29,155,240,0.12);flex:0 0 64px}
+    .badge{font-size:12px;padding:6px 10px;border-radius:999px;background:color-mix(in srgb,var(--accent) 12%, transparent);color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 12%, transparent);font-weight:600;white-space:nowrap}
+    .card h3{margin:6px 0 6px;font-size:16px}
+    .card p{margin:0;color:var(--muted);font-size:13px}
+
+    footer.pagefoot{text-align:center;padding:28px 16px;color:var(--muted);font-size:13px;margin-top:24px}
+
+    /* helpers */
+    .muted{color:var(--muted)}
+    a{color:inherit;text-decoration:none}
+    .sr-only{position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="site-inner">
+      <div class="bar-inner" role="navigation" aria-label="Top Navigation">
+        <a class="brand" href="#" title="SIPEDASI">
+          <div class="logo" aria-hidden="true">S</div>
+          <div class="meta">
+            <strong>SIPEDASI</strong>
+            <span class="sub">Sistem Pengelolaan Data &amp; Sistem Informasi</span>
+          </div>
+        </a>
+
+        <div class="actions" role="group" aria-label="Actions">
+          <div class="search" role="search" aria-label="Cari" id="searchWrap">
+            <button class="btn search-toggle" id="searchToggle" aria-label="Buka pencarian" title="Cari">
+              <i class="bi bi-search" style="font-size:16px;color:var(--muted)"></i>
+            </button>
+            <input id="search" class="input" placeholder="Cari menu, modul, atau kata kunci..." aria-label="Cari menu" />
+            <button class="icon-btn" id="clearSearch" title="Bersihkan pencarian" style="display:none"><i class="bi bi-x-lg"></i></button>
+          </div>
+
+          <button id="themeToggle" class="icon-btn" title="Toggle tema (T)" aria-label="Toggle tema">
+            <i id="themeIcon" class="bi bi-moon"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container site-inner" role="main">
+    <section class="hero">
+      <div class="title">
+        <h2>Selamat Datang di Sistem Pengelolaan Data dan Sistem Informasi</h2>
+        <p class="muted">Pilih modul untuk memulai — desain sederhana &amp; responsif.</p>
+      </div>
+
+      <!-- <div style="display:flex;gap:8px;align-items:center">
+        <a class="icon-btn" href="#" title="Buat Laporan" aria-label="Buat Laporan"><i class="bi bi-plus-lg" style="color:var(--accent)"></i></a>
+        <a class="icon-btn" href="#" title="Export" aria-label="Export"><i class="bi bi-download" style="color:var(--muted)"></i></a>
+      </div> -->
+    </section>
+
+    <div class="grid" id="menuGrid">
+      <a class="card" href="SiRekonPBB" aria-label="SiRekon PBB">
+        <div class="card-top">
+          <div class="icon" aria-hidden="true"><i class="bi bi-bank2"></i></div>
+          <span class="badge">Digital Tax</span>
+        </div>
+        <div>
+          <h3 class="font-bold">SiRekon PBB</h3>
+          <p>Sistem Rekonsiliasi PBB</p>
+        </div>
+      </a>
+
+      <a class="card" href="SiRekonPJDL" aria-label="SiRekon PJDL">
+        <div class="card-top">
+          <div class="icon" style="background:linear-gradient(90deg,#ff7ab6,#7c3aed)" aria-hidden="true"><i class="bi bi-cash-coin"></i></div>
+          <span class="badge">Digital Tax</span>
+        </div>
+        <div>
+          <h3 class="font-bold">SiRekon PJDL</h3>
+          <p>Sistem Rekonsiliasi PJDL</p>
+        </div>
+      </a>
+
+      <a class="card" href="SiNkronLRA" aria-label="SiNkron LRA">
+        <div class="card-top">
+          <div class="icon" style="background:linear-gradient(90deg,#06b6d4,#3b82f6)" aria-hidden="true"><i class="bi bi-arrow-repeat"></i></div>
+          <span class="badge">Easy Sync</span>
+        </div>
+        <div>
+          <h3 class="font-bold">SiNkron LRA</h3>
+          <p>Sistem Sinkronisasi LRA</p>
+        </div>
+      </a>
+
+      <a class="card" href="#" aria-label="Pengaturan">
+        <div class="card-top">
+          <div class="icon" style="background:linear-gradient(90deg,#6366f1,#a21caf)" aria-hidden="true"><i class="bi bi-gear-wide-connected"></i></div>
+          <span class="badge">System</span>
+        </div>
+        <div>
+          <h3 class="font-bold">Pengaturan</h3>
+          <p>ComingSoon</p>
+        </div>
+      </a>
+    </div>
+  </main>
+
+  <footer class="pagefoot">
+    &copy; 2025 SIAP Renbang — Powered by <strong style="color:var(--accent)">Digitalisasi &amp; AI</strong>
+    <div class="font-bold text-[var(--accent)]">BerAKHLAK, Smart ASN, Manajemen ASN</div>
+  </footer>
+
+  <script>
+    (function(){
+      const root = document.documentElement;
+      const toggle = document.getElementById('themeToggle');
+      const icon = document.getElementById('themeIcon');
+      const searchWrap = document.getElementById('searchWrap');
+      const searchInput = document.getElementById('search');
+      const clearSearch = document.getElementById('clearSearch');
+      const searchToggle = document.getElementById('searchToggle');
+
+      // theme init
+      const saved = localStorage.getItem('sipedasi:theme');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      let mode = saved || (prefersDark ? 'dark' : 'light');
+      function applyMode(m){ root.setAttribute('data-theme', m==='dark'?'dark':'light'); icon.className = m==='dark' ? 'bi bi-sun' : 'bi bi-moon'; }
+      applyMode(mode);
+      toggle.addEventListener('click', ()=>{
+        mode = (root.getAttribute('data-theme')==='dark')?'light':'dark';
+        localStorage.setItem('sipedasi:theme', mode);
+        applyMode(mode);
+      });
+      window.addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='t' && !/input|textarea/i.test(document.activeElement.tagName)) toggle.click(); });
+
+      // search behavior: filter cards
+      function filterCards(q){
+        const cards = document.querySelectorAll('#menuGrid .card');
+        cards.forEach(c=>{
+          const txt = (c.innerText||'').toLowerCase();
+          c.style.display = q ? (txt.includes(q) ? '' : 'none') : '';
+        });
+      }
+      if(searchInput){
+        searchInput.addEventListener('input', ()=>{
+          const q = searchInput.value.trim().toLowerCase();
+          clearSearch.style.display = searchInput.value ? 'inline-flex' : 'none';
+          filterCards(q);
+        });
+      }
+      if(clearSearch){
+        clearSearch.addEventListener('click', ()=>{
+          if(searchInput) searchInput.value='';
+          clearSearch.style.display='none';
+          filterCards('');
+          if(searchInput) searchInput.focus();
+        });
+      }
+
+      // mobile: toggle expanded search
+      function isMobileView(){ return window.innerWidth <= 720; }
+      if(searchToggle){
+        searchToggle.addEventListener('click', (e)=>{
+          if(isMobileView()){
+            searchWrap.classList.toggle('expanded');
+            if(searchWrap.classList.contains('expanded')){
+              setTimeout(()=>{ if(searchInput) searchInput.focus(); }, 80);
+            }
+          } else {
+            if(searchInput) searchInput.focus();
+          }
+        });
+      }
+      // close expanded when clicking outside (mobile)
+      document.addEventListener('click', (e)=>{
+        if(isMobileView() && searchWrap && !searchWrap.contains(e.target)){
+          searchWrap.classList.remove('expanded');
+        }
+      });
+
+      // accessibility: activate icon-btn by Enter
+      document.querySelectorAll('.icon-btn, .btn').forEach(b=>{
+        b.addEventListener('keydown', e=>{ if(e.key === 'Enter') b.click(); });
+      });
+    })();
+  </script>
+</body>
+
+</html>

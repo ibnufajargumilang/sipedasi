@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daftar Catatan</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(180deg, #0f172a 0%, #071031 60%);
+            color: #e6eef8;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .toast-enter-active,
+        .toast-leave-active {
+            transition: opacity 0.5s ease;
+        }
+
+        .toast-enter-from,
+        .toast-leave-to {
+            opacity: 0;
+        }
+
+        /* X-like accent */
+        .x-accent {
+            color: #1d9bf0;
+        }
+
+        .card-bg {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+        }
+
+        .muted {
+            color: rgba(230, 238, 248, 0.6);
+        }
+
+        .pill {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        /* Modal enhancements */
+        #detailModal .modal-panel {
+            transform: translateY(10px);
+            transition: transform 180ms ease, opacity 180ms ease;
+            opacity: 0;
+        }
+
+        #detailModal.show .modal-panel {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .field-label {
+            color: rgba(230, 238, 248, 0.7);
+            font-size: 0.85rem;
+        }
+
+        .field-value {
+            color: #e6eef8;
+            font-weight: 600;
+        }
+
+        .small-muted {
+            color: rgba(230, 238, 248, 0.55);
+            font-size: 0.85rem;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-4">
+    <div id="toast"
+        class="fixed bottom-5 right-5 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg opacity-0 transition-opacity duration-300 z-50">
+    </div>
+
+    <!-- Header mirip X -->
+    <header class="flex items-center justify-between py-4 px-3 sticky top-0 z-40 backdrop-blur bg-black/20 rounded-xl">
+        <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center w-10 h-10 rounded-full bg-white text-black font-bold">X</div>
+            <div>
+                <h1 class="text-lg font-semibold">Catatan — SiRekonPBB</h1>
+                <p class="text-sm muted">Daftar catatan Anda</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <input id="searchInput" type="text" placeholder="Cari keterangan, tanggal, total..."
+                class="pill rounded-full px-4 py-2 w-64 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0] placeholder:muted" />
+            <button onclick="window.history.back();" title="Kembali"
+                class="rounded-full bg-white/6 hover:bg-white/10 p-2">
+                <i class="bi bi-arrow-left x-accent"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="container mx-auto py-6 w-full md:px-8">
+        <div id="catatanList" class="flex flex-col gap-3 w-full mt-4">
+            <p class="text-center muted p-6">Memuat catatan...</p>
+        </div>
+    </main>
+
+    <!-- Modal for full note details (updated layout) -->
+    <div id="detailModal"
+        class="hidden fixed inset-0 bg-black bg-opacity-60 z-[100] flex items-center justify-center px-4">
+        <div class="modal-panel bg-[#07122a] p-5 rounded-2xl shadow-xl w-full max-w-2xl relative max-h-[90vh] overflow-y-auto card-bg border border-white/5">
+            <div class="flex items-start gap-4">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[#1d9bf0] to-[#0ea5e9] flex items-center justify-center text-black font-bold text-xl">
+                    N
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="min-w-0">
+                            <div id="modalTitle" class="text-xl font-semibold text-white truncate">Judul Catatan</div>
+                            <div id="modalSub" class="small-muted mt-1">Tanggal · Waktu · Bank</div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <button id="copyBtn" class="copy-btn p-2 rounded-full hover:bg-white/6" title="Salin detail">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                            <button id="editBtn" class="copy-btn p-2 rounded-full hover:bg-white/6" title="Edit (jika ada)">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button id="closeModalBtn" class="p-2 rounded-full hover:bg-white/6" title="Tutup">
+                                <i class="bi bi-x-lg muted"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 grid grid-cols-2 gap-4">
+                        <div class="p-3 rounded-lg pill">
+                            <div class="field-label">Bank</div>
+                            <div id="modalBank" class="field-value mt-1">-</div>
+                        </div>
+                        <div class="p-3 rounded-lg pill">
+                            <div class="field-label">Mode</div>
+                            <div id="modalMode" class="field-value mt-1">-</div>
+                        </div>
+                        <div class="p-3 rounded-lg pill">
+                            <div class="field-label">Jumlah Baris</div>
+                            <div id="modalRows" class="field-value mt-1">-</div>
+                        </div>
+                        <div class="p-3 rounded-lg pill">
+                            <div class="field-label">Total Mutasi</div>
+                            <div id="modalTotal" class="field-value mt-1 x-accent text-lg">-</div>
+                        </div>
+
+                        <div class="p-3 rounded-lg pill">
+                            <div class="field-label">Total Denda</div>
+                            <div id="modalDenda" class="field-value mt-1">-</div>
+                        </div>
+                        <div class="p-3 rounded-lg pill">
+                            <div class="field-label">Total PBB</div>
+                            <div id="modalPbb" class="field-value mt-1">-</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="field-label">Catatan Tambahan</div>
+                        <div id="modalNote" class="mt-2 p-3 rounded-lg"
+                            style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03);">
+                            <div class="text-sm muted">-</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 flex items-center gap-3">
+                        <button id="deleteModalBtn"
+                            class="w-full md:w-auto bg-red-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-700 transition">
+                            <i class="bi bi-trash"></i> Hapus
+                        </button>
+                        <button onclick="closeModal()"
+                            class="w-full md:w-auto bg-white/6 text-white px-4 py-2 rounded-lg hover:bg-white/10 transition">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWiWtq8Ir-_KPlqSwYEGJkOmM9TTp1pDk",
+            authDomain: "rc-notedsbapenda.firebaseapp.com",
+            databaseURL: "https://rc-notedsbapenda-default-rtdb.firebaseio.com",
+            projectId: "rc-notedsbapenda",
+            storageBucket: "rc-notedsbapenda.firebasestorage.app",
+            messagingSenderId: "961787045460",
+            appId: "1:961787045460:web:1932764db5a4c02f28afc1",
+            measurementId: "G-DNC3WPJ7PQ"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        let allNotes = [];
+        let selectedNoteId = null;
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById("toast");
+            if (toast) {
+                toast.textContent = message;
+                toast.className = `fixed bottom-5 right-5 px-4 py-2 rounded-xl shadow-lg opacity-100 transition-opacity duration-300 z-50 ${isError ? 'bg-red-500' : 'bg-green-500'} text-white`;
+                setTimeout(() => {
+                    toast.style.opacity = "0";
+                }, 3000);
+            }
+        }
+
+        function formatCurrency(val) {
+            if (val === undefined || val === null || val === '') return '-';
+            let s = String(val).trim();
+            // Normalize common formats:
+            // - Indonesian style: "38.236" (thousand separator '.')
+            // - If both '.' and ',' present, assume '.' thousands and ',' decimals -> remove '.' and change ',' -> '.'
+            if (s.indexOf('.') !== -1 && s.indexOf(',') !== -1) {
+                s = s.replace(/\./g, '').replace(',', '.');
+            } else if (s.indexOf('.') !== -1 && s.indexOf(',') === -1) {
+                // only dots -> treat as thousand separators, remove them
+                s = s.replace(/\./g, '');
+            } else if (s.indexOf(',') !== -1 && s.indexOf('.') === -1) {
+                // only commas -> treat comma as decimal separator
+                s = s.replace(',', '.');
+            }
+            // remove anything left that's not digit, minus or dot
+            s = s.replace(/[^\d\.-]+/g, '');
+            const num = Number(s);
+            if (Number.isNaN(num)) return val;
+            return num.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+        }
+
+        window.openModal = function (noteId) {
+            const modal = document.getElementById('detailModal');
+            const panel = modal.querySelector('.modal-panel');
+            const note = allNotes.find(n => n.id === noteId);
+
+            if (note) {
+                selectedNoteId = note.id;
+
+                // Fill header
+                document.getElementById('modalTitle').textContent = note.keterangan || 'Tidak ada keterangan';
+                document.getElementById('modalSub').textContent = `${note.tanggal || 'N/A'} · ${note.waktu || ''} · ${note.bank || '-'}`;
+
+                // Fill fields
+                document.getElementById('modalBank').textContent = note.bank || '-';
+                document.getElementById('modalMode').textContent = note.mode || '-';
+                document.getElementById('modalRows').textContent = note.jumlahBaris || '-';
+                document.getElementById('modalTotal').textContent = formatCurrency(note.totalMutasi ?? note.total ?? '-');
+                // tambahan: tampilkan totalDenda dan totalPbb jika ada
+                document.getElementById('modalDenda').textContent = formatCurrency(note.totalDenda ?? '-');
+                document.getElementById('modalPbb').textContent = formatCurrency(note.totalPbb ?? '-');
+                document.getElementById('modalNote').innerHTML = `<div class="text-sm">${(note.catatanTambahan && note.catatanTambahan.trim()) ? note.catatanTambahan : '<span class="muted">-</span>'}</div>`;
+
+                // show modal with animation class
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.add('show'), 10);
+
+                // copy button
+                const copyBtn = document.getElementById('copyBtn');
+                copyBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const text = [
+                        `Keterangan: ${note.keterangan || '-'}`,
+                        `Tanggal: ${note.tanggal || '-'}`,
+                        `Waktu: ${note.waktu || '-'}`,
+                        `Bank: ${note.bank || '-'}`,
+                        `Mode: ${note.mode || '-'}`,
+                        `Jumlah Baris: ${note.jumlahBaris || '-'}`,
+                        `Total Mutasi: ${formatCurrency(note.totalMutasi ?? note.total ?? '-')}`,
+                        `Total Denda: ${formatCurrency(note.totalDenda ?? '-')}`,
+                        `Total PBB: ${formatCurrency(note.totalPbb ?? '-')}`,
+                        `Catatan Tambahan: ${note.catatanTambahan || '-'}`
+                    ].join('\n');
+                    navigator.clipboard?.writeText(text).then(() => showToast('Detail disalin.'), () => showToast('Gagal menyalin.', true));
+                };
+
+                // delete button inside modal
+                document.getElementById('deleteModalBtn').onclick = function (ev) {
+                    ev.stopPropagation();
+                    hapusCatatanModal();
+                };
+
+                // close btn
+                document.getElementById('closeModalBtn').onclick = (ev) => { ev.stopPropagation(); closeModal(); };
+
+                // optional edit - if you have edit flow, hook here
+                document.getElementById('editBtn').onclick = (ev) => { ev.stopPropagation(); showToast('Fungsi edit belum tersedia.'); };
+
+            }
+        }
+
+        window.closeModal = function () {
+            const modal = document.getElementById('detailModal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.classList.add('hidden'), 180);
+            selectedNoteId = null;
+        }
+
+        // close when clicking backdrop
+        document.getElementById('detailModal').addEventListener('click', function (e) {
+            if (e.target === this) closeModal();
+        });
+
+        // close on ESC
+        window.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('detailModal');
+                if (!modal.classList.contains('hidden')) closeModal();
+            }
+        });
+
+        window.hapusCatatanModal = function () {
+            if (!selectedNoteId) return;
+            Swal.fire({
+                title: 'Hapus catatan?',
+                text: 'Yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Hapus',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#d33',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    database.ref('catatan/' + selectedNoteId).remove()
+                        .then(() => {
+                            showToast("Catatan berhasil dihapus.");
+                            closeModal();
+                        })
+                        .catch(error => {
+                            console.error("Gagal menghapus catatan:", error);
+                            showToast("Gagal menghapus catatan.", true);
+                        });
+                }
+            });
+        }
+
+        window.hapusCatatan = function (catatanId) {
+            if (!catatanId) return;
+            Swal.fire({
+                title: 'Hapus catatan?',
+                text: 'Yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Hapus',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#d33',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    database.ref('catatan/' + catatanId).remove()
+                        .then(() => {
+                            showToast("Catatan berhasil dihapus.");
+                        })
+                        .catch(error => {
+                            console.error("Gagal menghapus catatan:", error);
+                            showToast("Gagal menghapus catatan.", true);
+                        });
+                }
+            });
+        }
+
+        function renderCatatan(notes) {
+            const catatanList = document.getElementById("catatanList");
+            catatanList.innerHTML = '';
+            if (notes.length > 0) {
+                notes.forEach(note => {
+                    const noteElement = document.createElement('div');
+                    noteElement.className = 'flex gap-4 items-start p-4 rounded-xl card-bg border border-white/4 hover:translate-y-[-2px] transition cursor-pointer';
+                    noteElement.setAttribute('onclick', `openModal('${note.id}')`);
+
+                    const formattedKeterangan = note.keterangan || 'Tidak ada keterangan';
+                    const formattedTanggal = note.tanggal || '';
+                    const formattedMutasi = formatCurrency(note.totalMutasi || note.total || '-');
+                    const formattedBank = note.bank || '-';
+                    // tampilkan seluruh keterangan di list (hilangkan pemotongan jika ingin lengkap).
+                    const preview = formattedKeterangan;
+
+                    noteElement.innerHTML = `
+                        <div class="flex-shrink-0">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#1d9bf0] to-[#0ea5e9] flex items-center justify-center text-black font-bold">
+                                ${(note.keterangan && note.keterangan.trim().charAt(0)) ? note.keterangan.trim().charAt(0).toUpperCase() : 'N'}
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center justify-between">
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold text-white">${preview}</span>
+                                    </div>
+                                    <div class="text-sm muted mt-1 truncate">
+                                        ${formattedTanggal} · ${formattedBank} · <span class="x-accent font-semibold">${formattedMutasi}</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 ml-4">
+                                    <button onclick="event.stopPropagation(); hapusCatatan('${note.id}')" class="p-2 rounded-full hover:bg-white/5">
+                                        <i class="bi bi-x-lg muted"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    catatanList.appendChild(noteElement);
+                });
+            } else {
+                catatanList.innerHTML = `<p class="text-center muted p-6">Tidak ada catatan.</p>`;
+            }
+        }
+
+        function ambilCatatan() {
+            const catatanRef = database.ref('catatan').orderByChild('timestamp');
+            catatanRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                allNotes = [];
+                if (data) {
+                    allNotes = Object.keys(data).map(key => ({
+                        id: key,
+                        ...data[key]
+                    })).reverse();
+                }
+                renderCatatan(allNotes);
+            });
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredNotes = allNotes.filter(note =>
+                (note.keterangan && note.keterangan.toLowerCase().includes(searchTerm)) ||
+                (note.tanggal && note.tanggal.toLowerCase().includes(searchTerm)) ||
+                (note.totalMutasi && String(note.totalMutasi).toLowerCase().includes(searchTerm))
+            );
+            renderCatatan(filteredNotes);
+        });
+
+        window.addEventListener("DOMContentLoaded", () => {
+            ambilCatatan();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SiNkronLRA | Sistem Sinkronisasi LRA</title>
+    <link rel="stylesheet" href="../assets/icons/bootstrap-icons.min.css">
+    <script src="../assets/xlsx.full.min.js"></script>
+    <script src="../assets/tailwind.js"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <!-- Header Sticky + Form Upload -->
+    <div class="bg-white shadow-md sticky top-0 z-10 border-b border-gray-200">
+        <div
+            class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+
+            <!-- Judul -->
+            <h1 class="text-lg md:text-xl font-bold text-gray-800 whitespace-nowrap">Sistem Sinkronisasi LRA</h1>
+
+            <!-- Form Upload + Tombol -->
+            <div class="flex flex-col md:flex-row md:items-center gap-3 w-full md:w-auto">
+
+                <!-- Upload File Utama -->
+                <div class="relative">
+                    <input type="file" id="utamaFile" accept=".xlsx, .xls" class="sr-only" />
+                    <label for="utamaFile"
+                        class="inline-flex items-center gap-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-md shadow">
+                        <i class="bi bi-upload"></i> Upload File Utama
+                    </label>
+                </div>
+
+                <!-- Upload File Konsolidasi -->
+                <div class="relative">
+                    <input type="file" id="konsolidasiFile" accept=".xlsx, .xls" class="sr-only" />
+                    <label for="konsolidasiFile"
+                        class="inline-flex items-center gap-2 cursor-pointer bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded-md shadow">
+                        <i class="bi bi-upload"></i> Upload File Konsolidasi
+                    </label>
+                </div>
+
+                <!-- Tombol Proses -->
+                <button onclick="processFiles()"
+                    class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-md shadow text-sm whitespace-nowrap">
+                    <i class="bi bi-arrow-repeat"></i> Proses & Bandingkan
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Konten Utama -->
+    <div class="flex-1 max-w-7xl mx-auto px-4 py-6 w-full">
+        <div class="bg-white rounded-xl shadow overflow-hidden">
+            <div class="overflow-auto max-h-[70vh]" id="result" class="text-sm"></div>
+        </div>
+    </div>
+
+    <a href="../"
+        class="group fixed top-0 left-0 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-br-lg shadow-lg z-50 transition duration-300 ease-in-out"
+        title="Kembali ke Beranda">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M3 9.75L12 3l9 6.75M4.5 10.5v9a1.5 1.5 0 001.5 1.5h3.75a.75.75 0 00.75-.75V15a.75.75 0 01.75-.75h2.25a.75.75 0 01.75.75v5.25c0 .414.336.75.75.75H18a1.5 1.5 0 001.5-1.5v-9" />
+        </svg>
+        <div
+            class="absolute top-1/2 left-full ml-2 -translate-y-1/2 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto bg-gray-700 text-white text-xs px-2 py-1 rounded transition-opacity duration-300 whitespace-nowrap">
+            Beranda
+        </div>
+    </a>
+
+    <script>
+        let utamaData = [];
+        let konsolidasiDataMap = {};
+        let jumlahPendapatanTransferKons = 0; // NILAI TOTAL dari file konsolidasi
+        let jumlahPendapatanAsliDaerahKons = 0;
+        let jumlahPendapatanTppKons = 0;
+
+        function readExcel(file, startRow, callback) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: "array" });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const json = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
+                const sliced = json.slice(startRow);
+                callback(sliced);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processFiles() {
+            const fileUtama = document.getElementById("utamaFile").files[0];
+            const fileKonsolidasi = document.getElementById("konsolidasiFile").files[0];
+
+            if (!fileUtama || !fileKonsolidasi) {
+                alert("Silakan upload kedua file Excel.");
+                return;
+            }
+
+            readExcel(fileKonsolidasi, 8, (dataKonsolidasi) => {
+                konsolidasiDataMap = {};
+                jumlahPendapatanTransferKons = 0;
+                jumlahPendapatanAsliDaerahKons = 0;
+                jumlahPendapatanTppKons = 0;
+
+                for (let row of dataKonsolidasi) {
+                    const kode = row[0];
+                    const uraian = (row[1] || "").toString().trim().toLowerCase();
+                    const nilaiAsli = row[3] || "";
+
+                    if (kode) konsolidasiDataMap[kode] = nilaiAsli;
+
+                    // Ambil nilai JUMLAH PENDAPATAN TRANSFER
+                    if (uraian === "jumlah pendapatan transfer") {
+                        let nilaiStr = nilaiAsli.toString();
+                        nilaiStr = nilaiStr.replace(/\.00$/, "");
+                        nilaiStr = nilaiStr.replace(/,/g, ".");
+                        jumlahPendapatanTransferKons = parseInt(nilaiStr.replace(/\./g, "")) || 0;
+                    }
+
+                    // Ambil nilai JUMLAH PENDAPATAN ASLI DAERAH
+                    if (uraian === "jumlah pendapatan asli daerah") {
+                        let nilaiPad = nilaiAsli.toString();
+                        nilaiPad = nilaiPad.replace(/\.00$/, "");
+                        nilaiPad = nilaiPad.replace(/,/g, ".");
+                        jumlahPendapatanAsliDaerahKons = parseInt(nilaiPad.replace(/\./g, "")) || 0;
+                    }
+
+                    if (uraian === "jumlah pendapatan transfer pemerintah pusat - lainnya") {
+                        let nilaiTpp = nilaiAsli.toString();
+                        nilaiTpp = nilaiTpp.replace(/\.00$/, "");
+                        nilaiTpp = nilaiTpp.replace(/,/g, ".");
+                        jumlahPendapatanTppKons = parseInt(nilaiTpp.replace(/\./g, "")) || 0;
+                    }
+                }
+
+                readExcel(fileUtama, 1, (dataUtama) => {
+                    utamaData = dataUtama;
+                    tampilkanPerbandingan();
+                });
+            });
+        }
+
+        function tampilkanPerbandingan() {
+            const container = document.getElementById("result");
+
+            // Ambil nilai "Total Pendapatan Transfer" dari file utama
+            let totalPendapatanTransferUtama = 0;
+            for (let row of utamaData) {
+                if ((row[1] || "").toString().trim().toLowerCase() === "total pendapatan transfer") {
+                    const raw = (row[2] || "").toString().replace(/\./g, "").replace(/,/g, "");
+                    totalPendapatanTransferUtama = parseInt(raw) || 0;
+                    break;
+                }
+            }
+
+            let html = `
+<table class="min-w-full bg-white border border-gray-300 rounded overflow-hidden">
+    <thead class="bg-gray-200 text-gray-800 text-sm font-semibold">
+        <tr>
+            <th class="border px-4 py-2 text-left">No</th>
+            <th class="border px-4 py-2 text-left">Kode Rekening</th>
+            <th class="border px-4 py-2 text-left">Uraian</th>
+            <th class="border px-4 py-2 text-right">Realisasi Utama</th>
+            <th class="border px-4 py-2 text-right">Realisasi Konsolidasi</th>
+            <th class="border px-4 py-2 text-right">Selisih (KONS - UTAMA)</th>
+        </tr>
+    </thead>
+    <tbody class="text-sm text-gray-700">`;
+
+            for (let i = 0; i < utamaData.length && i < 231; i++) {
+                const row = utamaData[i];
+                const kode = row[0];
+                const uraian = row[1];
+
+                let rawUtama = (row[2] || "").toString().replace(/\./g, "").replace(/,/g, "");
+                let nilaiUtamaNum = parseInt(rawUtama) || 0;
+
+                let nilaiKonsStr = "";
+                const uraianLower = (uraian || "").toString().trim().toLowerCase();
+
+                if (uraianLower === "total pendapatan transfer") {
+                    nilaiKonsStr = jumlahPendapatanTransferKons.toString();
+                } else if (uraianLower === "jumlah pendapatan asli daerah") {
+                    nilaiKonsStr = jumlahPendapatanAsliDaerahKons.toString();
+                } else if (uraianLower === "jumlah pendapatan transfer pemerintah pusat - lainnya") {
+                    nilaiKonsStr = jumlahPendapatanTppKons.toString();
+                } else {
+                    nilaiKonsStr = konsolidasiDataMap[kode] || "";
+                }
+
+                nilaiKonsStr = nilaiKonsStr.toString().replace(/([,.])00$/, "").replace(/,/g, ".");
+                let nilaiKonsNum = parseInt(nilaiKonsStr.replace(/\./g, "")) || 0;
+
+                let selisih = nilaiKonsNum - nilaiUtamaNum;
+                const mismatch = Math.abs(selisih) > 0;
+
+                // Baris dengan background abu-abu (prioritas utama)
+                const isGrayRow = (i >= 48 && i <= 53) || (i >= 57 && i <= 58);
+
+                // Cek baris khusus untuk background kuning jika mismatch
+                const isSpecialUraian = uraianLower === "jumlah pendapatan transfer antar daerah" || uraianLower === "total pendapatan daerah";
+
+                // Logika warna baris
+                let rowClass = "";
+                if (isGrayRow) {
+                    rowClass = "bg-gray-200";
+                } else if (mismatch && (isSpecialUraian || true)) {
+                    // 'true' supaya semua mismatch juga kuning, kalau mau hanya khusus bisa hapus true
+                    rowClass = "bg-yellow-100 font-semibold";
+                }
+
+                const formatRupiah = (val) => val.toLocaleString("id-ID");
+
+                html += `
+        <tr class="${rowClass}">
+            <td class="border px-4 py-2">${i + 1}</td>
+            <td class="border px-4 py-2">${kode || ""}</td>
+            <td class="border px-4 py-2">${uraian || ""}</td>
+            <td class="border px-4 py-2 text-right">${formatRupiah(nilaiUtamaNum)}</td>
+            <td class="border px-4 py-2 text-right">${formatRupiah(nilaiKonsNum)}</td>
+            <td class="border px-4 py-2 text-right">${formatRupiah(selisih)}</td>
+        </tr>`;
+            }
+
+            html += "</tbody></table>";
+            container.innerHTML = html;
+        }
+    </script>
+
+</body>
+
+</html>

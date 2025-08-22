@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SiRekon PJDL | Sistem Rekonsiliasi PJDL</title>
+    <link rel="stylesheet" href="../assets/icons/bootstrap-icons.min.css">
+    <script src="../assets/xlsx.full.min.js"></script>
+    <script src="../assets/tailwind.js"></script>
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 to-white min-h-screen">
+    <div class="flex flex-col md:flex-row max-w-7xl w-full mx-auto min-h-[80vh]">
+        <!-- Sidebar -->
+        <aside
+            class="w-full md:w-1/4 max-w-full md:max-w-xs bg-white shadow-lg p-4 md:p-6 flex flex-col gap-4 border-b md:border-b-0 md:border-r border-gray-200">
+            <div class="flex items-center gap-3 mb-2 justify-center md:justify-start">
+                <i class="bi bi-cash-coin text-blue-600 text-2xl"></i>
+                <h2 class="text-xl font-bold text-gray-700 text-center">Sistem Rekonsiliasi PJDL
+                </h2>
+            </div>
+            <label for="input-excel"
+                class="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-blue-400 transition overflow-hidden">
+                <i class="bi bi-upload"></i>
+                <span id="upload-text" class="truncate overflow-hidden whitespace-nowrap max-w-[80%]">
+                    Upload File Excel PJDL
+                </span>
+                <input type="file" id="input-excel" accept=".xlsx,.xls" class="hidden" />
+            </label>
+
+            <div class="flex items-center gap-2">
+                <!-- Input Teks -->
+                <input id="paste-input" type="text" class="flex-1 px-2 py-2 border border-gray-300 rounded"
+                    placeholder="Tempelkan Keterangan Disini" />
+
+                <!-- Tombol Paste -->
+                <button id="btn-paste-text"
+                    class="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded shadow transition"
+                    title="Paste Teks">
+                    <i class="bi bi-clipboard"></i>
+                </button>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1"><i class="bi bi-tags"></i> Pilih Jenis Pajak:</label>
+                <select id="jenispajak-select" class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-200">
+                    <option value="">-- Semua Jenis Pajak --</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1"><i class="bi bi-calendar-event"></i> Pilih Tanggal
+                    Pembayaran:</label>
+                <select id="tanggal-select" class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-200">
+                    <option value="">-- Semua Tanggal --</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1"><i class="bi bi-bank"></i> Pilih Tempat Bayar:</label>
+                <select id="tempatbayar-select"
+                    class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-200">
+                    <option value="">-- Semua Tempat Bayar --</option>
+                    <option value="PJDLU">PJDLU</option>
+                    <option value="PJDLQRIS">PJDLQRIS</option>
+                    <option value="PJDLVA">PJDLVA</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1"><i class="bi bi-clock-history"></i> Kategori Waktu:</label>
+                <select id="waktu-select" class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-200">
+                    <option value="">-- Semua Transaksi --</option>
+                    <option value="akhir">Akhir Pembayaran</option>
+                    <option value="pelimpahan">Tgl Pelimpahan</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1"><i class="bi bi-file-earmark-text"></i> Pilih Uraian
+                    Pajak:</label>
+                <select id="uraianspajak-select"
+                    class="w-full px-2 py-1 border rounded focus:ring-2 focus:ring-blue-200">
+                    <option value="">-- Semua Uraian Pajak --</option>
+                </select>
+            </div>
+        </aside>
+        <!-- Main Content -->
+        <main class="flex-1 md:px-4 mt-4 flex flex-col gap-6">
+            <!-- Ringkasan -->
+            <div id="summaryCards" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-blue-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                    <p class="text-sm font-medium text-blue-700 mb-2">Total Pokok</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-pokok" class="text-2xl font-bold text-blue-900">0</p>
+                        <button onclick="copyTotal('total-pokok')" title="Salin Total Pokok"
+                            class="ml-3 text-blue-300 hover:text-blue-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2M8 16v2a2 2 0 002 2h8a2 2 0 002-2v-8a2 2 0 00-2-2h-2" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-yellow-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                    <p class="text-sm font-medium text-yellow-700 mb-2">Total Denda</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-denda" class="text-2xl font-bold text-yellow-900">0</p>
+                        <button onclick="copyTotal('total-denda')" title="Salin Total Denda"
+                            class="ml-3 text-yellow-300 hover:text-yellow-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2M8 16v2a2 2 0 002 2h8a2 2 0 002-2v-8a2 2 0 00-2-2h-2" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-green-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                    <p class="text-sm font-medium text-green-700 mb-2">Total Jumlah Bayar</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-jumlah" class="text-2xl font-bold text-green-900">0</p>
+                        <button onclick="copyTotal('total-jumlah')" title="Salin Total Jumlah"
+                            class="ml-3 text-green-300 hover:text-green-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2M8 16v2a2 2 0 002 2h8a2 2 0 002-2v-8a2 2 0 00-2-2h-2" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Tabel -->
+            <div>
+                <div
+                    class="flex justify-between items-center gap-2 px-4 py-2 bg-white shadow rounded border border-b-0 border-gray-200">
+                    <!-- Kiri: Radio dan Label -->
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <label class="text-xs text-gray-600">Mode:</label>
+                        <label class="text-xs flex items-center gap-1">
+                            <input type="radio" name="mode-extra-rows" id="mode-tambah" value="tambah" checked>
+                            Tambah
+                        </label>
+                        <label class="text-xs flex items-center gap-1">
+                            <input type="radio" name="mode-extra-rows" id="mode-kurang" value="kurang">
+                            Kurangi
+                        </label>
+                    </div>
+
+                    <!-- Kanan: Input Jumlah -->
+                    <div class="flex items-center gap-1">
+                        <label for="input-extra-rows" class="text-xs text-gray-600">Jumlah Baris:</label>
+                        <input id="input-extra-rows" type="number" min="0" value="0"
+                            class="w-16 px-2 py-1 border rounded text-xs text-center" />
+                    </div>
+                </div>
+
+                <!-- Scrollable Table Container -->
+                <div
+                    class="overflow-x-auto overflow-y-auto max-h-[60vh] bg-white rounded-b-lg shadow border border-gray-200 border-t-0">
+                    <table id="excel-table" class="min-w-full table-auto border-collapse text-sm">
+                        <!-- Table content here -->
+                    </table>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <a href="../"
+        class="group fixed top-0 left-0 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-br-lg shadow-lg z-50 transition duration-300 ease-in-out"
+        title="Kembali ke Beranda">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M3 9.75L12 3l9 6.75M4.5 10.5v9a1.5 1.5 0 001.5 1.5h3.75a.75.75 0 00.75-.75V15a.75.75 0 01.75-.75h2.25a.75.75 0 01.75.75v5.25c0 .414.336.75.75.75H18a1.5 1.5 0 001.5-1.5v-9" />
+        </svg>
+        <div
+            class="absolute top-1/2 left-full ml-2 -translate-y-1/2 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto bg-gray-700 text-white text-xs px-2 py-1 rounded transition-opacity duration-300 whitespace-nowrap">
+            Beranda
+        </div>
+    </a>
+
+    <script>
+        let excelData = [];
+        let headers = [];
+
+        // Indeks kolom tanggal pembayaran (misal kolom U = 20)
+        const tanggalBayarIdx = 20;
+        // Kolom yang ingin ditampilkan (indeks dimulai dari 0)
+        const selectedCols = [1, 3, 13, 14, 17, 20, 22];
+
+        document.getElementById('input-excel').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+
+            // ✅ Tambahkan ini untuk mengganti teks label:
+            if (file) {
+                document.getElementById('upload-text').textContent = file.name;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                headers = excelData[0];
+                // Urutkan data sejak awal
+                const sorted = [headers].concat(sortByTanggalWaktu(excelData.slice(1)));
+                excelData = sorted;
+                renderJenisPajakOptions();
+                renderTanggalOptions();
+                renderUraianPajakOptions();
+                renderTable(excelData);
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function filterAndRender() {
+            const jenis = document.getElementById('jenispajak-select').value;
+            const tgl = document.getElementById('tanggal-select').value;
+            const tempat = document.getElementById('tempatbayar-select').value;
+            const waktu = document.getElementById('waktu-select').value;
+            const uraian = document.getElementById('uraianspajak-select').value;
+            const mode = document.querySelector('input[name="mode-extra-rows"]:checked').value;
+            let filtered = excelData.slice(1);
+
+            if (jenis) {
+                filtered = filtered.filter(row => {
+                    let val = normalizeJenis(row[1]);
+                    return val === jenis;
+                });
+            }
+            if (tgl) {
+                filtered = filtered.filter(row => {
+                    let tglFull = row[tanggalBayarIdx];
+                    if (typeof tglFull !== 'string') tglFull = String(tglFull || '').trim();
+                    return tglFull.substr(0, 10) === tgl;
+                });
+            }
+            if (tempat) {
+                const tempatBayarIdx = 22;
+                filtered = filtered.filter(row => {
+                    let tempatVal = row[tempatBayarIdx];
+                    if (typeof tempatVal !== 'string') tempatVal = String(tempatVal || '').trim();
+                    if (tempat === 'PJDLU') {
+                        return [
+                            'Bank BJB - Internet Banking',
+                            'Bank BJB - Mobile Banking',
+                            'Bank BJB - TELER',
+                            'Bank BJB - Lainnya',
+                            'Bank BJB - POS'
+                        ].includes(tempatVal);
+                    }
+                    if (tempat === 'PJDLQRIS') {
+                        return tempatVal === 'Bank BJB - QRIS';
+                    }
+                    if (tempat === 'PJDLVA') {
+                        return tempatVal === 'Bank BJB - Virtual Account';
+                    }
+                    return true;
+                });
+            }
+            if (waktu) {
+                filtered = filtered.filter(row => {
+                    let tglFull = row[tanggalBayarIdx];
+                    if (typeof tglFull !== 'string') tglFull = String(tglFull || '').trim();
+                    let jamMenit = '';
+                    const match = tglFull.match(/\b(\d{2}:\d{2})/);
+                    if (match) jamMenit = match[1];
+                    if (!jamMenit) return false;
+                    if (waktu === 'akhir') {
+                        return jamMenit < '17:00';
+                    }
+                    if (waktu === 'pelimpahan') {
+                        return jamMenit >= '17:00';
+                    }
+                    return true;
+                });
+
+                // MODE TAMBAH: Tambahkan baris extra jika ada
+                if (mode === 'tambah' && extraRows.length > 0) {
+                    filtered = extraRows.concat(filtered);
+                }
+
+                // MODE KURANG: Kurangi baris dari hasil filter
+                if (mode === 'kurang' && kurangiCount !== 0) {
+                    if (waktu === 'akhir' && kurangiCount < 0) {
+                        // Kurangi dari bawah
+                        filtered = filtered.slice(0, filtered.length + kurangiCount);
+                    } else if (kurangiCount > 0) {
+                        // Kurangi dari atas
+                        filtered = filtered.slice(kurangiCount);
+                    }
+                }
+            }
+            if (uraian) {
+                filtered = filtered.filter(row => {
+                    let val = row[3];
+                    if (typeof val !== 'string') val = String(val || '').trim();
+                    return val === uraian;
+                });
+            }
+            // Urutkan hasil filter
+            filtered = sortByTanggalWaktu(filtered);
+            renderTable([headers].concat(filtered));
+        }
+
+        function renderTanggalOptions() {
+            const select = document.getElementById('tanggal-select');
+            select.innerHTML = '<option value="">-- Semua Tanggal --</option>';
+            const jenis = document.getElementById('jenispajak-select').value;
+            const tanggalCount = {};
+            excelData.slice(1).forEach(row => {
+                let matchJenis = true;
+                if (jenis) {
+                    let val = normalizeJenis(row[1]);
+                    matchJenis = val === jenis;
+                }
+                if (matchJenis) {
+                    let tglFull = row[tanggalBayarIdx];
+                    if (typeof tglFull !== 'string') tglFull = String(tglFull || '').trim();
+                    const tgl = tglFull.substr(0, 10);
+                    if (tgl && tgl !== 'undefined') {
+                        tanggalCount[tgl] = (tanggalCount[tgl] || 0) + 1;
+                    }
+                }
+            });
+            Object.keys(tanggalCount)
+                .sort((a, b) => {
+                    // Ubah dari DD-MM-YYYY atau DD/MM/YYYY ke YYYYMMDD untuk sorting
+                    // Jika format sudah YYYY-MM-DD, cukup ganti '-' jadi '' saja
+                    const toSortable = s => {
+                        // Deteksi format
+                        if (/^\d{2}-\d{2}-\d{4}$/.test(s)) {
+                            const [d, m, y] = s.split('-');
+                            return `${y}${m}${d}`;
+                        } else if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+                            return s.replace(/-/g, '');
+                        } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+                            const [d, m, y] = s.split('/');
+                            return `${y}${m}${d}`;
+                        }
+                        return s;
+                    };
+                    return toSortable(a).localeCompare(toSortable(b));
+                })
+                .forEach(tgl => {
+                    const opt = document.createElement('option');
+                    opt.value = tgl;
+                    opt.textContent = `${tgl} - (${tanggalCount[tgl]})`;
+                    select.appendChild(opt);
+                });
+        }
+
+        function renderJenisPajakOptions() {
+            const jenisPajakIdx = 1;
+            const select = document.getElementById('jenispajak-select');
+            select.innerHTML = '<option value="">-- Semua Jenis Pajak --</option>';
+            const jenisSet = new Set();
+            excelData.slice(1).forEach(row => {
+                let jenis = normalizeJenis(row[jenisPajakIdx]);
+                if (jenis && jenis !== 'undefined') jenisSet.add(jenis);
+            });
+            Array.from(jenisSet).sort().forEach(jenis => {
+                const opt = document.createElement('option');
+                opt.value = jenis;
+                opt.textContent = jenis;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderUraianPajakOptions() {
+            const select = document.getElementById('uraianspajak-select');
+            select.innerHTML = '<option value="">-- Semua Uraian Pajak --</option>';
+
+            const jenis = document.getElementById('jenispajak-select').value;
+            const tgl = document.getElementById('tanggal-select').value;
+            const tempat = document.getElementById('tempatbayar-select').value;
+            const waktu = document.getElementById('waktu-select').value;
+
+            let filtered = excelData.slice(1);
+
+            if (jenis) {
+                filtered = filtered.filter(row => normalizeJenis(row[1]) === jenis);
+            }
+            if (tgl) {
+                filtered = filtered.filter(row => {
+                    let tglFull = row[tanggalBayarIdx];
+                    if (typeof tglFull !== 'string') tglFull = String(tglFull || '').trim();
+                    return tglFull.substr(0, 10) === tgl;
+                });
+            }
+            if (tempat) {
+                const tempatBayarIdx = 22;
+                filtered = filtered.filter(row => {
+                    let tempatVal = row[tempatBayarIdx];
+                    if (typeof tempatVal !== 'string') tempatVal = String(tempatVal || '').trim();
+                    if (tempat === 'PJDLU') {
+                        return [
+                            'Bank BJB - Internet Banking',
+                            'Bank BJB - Mobile Banking',
+                            'Bank BJB - TELER',
+                            'Bank BJB - Lainnya',
+                            'Bank BJB - POS'
+                        ].includes(tempatVal);
+                    }
+                    if (tempat === 'PJDLQRIS') {
+                        return tempatVal === 'Bank BJB - QRIS';
+                    }
+                    if (tempat === 'PJDLVA') {
+                        return tempatVal === 'Bank BJB - Virtual Account';
+                    }
+                    return true;
+                });
+            }
+            if (waktu) {
+                filtered = filtered.filter(row => {
+                    let tglFull = row[tanggalBayarIdx];
+                    if (typeof tglFull !== 'string') tglFull = String(tglFull || '').trim();
+                    let jamMenit = '';
+                    const match = tglFull.match(/\b(\d{2}:\d{2})/);
+                    if (match) jamMenit = match[1];
+                    if (!jamMenit) return false;
+                    if (waktu === 'akhir') {
+                        return jamMenit < '17:00';
+                    }
+                    if (waktu === 'pelimpahan') {
+                        return jamMenit >= '17:00';
+                    }
+                    return true;
+                });
+            }
+
+            // Ambil uraian pajak unik dari hasil filter
+            const uraianSet = new Set();
+            filtered.forEach(row => {
+                let uraian = row[3];
+                if (typeof uraian !== 'string') uraian = String(uraian || '').trim();
+                if (uraian && uraian !== 'undefined') uraianSet.add(uraian);
+            });
+
+            Array.from(uraianSet).sort().forEach(uraian => {
+                const opt = document.createElement('option');
+                opt.value = uraian;
+                opt.textContent = uraian;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderTable(data) {
+            const table = document.getElementById('excel-table');
+            table.innerHTML = '';
+
+            // Render header
+            const thead = document.createElement('tr');
+            selectedCols.forEach(idx => {
+                const th = document.createElement('th');
+                th.textContent = headers[idx] !== undefined ? headers[idx] : '';
+                th.className = "bg-blue-100 border-b font-semibold text-gray-700 px-3 py-2";
+                thead.appendChild(th);
+            });
+            table.appendChild(thead);
+
+            // Render data
+            data.slice(1).forEach(row => {
+                const tr = document.createElement('tr');
+                selectedCols.forEach(idx => {
+                    const td = document.createElement('td');
+                    let cellValue = row[idx] !== undefined ? row[idx] : '';
+
+                    // Format angka untuk kolom Pokok (13), Denda (14), dan Jumlah Bayar (17)
+                    if ([13, 14, 17].includes(idx)) {
+                        const numericValue = parseFloat(cellValue.toString().replace(/[^0-9.-]/g, '')) || 0;
+                        cellValue = numericValue.toLocaleString('id-ID');
+                    }
+
+                    td.textContent = cellValue;
+                    td.className = "border-b px-3 py-1";
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+
+            // Tampilkan total summary
+            renderTotalSummary(data);
+
+            // Scroll otomatis ke bawah jika kategori waktu "akhir"
+            const waktu = document.getElementById('waktu-select').value;
+            if (waktu === 'akhir') {
+                // Tunggu render selesai, lalu scroll
+                setTimeout(() => {
+                    const tableWrapper = table.parentElement;
+                    tableWrapper.scrollTop = tableWrapper.scrollHeight;
+                }, 0);
+            }
+        }
+
+        function renderTotalSummary(data) {
+            // Data tanpa header
+            const rows = data.slice(1);
+            // Kolom: Pokok = 13, Denda = 14, Jumlah Bayar = 17
+            const idxPokok = 13;
+            const idxDenda = 14;
+            const idxJumlah = 17;
+
+            let totalPokok = 0, totalDenda = 0, totalJumlah = 0;
+            rows.forEach(row => {
+                let pokok = parseFloat((row[idxPokok] || '0').toString().replace(/[^0-9.-]/g, '')) || 0;
+                let denda = parseFloat((row[idxDenda] || '0').toString().replace(/[^0-9.-]/g, '')) || 0;
+                let jumlah = parseFloat((row[idxJumlah] || '0').toString().replace(/[^0-9.-]/g, '')) || 0;
+                totalPokok += pokok;
+                totalDenda += denda;
+                totalJumlah += jumlah;
+            });
+
+            document.getElementById('total-pokok').textContent = totalPokok.toLocaleString('id-ID');
+            document.getElementById('total-denda').textContent = totalDenda.toLocaleString('id-ID');
+            document.getElementById('total-jumlah').textContent = totalJumlah.toLocaleString('id-ID');
+        }
+
+        function normalizeJenis(jenis) {
+            if (typeof jenis !== 'string') jenis = String(jenis || '').trim();
+            return jenis.replace(/\s*\(NonReg\)$/i, '').trim();
+        }
+
+        function sortByTanggalWaktu(data) {
+            return data
+                .filter(row => {
+                    // Cek minimal ada satu kolom terisi (selain header)
+                    return row && row.some(cell => cell !== undefined && String(cell).trim() !== '');
+                })
+                .sort((a, b) => {
+                    let tA = a[tanggalBayarIdx] || '';
+                    let tB = b[tanggalBayarIdx] || '';
+                    if (typeof tA !== 'string') tA = String(tA || '').trim();
+                    if (typeof tB !== 'string') tB = String(tB || '').trim();
+                    const toSortable = s => {
+                        const [d, m, yAndTime] = s.split('-');
+                        if (!yAndTime) return '';
+                        const [y, time] = yAndTime.split(' ');
+                        return `${y}-${m}-${d}${time ? ' ' + time : ''}`;
+                    };
+                    return toSortable(tA).localeCompare(toSortable(tB));
+                });
+        }
+
+        // Event listener
+        document.getElementById('jenispajak-select').addEventListener('change', function () {
+            renderTanggalOptions(); // Update tanggal sesuai jenis pajak
+            renderUraianPajakOptions(); // Update uraian pajak sesuai jenis pajak
+            filterAndRender(); // Render ulang tabel
+        });
+        document.getElementById('tanggal-select').addEventListener('change', filterAndRender);
+        document.getElementById('tempatbayar-select').addEventListener('change', function () {
+            renderUraianPajakOptions();
+            filterAndRender();
+        });
+        document.getElementById('waktu-select').addEventListener('change', filterAndRender);
+        document.getElementById('uraianspajak-select').addEventListener('change', filterAndRender);
+
+        function copyTotal(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                const val = el.textContent.replace(/\./g, '').replace(/,/g, '.'); // handle ribuan
+                navigator.clipboard.writeText(val).then(() => {
+                    showCopyNotification(`Nominal "${el.textContent}" berhasil disalin!`);
+                });
+            }
+        }
+
+        // Tambahkan fungsi notifikasi sederhana
+        function showCopyNotification(msg) {
+            let notif = document.getElementById('copy-notif');
+            if (!notif) {
+                notif = document.createElement('div');
+                notif.id = 'copy-notif';
+                notif.className = 'fixed top-6 right-6 bg-green-500 text-white px-4 py-2 rounded shadow z-50 transition-opacity';
+                document.body.appendChild(notif);
+            }
+            notif.textContent = msg;
+            notif.style.opacity = '1';
+            setTimeout(() => {
+                notif.style.opacity = '0';
+            }, 1500);
+        }
+
+        let extraRows = []; // Untuk baris tambahan pada waktu >=17:00
+        let kurangiCount = 0; // Untuk menyimpan jumlah baris yang ingin dikurangi pada mode kurangi
+
+        document.getElementById('input-extra-rows').addEventListener('input', handleExtraRowsInput);
+        document.getElementById('mode-tambah').addEventListener('change', handleExtraRowsInput);
+        document.getElementById('mode-kurang').addEventListener('change', handleExtraRowsInput);
+
+        function handleExtraRowsInput() {
+            const waktu = document.getElementById('waktu-select').value;
+            const tgl = document.getElementById('tanggal-select').value;
+            const input = document.getElementById('input-extra-rows');
+            const mode = document.querySelector('input[name="mode-extra-rows"]:checked').value;
+            let jumlah = parseInt(input.value, 10) || 0;
+
+            extraRows = [];
+            kurangiCount = 0;
+
+            if (!waktu || !tgl) {
+                filterAndRender();
+                return;
+            }
+
+            if (mode === 'tambah') {
+                // Tambah baris dari kategori lawan
+                let filteredLawan = excelData.slice(1).filter(row => {
+                    let tglFull = row[tanggalBayarIdx];
+                    if (typeof tglFull !== 'string') tglFull = String(tglFull || '').trim();
+                    let jamMenit = '';
+                    const match = tglFull.match(/\b(\d{2}:\d{2})/);
+                    if (match) jamMenit = match[1];
+                    if (!jamMenit) return false;
+                    if (tglFull.substr(0, 10) !== tgl) return false;
+                    // Lawan: jika waktu pelimpahan, ambil <17:00; jika waktu akhir, ambil >=17:00
+                    if (waktu === 'pelimpahan') return jamMenit < '17:00';
+                    if (waktu === 'akhir') return jamMenit >= '17:00';
+                    return false;
+                });
+                if (jumlah > filteredLawan.length) {
+                    showCopyNotification('Jumlah baris yang tersedia hanya ' + filteredLawan.length);
+                    jumlah = filteredLawan.length;
+                    input.value = jumlah;
+                }
+                extraRows = filteredLawan.slice(filteredLawan.length - jumlah);
+            } else if (mode === 'kurang') {
+                // Kurangi dari hasil filter utama
+                let filteredUtama = excelData.slice(1).filter(row => {
+                    let tglFull = row[tanggalBayarIdx];
+                    if (typeof tglFull !== 'string') tglFull = String(tglFull || '').trim();
+                    let jamMenit = '';
+                    const match = tglFull.match(/\b(\d{2}:\d{2})/);
+                    if (match) jamMenit = match[1];
+                    if (!jamMenit) return false;
+                    if (tglFull.substr(0, 10) !== tgl) return false;
+                    if (waktu === 'pelimpahan') return jamMenit >= '17:00';
+                    if (waktu === 'akhir') return jamMenit < '17:00';
+                    return false;
+                });
+                if (jumlah > filteredUtama.length) {
+                    showCopyNotification('Jumlah baris yang tersedia hanya ' + filteredUtama.length);
+                    jumlah = filteredUtama.length;
+                    input.value = jumlah;
+                }
+                if (waktu === 'akhir') {
+                    // Kurangi dari bawah (desc)
+                    kurangiCount = -jumlah; // gunakan negatif sebagai penanda
+                } else {
+                    // Kurangi dari atas (asc)
+                    kurangiCount = jumlah;
+                }
+            }
+            filterAndRender();
+        }
+
+        // Reset extraRows, kurangiCount, dan input jika filter waktu/tanggal berubah
+        document.getElementById('waktu-select').addEventListener('change', function () {
+            extraRows = [];
+            kurangiCount = 0;
+            document.getElementById('input-extra-rows').value = 0;
+        });
+        document.getElementById('tanggal-select').addEventListener('change', function () {
+            extraRows = [];
+            kurangiCount = 0;
+            document.getElementById('input-extra-rows').value = 0;
+        });
+    </script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const pasteInput = document.getElementById('paste-input');
+            if (!pasteInput) {
+                console.warn('Element #paste-input tidak ditemukan di halaman.');
+                return;
+            }
+
+            pasteInput.addEventListener('input', function () {
+                const inputText = this.value.trim();
+
+                if (!inputText) {
+                    document.getElementById('tempatbayar-select').value = "";
+                    document.getElementById('tanggal-select').value = "";
+                    document.getElementById('jenispajak-select').value = "";
+                    document.getElementById('uraianspajak-select').value = "";
+
+                    if (typeof filterAndRender === 'function') {
+                        filterAndRender();
+                    }
+                    return;
+                }
+
+                // ✅ Gunakan regex literal tanpa backslash ganda
+                const paymentTypeMatch = inputText.match(/PJK\s+([A-Z]+)/);
+                const paymentType = paymentTypeMatch ? paymentTypeMatch[1] : '';
+
+                const dateMatch = inputText.match(/TGL\s+(\d{8})\//);
+                let rawDate = dateMatch ? dateMatch[1] : '';
+                let formattedDate = '';
+                if (rawDate.length === 8) {
+                    const day = rawDate.slice(0, 2);
+                    const month = rawDate.slice(2, 4);
+                    const year = rawDate.slice(4);
+                    formattedDate = `${day}-${month}-${year}`;
+                }
+
+                let taxType = '';
+                if (rawDate) {
+                    const taxTypePattern = new RegExp(`${rawDate}/([A-Z]+)(PELIMPAHAN|\\s+-|$)`);
+                    const taxTypeMatch = inputText.match(taxTypePattern);
+                    taxType = taxTypeMatch ? taxTypeMatch[1] : '';
+                }
+
+                if (paymentType) {
+                    const bayarSelect = document.getElementById('tempatbayar-select');
+                    for (let opt of bayarSelect.options) {
+                        if (opt.value === paymentType) {
+                            bayarSelect.value = paymentType;
+                            break;
+                        }
+                    }
+                }
+
+                if (formattedDate) {
+                    const tglSelect = document.getElementById('tanggal-select');
+                    for (let opt of tglSelect.options) {
+                        if (opt.value === formattedDate) {
+                            tglSelect.value = formattedDate;
+                            break;
+                        }
+                    }
+                }
+
+                if (taxType) {
+                    const pajakSelect = document.getElementById('jenispajak-select');
+                    for (let opt of pajakSelect.options) {
+                        if (opt.value.toUpperCase() === taxType.toUpperCase()) {
+                            pajakSelect.value = opt.value;
+                            break;
+                        }
+                    }
+                }
+
+                if (typeof filterAndRender === 'function') {
+                    filterAndRender();
+                }
+            });
+        });
+        document.getElementById('btn-paste-text').addEventListener('click', async function () {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('paste-input').value = text;
+            } catch (err) {
+                alert("Gagal mengambil teks dari clipboard. Izinkan akses clipboard.");
+            }
+        });
+    </script>
+
+</body>
+
+</html>

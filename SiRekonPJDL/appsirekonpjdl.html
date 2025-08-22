@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>SiRekon PJDL | Sistem Rekonsiliasi PJDL</title>
+    <link rel="stylesheet" href="../assets/icons/bootstrap-icons.min.css">
+    <script src="../assets/xlsx.full.min.js"></script>
+    <script src="../assets/tailwind.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 to-white min-h-screen">
+    <!-- Kontainer utama diubah menjadi full-width -->
+    <div class="flex flex-col md:flex-row w-full mx-auto min-h-screen rounded-none shadow-none overflow-hidden">
+        <!-- Sidebar -->
+        <aside
+            class="w-full md:w-1/4 max-w-full md:max-w-xs bg-white shadow-inner p-4 md:p-6 flex flex-col gap-4 border-b md:border-b-0 md:border-r border-gray-200">
+            <div class="flex items-center gap-3 mb-2 justify-center md:justify-start">
+                <i class="bi bi-cash-coin text-blue-600 text-2xl"></i>
+                <h2 class="text-xl font-bold text-gray-700 text-center">Sistem Rekonsiliasi PJDL
+                </h2>
+            </div>
+            <label for="input-excel"
+                class="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-300 ease-in-out cursor-pointer">
+                <i class="bi bi-upload"></i>
+                <span id="upload-text" class="truncate overflow-hidden whitespace-nowrap max-w-[80%]">
+                    Upload File Excel PJDL
+                </span>
+                <input type="file" id="input-excel" accept=".xlsx,.xls,.csv" class="hidden" />
+            </label>
+
+            <div class="flex items-center gap-2">
+                <!-- Input Teks -->
+                <input id="paste-input" type="text"
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition"
+                    placeholder="Tempelkan Keterangan Disini" />
+
+                <!-- Tombol Paste -->
+                <button id="btn-paste-text"
+                    class="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-md transition duration-300 ease-in-out"
+                    title="Paste Teks">
+                    <i class="bi bi-clipboard"></i>
+                </button>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1 text-gray-600"><i class="bi bi-tags"></i> Pilih Jenis Pajak:</label>
+                <select id="jenispajak-select" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 transition">
+                    <option value="">-- Semua Jenis Pajak --</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1 text-gray-600"><i class="bi bi-calendar-event"></i> Pilih Tanggal
+                    Pembayaran:</label>
+                <select id="tanggal-select" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 transition">
+                    <option value="">-- Semua Tanggal --</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1 text-gray-600"><i class="bi bi-bank"></i> Pilih Tempat Bayar:</label>
+                <select id="tempatbayar-select"
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 transition">
+                    <option value="">-- Semua Tempat Bayar --</option>
+                    <option value="PJDLU">PJDLU</option>
+                    <option value="PJDLQRIS">PJDLQRIS</option>
+                    <option value="PJDLVA">PJDLVA</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1 text-gray-600"><i class="bi bi-clock-history"></i> Kategori Waktu:</label>
+                <select id="waktu-select" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 transition">
+                    <option value="">-- Semua Transaksi --</option>
+                    <option value="akhir">Akhir Pembayaran</option>
+                    <option value="pelimpahan">Tgl Pelimpahan</option>
+                </select>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1 text-gray-600"><i class="bi bi-file-earmark-text"></i> Pilih Uraian
+                    Pajak:</label>
+                <select id="uraianspajak-select"
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-200 transition">
+                    <option value="">-- Semua Uraian Pajak --</option>
+                </select>
+            </div>
+
+            <!-- Fitur Tambah/Kurangi -->
+            <div id="fiturGroup" class="border rounded-lg px-4 py-2 bg-gray-100 mt-2">
+                <div class="flex items-center gap-2 text-sm text-gray-700">
+                    <span class="font-semibold">Mode Filter:</span>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-row gap-4" id="fiturRadioGroup">
+                            <label class="flex items-center gap-1">
+                                <input type="radio" name="fitur" value="tambah" checked />
+                                Tambah
+                            </label>
+                            <label class="flex items-center gap-1">
+                                <input type="radio" name="fitur" value="kurangi" />
+                                Kurangi
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center mt-2">
+                    <label for="tambahanCount" class="text-sm text-gray-600"><span id="labelTambahanCount">Ditambah</span>:</label>
+                    <input type="number" id="tambahanCount" value="0" min="0"
+                        class="w-16 px-2 py-1 border rounded text-sm text-center ml-auto" />
+                </div>
+            </div>
+
+        </aside>
+        <!-- Main Content -->
+        <main class="flex-1 md:px-6 mt-6 flex flex-col gap-6">
+            <!-- Ringkasan -->
+            <div id="summaryCards" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2">
+                <!-- Total Pokok -->
+                <div class="bg-blue-100 p-6 rounded-2xl shadow-md flex flex-col justify-between border border-blue-200">
+                    <p class="text-sm font-medium text-blue-800 mb-2">Total Pokok</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-pokok" class="text-lg md:text-xl lg:text-2xl font-bold text-blue-900">0</p>
+                        <button onclick="copyTotal('total-pokok')" title="Salin Total Pokok"
+                            class="ml-3 text-blue-400 hover:text-blue-600 transition-colors duration-200">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Total Denda -->
+                <div class="bg-yellow-100 p-6 rounded-2xl shadow-md flex flex-col justify-between border border-yellow-200">
+                    <p class="text-sm font-medium text-yellow-800 mb-2">Total Denda</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-denda" class="text-lg md:text-xl lg:text-2xl font-bold text-yellow-900">0</p>
+                        <button onclick="copyTotal('total-denda')" title="Salin Total Denda"
+                            class="ml-3 text-yellow-400 hover:text-yellow-600 transition-colors duration-200">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Total Pembayaran Pokok + Denda -->
+                <div id="card-pokok-denda-gabungan" class="hidden bg-indigo-100 p-6 rounded-2xl shadow-md flex flex-col justify-between border border-indigo-200">
+                    <p class="text-sm font-medium text-indigo-800 mb-2">Total Pembayaran Pokok + Denda</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-pokok-denda-gabungan-value" class="text-lg md:text-xl lg:text-2xl font-bold text-indigo-900">0</p>
+                        <button onclick="copyTotal('total-pokok-denda-gabungan-value')" title="Salin Total Pembayaran Pokok + Denda"
+                            class="ml-3 text-indigo-400 hover:text-indigo-600 transition-colors duration-200">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- Total Pokok Opsen -->
+                <div id="card-opsen-pokok" class="hidden bg-purple-100 p-6 rounded-2xl shadow-md flex flex-col justify-between border border-purple-200">
+                    <p class="text-sm font-medium text-purple-800 mb-2">Total Pokok Opsen</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-pokok-opsen" class="text-lg md:text-xl lg:text-2xl font-bold text-purple-900">0</p>
+                        <button onclick="copyTotal('total-pokok-opsen')" title="Salin Total Pokok Opsen"
+                            class="ml-3 text-purple-400 hover:text-purple-600 transition-colors duration-200">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Total Denda Opsen -->
+                <div id="card-opsen-denda" class="hidden bg-pink-100 p-6 rounded-2xl shadow-md flex flex-col justify-between border border-pink-200">
+                    <p class="text-sm font-medium text-pink-800 mb-2">Total Denda Opsen</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-denda-opsen" class="text-lg md:text-xl lg:text-2xl font-bold text-pink-900">0</p>
+                        <button onclick="copyTotal('total-denda-opsen')" title="Salin Total Denda Opsen"
+                            class="ml-3 text-pink-400 hover:text-pink-600 transition-colors duration-200">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Total Pembayaran Opsen -->
+                <div id="card-opsen-gabungan" class="hidden bg-orange-100 p-6 rounded-2xl shadow-md flex flex-col justify-between border border-orange-200">
+                    <p class="text-sm font-medium text-orange-800 mb-2">Total Pembayaran Opsen</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-opsen-gabungan" class="text-lg md:text-xl lg:text-2xl font-bold text-orange-900">0</p>
+                        <button onclick="copyTotal('total-opsen-gabungan')" title="Salin Total Pembayaran Opsen"
+                            class="ml-3 text-orange-400 hover:text-orange-600 transition-colors duration-200">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Total Seluruh Pembayaran Gabungan -->
+                <div id="card-total-gabungan" class="hidden bg-green-100 p-6 rounded-2xl shadow-md flex flex-col justify-between border border-green-200">
+                    <p class="text-sm font-medium text-green-800 mb-2">Total Seluruh Pembayaran</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-gabungan" class="text-lg md:text-xl lg:text-2xl font-bold text-green-900">0</p>
+                        <button onclick="copyTotal('total-gabungan')" title="Salin Total Seluruh Pembayaran"
+                            class="ml-3 text-green-400 hover:text-green-600 transition-colors duration-200">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Total Jumlah Bayar -->
+                <div id="card-jumlah-bayar" class="bg-teal-100 p-6 rounded-2xl shadow-md flex flex-col justify-between border border-teal-200">
+                    <p class="text-sm font-medium text-teal-800 mb-2">Total Jumlah Bayar</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-jumlah" class="text-lg md:text-xl lg:text-2xl font-bold text-teal-900">0</p>
+                        <button onclick="copyTotal('total-jumlah')" title="Salin Total Jumlah"
+                            class="ml-3 text-teal-400 hover:text-teal-600 transition-colors duration-200">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Tabel -->
+            <div>
+                <div id="table-scroll-container" class="overflow-x-auto overflow-y-auto max-h-[60vh] bg-white rounded-b-lg shadow border border-gray-200 border-t-0">
+                    <table id="excel-table" class="min-w-full table-auto border-collapse text-sm">
+                        <!-- Table content here -->
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <a href="javascript:void(0)" onclick="window.history.back()"
+        class="group fixed bottom-4 right-4 bg-gray-800 hover:bg-gray-900 text-white p-3 rounded-full shadow-lg z-50 transition duration-300 ease-in-out"
+        title="Kembali">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+            stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+    </a>
+
+    <div id="copy-notif"
+        class="fixed top-6 right-6 bg-green-500 text-white px-4 py-2 rounded-full shadow z-50 transition-opacity duration-300 opacity-0">
+        Berhasil disalin!
+    </div>
+
+    <script>
+        let excelData = [];
+        let headers = [];
+        let isNewFormat = false;
+
+        // Indeks kolom untuk format lama dan baru
+        const oldFormatCols = {
+            'Jenis Pajak': 1,
+            'Uraian Pajak': 3,
+            'Pokok (Rp)': 13,
+            'Denda (Rp)': 14,
+            'Pokok Opsen (Rp)': 15,
+            'Denda Opsen (Rp)': 16,
+            'Jumlah Bayar (Rp)': 17,
+            'Tanggal Bayar': 20,
+            'Tempat Bayar': 22,
+            'Keterangan': 23
+        };
+
+        const newFormatCols = {
+            'Jenis Pajak': 1,
+            'Uraian Pajak': 3,
+            'Pokok (Rp)': 15,
+            'Denda (Rp)': 16,
+            'Pokok Opsen (Rp)': 17,
+            'Denda Opsen (Rp)': 18,
+            'Jumlah Bayar (Rp)': 19,
+            'Tanggal Bayar': 22,
+            'Tempat Bayar': 24,
+            'Keterangan': 25
+        };
+
+        let currentCols = {};
+        let unfilteredData = [];
+
+        document.getElementById('input-excel').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) {
+                return;
+            }
+
+            document.getElementById('upload-text').textContent = file.name;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                headers = excelData[0];
+
+                isNewFormat = headers.includes('Kecamatan OP') && headers.includes('Kelurahan OP');
+                currentCols = isNewFormat ? newFormatCols : oldFormatCols;
+
+                while (excelData.length > 1 && (excelData[1][0] === null || excelData[1][0] === undefined || String(excelData[1][0]).trim() === '' || isNaN(parseInt(String(excelData[1][0]).trim())))) {
+                    excelData.splice(1, 1);
+                }
+
+                for (let i = excelData.length - 1; i >= 1; i--) {
+                    const row = excelData[i];
+                    if (row[0] === null || row[0] === undefined || String(row[0]).trim() === '' || isNaN(parseInt(String(row[0]).trim()))) {
+                        excelData.pop();
+                    } else {
+                        break;
+                    }
+                }
+
+                const sorted = [headers].concat(sortByTanggalWaktu(excelData.slice(1)));
+                excelData = sorted;
+                unfilteredData = excelData.slice(1);
+
+                renderJenisPajakOptions();
+                renderTanggalOptions();
+                renderUraianPajakOptions();
+                filterAndRender();
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function getFilteredData() {
+            const jenis = document.getElementById('jenispajak-select').value;
+            const tgl = document.getElementById('tanggal-select').value;
+            const tempat = document.getElementById('tempatbayar-select').value;
+            const uraian = document.getElementById('uraianspajak-select').value;
+
+            let filtered = unfilteredData.slice();
+
+            if (jenis) {
+                filtered = filtered.filter(row => normalizeJenis(row[currentCols['Jenis Pajak']]) === jenis);
+            }
+            if (tgl) {
+                filtered = filtered.filter(row => {
+                    const tanggalBayarValue = row[currentCols['Tanggal Bayar']];
+                    const tglFull = typeof tanggalBayarValue === 'string' ? tanggalBayarValue.trim() : String(tanggalBayarValue || '').trim();
+                    return tglFull.substr(0, 10) === tgl;
+                });
+            }
+            if (tempat) {
+                filtered = filtered.filter(row => {
+                    const tempatVal = typeof row[currentCols['Tempat Bayar']] === 'string' ? row[currentCols['Tempat Bayar']].trim() : String(row[currentCols['Tempat Bayar']] || '').trim();
+                    if (tempat === 'PJDLU') {
+                        return [
+                            'Bank BJB - Internet Banking',
+                            'Bank BJB - Mobile Banking',
+                            'Bank BJB - TELER',
+                            'Bank BJB - Lainnya',
+                            'Bank BJB - POS'
+                        ].includes(tempatVal);
+                    }
+                    if (tempat === 'PJDLQRIS') {
+                        return tempatVal === 'Bank BJB - QRIS';
+                    }
+                    if (tempat === 'PJDLVA') {
+                        return tempatVal === 'Bank BJB - Virtual Account';
+                    }
+                    return true;
+                });
+            }
+            if (uraian) {
+                filtered = filtered.filter(row => {
+                    const uraianVal = typeof row[currentCols['Uraian Pajak']] === 'string' ? row[currentCols['Uraian Pajak']].trim() : String(row[currentCols['Uraian Pajak']] || '').trim();
+                    return uraianVal === uraian;
+                });
+            }
+
+            return filtered;
+        }
+
+        function filterAndRender() {
+            let filteredData = getFilteredData();
+
+            const mode = document.querySelector('input[name="fitur"]:checked')?.value || 'tambah';
+            const tambahanCount = parseInt(document.getElementById('tambahanCount').value) || 0;
+            const waktu = document.getElementById('waktu-select').value;
+            const tgl = document.getElementById('tanggal-select').value;
+
+            let finalData = filteredData;
+
+            if (waktu && waktu !== '') {
+                // Pertama, filter data utama berdasarkan waktu yang dipilih
+                let dataWaktuFilter = filteredData.filter(row => {
+                    const tglFull = String(row[currentCols['Tanggal Bayar']] || '').trim();
+                    const match = tglFull.match(/\b(\d{2}:\d{2}:\d{2})|\b(\d{2}:\d{2})/);
+                    const jamMenit = match ? match[1] || match[2] : '';
+                    if (!jamMenit) return false;
+
+                    return waktu === 'akhir' ? jamMenit < '17:00' : jamMenit >= '17:00';
+                });
+
+                if (mode === 'tambah' && tambahanCount > 0) {
+                    // Ambil data lawan jika mode 'tambah'
+                    let dataWaktuLawan = getFilteredData().filter(row => {
+                        const tglFull = String(row[currentCols['Tanggal Bayar']] || '').trim();
+                        const match = tglFull.match(/\b(\d{2}:\d{2}:\d{2})|\b(\d{2}:\d{2})/);
+                        const jamMenit = match ? match[1] || match[2] : '';
+                        if (!jamMenit || tglFull.substr(0, 10) !== tgl) return false;
+
+                        return waktu === 'akhir' ? jamMenit >= '17:00' : jamMenit < '17:00';
+                    });
+
+                    if (waktu === 'akhir') {
+                        // Jika mode akhir, tambahkan data lawan dari atas
+                        dataWaktuLawan = sortByTanggalWaktu(dataWaktuLawan);
+                        finalData = [...dataWaktuFilter, ...dataWaktuLawan.slice(0, tambahanCount)];
+                    } else { // 'pelimpahan'
+                        // Jika mode pelimpahan, tambahkan data lawan dari bawah
+                        dataWaktuLawan = sortByTanggalWaktu(dataWaktuLawan).reverse();
+                        const rowsToAdd = dataWaktuLawan.slice(0, tambahanCount).reverse(); // Ambil dari bawah dan balikan lagi
+                        finalData = [...dataWaktuFilter, ...rowsToAdd];
+                    }
+
+                } else if (mode === 'kurangi' && tambahanCount > 0) {
+                    if (waktu === 'akhir') {
+                        // Kurangi dari bawah
+                        finalData = dataWaktuFilter.slice(0, dataWaktuFilter.length - tambahanCount);
+                    } else {
+                        // Kurangi dari atas
+                        finalData = dataWaktuFilter.slice(tambahanCount);
+                    }
+                } else {
+                    finalData = dataWaktuFilter;
+                }
+            }
+
+            finalData = sortByTanggalWaktu(finalData);
+            renderTable([headers].concat(finalData));
+            updateSummaryCards(finalData);
+
+            const scrollContainer = document.getElementById('table-scroll-container');
+            if (scrollContainer) {
+                if (mode === 'kurangi' && waktu === 'akhir') {
+                    setTimeout(() => scrollContainer.scrollTop = scrollContainer.scrollHeight, 0);
+                } else {
+                    scrollContainer.scrollTop = 0;
+                }
+            }
+        }
+
+        function debounce(func, delay) {
+            let timeout;
+            return function (...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), delay);
+            };
+        }
+
+        const debouncedFilterAndRender = debounce(filterAndRender, 300);
+
+        function renderTanggalOptions() {
+            const select = document.getElementById('tanggal-select');
+            select.innerHTML = '<option value="">-- Semua Tanggal --</option>';
+            const jenis = document.getElementById('jenispajak-select').value;
+            const tanggalCount = {};
+            unfilteredData.forEach(row => {
+                let matchJenis = true;
+                if (jenis) {
+                    let val = normalizeJenis(row[currentCols['Jenis Pajak']]);
+                    matchJenis = val === jenis;
+                }
+                if (matchJenis) {
+                    const tanggalBayarValue = row[currentCols['Tanggal Bayar']];
+                    const tglFull = typeof tanggalBayarValue === 'string' ? tanggalBayarValue.trim() : String(tanggalBayarValue || '').trim();
+                    const tgl = tglFull.substr(0, 10);
+                    if (tgl && tgl !== 'undefined' && tgl !== '') {
+                        tanggalCount[tgl] = (tanggalCount[tgl] || 0) + 1;
+                    }
+                }
+            });
+            Object.keys(tanggalCount)
+                .sort((a, b) => {
+                    const toSortable = s => {
+                        const [datePart] = s.split(' ');
+                        let date = datePart;
+                        if (/^\d{2}-\d{2}-\d{4}$/.test(datePart)) {
+                            const [d, m, y] = datePart.split('-');
+                            date = `${y}-${m}-${d}`;
+                        } else if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+                            date = datePart;
+                        }
+                        return date;
+                    };
+                    return toSortable(a).localeCompare(toSortable(b));
+                })
+                .forEach(tgl => {
+                    const opt = document.createElement('option');
+                    opt.value = tgl;
+                    opt.textContent = `${tgl} - (${tanggalCount[tgl]})`;
+                    select.appendChild(opt);
+                });
+        }
+
+        function renderJenisPajakOptions() {
+            const jenisPajakIdx = currentCols['Jenis Pajak'];
+            const select = document.getElementById('jenispajak-select');
+            select.innerHTML = '<option value="">-- Semua Jenis Pajak --</option>';
+            const jenisSet = new Set();
+            unfilteredData.forEach(row => {
+                let jenis = normalizeJenis(row[jenisPajakIdx]);
+                if (jenis && jenis !== 'undefined' && jenis !== '') jenisSet.add(jenis);
+            });
+            Array.from(jenisSet).sort().forEach(jenis => {
+                const opt = document.createElement('option');
+                opt.value = jenis;
+                opt.textContent = jenis;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderUraianPajakOptions() {
+            const select = document.getElementById('uraianspajak-select');
+            select.innerHTML = '<option value="">-- Semua Uraian Pajak --</option>';
+
+            const jenis = document.getElementById('jenispajak-select').value;
+            const tgl = document.getElementById('tanggal-select').value;
+            const tempat = document.getElementById('tempatbayar-select').value;
+            const waktu = document.getElementById('waktu-select').value;
+
+            let filtered = unfilteredData.slice();
+
+            if (jenis) {
+                filtered = filtered.filter(row => normalizeJenis(row[currentCols['Jenis Pajak']]) === jenis);
+            }
+            if (tgl) {
+                filtered = filtered.filter(row => {
+                    const tanggalBayarValue = row[currentCols['Tanggal Bayar']];
+                    const tglFull = typeof tanggalBayarValue === 'string' ? tanggalBayarValue.trim() : String(tanggalBayarValue || '').trim();
+                    return tglFull.substr(0, 10) === tgl;
+                });
+            }
+            if (tempat) {
+                filtered = filtered.filter(row => {
+                    const tempatVal = typeof row[currentCols['Tempat Bayar']] === 'string' ? row[currentCols['Tempat Bayar']].trim() : String(row[currentCols['Tempat Bayar']] || '').trim();
+                    if (tempat === 'PJDLU') {
+                        return [
+                            'Bank BJB - Internet Banking',
+                            'Bank BJB - Mobile Banking',
+                            'Bank BJB - TELER',
+                            'Bank BJB - Lainnya',
+                            'Bank BJB - POS'
+                        ].includes(tempatVal);
+                    }
+                    if (tempat === 'PJDLQRIS') {
+                        return tempatVal === 'Bank BJB - QRIS';
+                    }
+                    if (tempat === 'PJDLVA') {
+                        return tempatVal === 'Bank BJB - Virtual Account';
+                    }
+                    return true;
+                });
+            }
+            if (waktu && waktu !== '') {
+                filtered = filtered.filter(row => {
+                    const tglFull = String(row[currentCols['Tanggal Bayar']] || '').trim();
+                    const match = tglFull.match(/\b(\d{2}:\d{2}:\d{2})|\b(\d{2}:\d{2})/);
+                    const jamMenit = match ? match[1] || match[2] : '';
+                    if (!jamMenit) return false;
+
+                    return waktu === 'akhir' ? jamMenit < '17:00' : jamMenit >= '17:00';
+                });
+            }
+
+            const uraianSet = new Set();
+            filtered.forEach(row => {
+                let uraian = row[currentCols['Uraian Pajak']];
+                if (typeof uraian !== 'string') uraian = String(uraian || '').trim();
+                if (uraian && uraian !== 'undefined' && uraian !== '') uraianSet.add(uraian);
+            });
+
+            Array.from(uraianSet).sort().forEach(uraian => {
+                const opt = document.createElement('option');
+                opt.value = uraian;
+                opt.textContent = uraian;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderTable(data) {
+            const table = document.getElementById('excel-table');
+            table.innerHTML = '';
+
+            let displayHeaders = ['Jenis Pajak', 'Uraian Pajak', 'Pokok (Rp)', 'Denda (Rp)', 'Jumlah Bayar (Rp)', 'Tanggal Bayar', 'Tempat Bayar'];
+
+            const jenisPajakSelected = document.getElementById('jenispajak-select').value;
+            if (jenisPajakSelected && jenisPajakSelected.toLowerCase().includes('mineral')) {
+                displayHeaders = ['Jenis Pajak', 'Uraian Pajak', 'Pokok (Rp)', 'Denda (Rp)', 'Pokok Opsen (Rp)', 'Denda Opsen (Rp)', 'Jumlah Bayar (Rp)', 'Tanggal Bayar', 'Tempat Bayar'];
+            }
+
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            displayHeaders.forEach(h => {
+                const th = document.createElement('th');
+                th.textContent = h;
+                th.className = "bg-blue-100 border-b font-semibold text-gray-700 px-3 py-2 text-left sticky top-0";
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            data.slice(1).forEach(row => {
+                const tr = document.createElement('tr');
+                displayHeaders.forEach(h => {
+                    const td = document.createElement('td');
+                    let cellValue = row[currentCols[h]] !== undefined ? row[currentCols[h]] : '';
+
+                    if (h.includes('(Rp)')) {
+                        const numericValue = parseFloat(String(cellValue).replace(/[^0-9.-]/g, '')) || 0;
+                        cellValue = numericValue.toLocaleString('id-ID');
+                    } else if (h === 'Tanggal Bayar' && typeof cellValue === 'string') {
+                        cellValue = cellValue.trim();
+                    } else if (h === 'Tempat Bayar') {
+                        if (typeof cellValue !== 'string') {
+                            cellValue = String(cellValue);
+                        }
+                        const keterangan = row[currentCols['Keterangan']];
+                        if (keterangan && keterangan.includes('VA')) {
+                            cellValue = 'Bank BJB - Virtual Account';
+                        }
+                    }
+
+                    td.textContent = cellValue;
+                    td.className = "border-b px-3 py-1";
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+
+            const waktu = document.getElementById('waktu-select').value;
+            const scrollContainer = document.getElementById('table-scroll-container');
+            if (scrollContainer) {
+                if (waktu === 'akhir') {
+                    setTimeout(() => scrollContainer.scrollTop = scrollContainer.scrollHeight, 0);
+                } else {
+                    scrollContainer.scrollTop = 0;
+                }
+            }
+        }
+
+        function updateSummaryCards(data) {
+            const jenisPajakSelected = document.getElementById('jenispajak-select').value;
+            const isMineral = jenisPajakSelected && jenisPajakSelected.toLowerCase().includes('mineral');
+
+            const cardOpsenPokok = document.getElementById('card-opsen-pokok');
+            const cardOpsenDenda = document.getElementById('card-opsen-denda');
+            const cardPokokDendaGabungan = document.getElementById('card-pokok-denda-gabungan');
+            const cardOpsenGabungan = document.getElementById('card-opsen-gabungan');
+            const cardTotalGabungan = document.getElementById('card-total-gabungan');
+            const cardJumlahBayar = document.getElementById('card-jumlah-bayar');
+            const summaryCardsDiv = document.getElementById('summaryCards');
+
+            // Atur ulang layout grid
+            if (isMineral) {
+                summaryCardsDiv.classList.remove('md:grid-cols-3', 'lg:grid-cols-3');
+                summaryCardsDiv.classList.add('md:grid-cols-4', 'lg:grid-cols-4');
+            } else {
+                summaryCardsDiv.classList.remove('md:grid-cols-4', 'lg:grid-cols-4');
+                summaryCardsDiv.classList.add('md:grid-cols-3', 'lg:grid-cols-3');
+            }
+
+            if (isMineral) {
+                cardOpsenPokok.classList.remove('hidden');
+                cardOpsenDenda.classList.remove('hidden');
+                cardPokokDendaGabungan.classList.remove('hidden');
+                cardOpsenGabungan.classList.remove('hidden');
+                cardTotalGabungan.classList.remove('hidden');
+                cardJumlahBayar.classList.add('hidden');
+            } else {
+                cardOpsenPokok.classList.add('hidden');
+                cardOpsenDenda.classList.add('hidden');
+                cardPokokDendaGabungan.classList.add('hidden');
+                cardOpsenGabungan.classList.add('hidden');
+                cardTotalGabungan.classList.add('hidden');
+            }
+
+            let totalPokok = 0, totalDenda = 0, totalPokokOpsen = 0, totalDendaOpsen = 0, totalJumlah = 0;
+
+            data.forEach(row => {
+                let pokok = parseFloat(String(row[currentCols['Pokok (Rp)']] || '0').replace(/[^0-9.-]/g, '')) || 0;
+                let denda = parseFloat(String(row[currentCols['Denda (Rp)']] || '0').replace(/[^0-9.-]/g, '')) || 0;
+                let jumlah = parseFloat(String(row[currentCols['Jumlah Bayar (Rp)']] || '0').replace(/[^0-9.-]/g, '')) || 0;
+
+                totalPokok += pokok;
+                totalDenda += denda;
+                totalJumlah += jumlah;
+
+                if (isMineral) {
+                    let pokokOpsen = parseFloat(String(row[currentCols['Pokok Opsen (Rp)']] || '0').replace(/[^0-9.-]/g, '')) || 0;
+                    let dendaOpsen = parseFloat(String(row[currentCols['Denda Opsen (Rp)']] || '0').replace(/[^0-9.-]/g, '')) || 0;
+                    totalPokokOpsen += pokokOpsen;
+                    totalDendaOpsen += dendaOpsen;
+                }
+            });
+
+            document.getElementById('total-pokok').textContent = totalPokok.toLocaleString('id-ID');
+            document.getElementById('total-denda').textContent = totalDenda.toLocaleString('id-ID');
+            document.getElementById('total-jumlah').textContent = totalJumlah.toLocaleString('id-ID');
+
+            if (isMineral) {
+                document.getElementById('total-pokok-opsen').textContent = totalPokokOpsen.toLocaleString('id-ID');
+                document.getElementById('total-denda-opsen').textContent = totalDendaOpsen.toLocaleString('id-ID');
+                document.getElementById('total-pokok-denda-gabungan-value').textContent = (totalPokok + totalDenda).toLocaleString('id-ID');
+                document.getElementById('total-opsen-gabungan').textContent = (totalPokokOpsen + totalDendaOpsen).toLocaleString('id-ID');
+                document.getElementById('total-gabungan').textContent = (totalPokok + totalDenda + totalPokokOpsen + totalDendaOpsen).toLocaleString('id-ID');
+            } else {
+                document.getElementById('total-gabungan').textContent = totalJumlah.toLocaleString('id-ID');
+            }
+        }
+
+        function normalizeJenis(jenis) {
+            if (typeof jenis !== 'string') jenis = String(jenis || '').trim();
+            return jenis.replace(/\s*\(NonReg\)$/i, '').trim();
+        }
+
+        function sortByTanggalWaktu(data) {
+            const tanggalBayarIdx = currentCols['Tanggal Bayar'];
+            return data
+                .filter(row => row && row.some(cell => cell !== undefined && String(cell).trim() !== ''))
+                .sort((a, b) => {
+                    let tA = String(a[tanggalBayarIdx] || '').trim();
+                    let tB = String(b[tanggalBayarIdx] || '').trim();
+                    const toSortable = s => {
+                        const [datePart, timePart] = s.split(' ');
+                        let date = datePart;
+                        if (/^\d{2}-\d{2}-\d{4}$/.test(datePart)) {
+                            const [d, m, y] = datePart.split('-');
+                            date = `${y}-${m}-${d}`;
+                        } else if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+                            date = datePart;
+                        }
+                        return `${date}${timePart ? ' ' + timePart : ''}`;
+                    };
+                    return toSortable(tA).localeCompare(toSortable(tB));
+                });
+        }
+
+        // Event listener
+        document.getElementById('jenispajak-select').addEventListener('change', debouncedFilterAndRender);
+        document.getElementById('tanggal-select').addEventListener('change', debouncedFilterAndRender);
+        document.getElementById('tempatbayar-select').addEventListener('change', debouncedFilterAndRender);
+        document.getElementById('waktu-select').addEventListener('change', debouncedFilterAndRender);
+        document.getElementById('uraianspajak-select').addEventListener('change', debouncedFilterAndRender);
+
+        document.getElementById('fiturRadioGroup').addEventListener('change', function () {
+            const mode = document.querySelector('input[name="fitur"]:checked')?.value;
+            document.getElementById('labelTambahanCount').textContent = mode === 'tambah' ? 'Ditambah' : 'Dikurangi';
+            document.getElementById('tambahanCount').value = 0;
+            debouncedFilterAndRender();
+        });
+
+        document.getElementById('tambahanCount').addEventListener('input', debouncedFilterAndRender);
+
+        function copyTotal(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                const val = el.textContent.replace(/\./g, '').replace(/,/g, '.');
+                document.execCommand('copy');
+                const tempInput = document.createElement('input');
+                document.body.appendChild(tempInput);
+                tempInput.value = val;
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                showCopyNotification(`Nominal "${el.textContent}" berhasil disalin!`);
+            }
+        }
+
+        function showCopyNotification(msg) {
+            let notif = document.getElementById('copy-notif');
+            if (!notif) {
+                notif = document.createElement('div');
+                notif.id = 'copy-notif';
+                notif.className = 'fixed top-6 right-6 bg-green-500 text-white px-4 py-2 rounded-full shadow z-50 transition-opacity';
+                document.body.appendChild(notif);
+            }
+            notif.textContent = msg;
+            notif.style.opacity = '1';
+            setTimeout(() => {
+                notif.style.opacity = '0';
+            }, 2000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const pasteInput = document.getElementById('paste-input');
+            if (!pasteInput) {
+                console.warn('Element #paste-input tidak ditemukan di halaman.');
+                return;
+            }
+
+            pasteInput.addEventListener('input', debounce(function () {
+                const inputText = this.value.trim();
+
+                if (!inputText) {
+                    document.getElementById('tempatbayar-select').value = "";
+                    document.getElementById('tanggal-select').value = "";
+                    document.getElementById('jenispajak-select').value = "";
+                    document.getElementById('uraianspajak-select').value = "";
+                    document.getElementById('waktu-select').value = "";
+                    filterAndRender();
+                    return;
+                }
+                const paymentTypeMatch = inputText.match(/PJK\s+([A-Z]+)/);
+                const paymentType = paymentTypeMatch ? paymentTypeMatch[1] : '';
+                const dateMatch = inputText.match(/TGL\s+(\d{8})\//);
+                let rawDate = dateMatch ? dateMatch[1] : '';
+                let formattedDate = '';
+                if (rawDate.length === 8) {
+                    const day = rawDate.slice(0, 2);
+                    const month = rawDate.slice(2, 4);
+                    const year = rawDate.slice(4);
+                    formattedDate = `${day}-${month}-${year}`;
+                }
+                const taxTypeMatch = inputText.match(/\/([A-Z]+)$/);
+                const taxType = taxTypeMatch ? taxTypeMatch[1] : '';
+
+                const bayarSelect = document.getElementById('tempatbayar-select');
+                bayarSelect.value = paymentType ? bayarSelect.querySelector(`option[value="${paymentType.toUpperCase()}"]`)?.value || "" : "";
+
+                const tglSelect = document.getElementById('tanggal-select');
+                tglSelect.value = formattedDate ? tglSelect.querySelector(`option[value="${formattedDate}"]`)?.value || "" : "";
+
+                const pajakSelect = document.getElementById('jenispajak-select');
+                let matchedTaxOptionValue = "";
+                if (taxType) {
+                    for (let i = 0; i < pajakSelect.options.length; i++) {
+                        if (pajakSelect.options[i].value.toLowerCase() === taxType.toLowerCase()) {
+                            matchedTaxOptionValue = pajakSelect.options[i].value;
+                            break;
+                        }
+                    }
+                }
+                pajakSelect.value = matchedTaxOptionValue;
+
+                // Set default Kategori Waktu ke 'Akhir Pembayaran'
+                document.getElementById('waktu-select').value = 'akhir';
+
+                renderUraianPajakOptions();
+                filterAndRender();
+
+                const uraianSelect = document.getElementById('uraianspajak-select');
+                if (uraianSelect.options.length === 2 && uraianSelect.options[1].value !== "") {
+                    uraianSelect.value = uraianSelect.options[1].value;
+                }
+            }, 300));
+        });
+        document.getElementById('btn-paste-text').addEventListener('click', async function () {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('paste-input').value = text;
+                const event = new Event('input', { bubbles: true });
+                document.getElementById('paste-input').dispatchEvent(event);
+            } catch (err) {
+                showCopyNotification("Gagal mengambil teks dari clipboard. Izinkan akses clipboard.");
+            }
+        });
+    </script>
+</body>
+
+</html>

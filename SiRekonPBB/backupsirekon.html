@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-sclae=1.0" />
+    <title>SiRekon PBB | Sistem Rekonsiliasi PBB</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #e5e7eb;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        .toast-enter-active,
+        .toast-leave-active {
+            transition: opacity 0.5s ease;
+        }
+
+        .toast-enter-from,
+        .toast-leave-to {
+            opacity: 0;
+        }
+
+        /* Styling untuk loading spinner */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 1rem;
+            height: 1rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 to-white min-h-screen p-4">
+
+    <!-- Toast message untuk notifikasi -->
+    <div id="toast"
+        class="fixed bottom-5 right-5 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg opacity-0 transition-opacity duration-300 z-50">
+    </div>
+
+    <!-- Kontainer utama tanpa batasan lebar, mengisi penuh layar -->
+    <div class="flex flex-col md:flex-row w-full min-h-screen bg-white rounded-2xl shadow-xl">
+        <!-- Sidebar -->
+        <aside
+            class="w-full md:w-1/4 max-w-full md:max-w-xs bg-white shadow-lg p-6 flex flex-col gap-4 border-b md:border-b-0 md:border-r border-gray-200 rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none mx-auto md:mx-0">
+            <div class="flex items-center gap-3 mb-2 justify-center">
+                <i class="bi bi-bank2 text-blue-700 text-2xl"></i>
+                <h2 class="text-xl font-bold text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis">Sistem Rekonsiliasi PBB</h2>
+            </div>
+
+            <!-- Upload Excel -->
+            <div class="mb-2">
+                <label for="fileExcel" class="block w-full cursor-pointer">
+                    <span id="uploadLabel"
+                        class="w-full flex justify-center items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 transition overflow-hidden whitespace-nowrap"
+                        style="text-align:center;">
+                        <i class="bi bi-upload"></i>
+                        <span class="truncate max-w-full">
+                            Upload File Excel PBB
+                        </span>
+                    </span>
+                </label>
+                <input type="file" id="fileExcel" accept=".xlsx, .xls" class="hidden" />
+            </div>
+            <!-- Dropdown Filters -->
+            <div class="flex flex-col gap-4">
+                <div class="flex space-x-2 items-center">
+                    <input id="inputTeks" type="text" placeholder="Tempelkan Keterangan Disini"
+                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" spellcheck="false" />
+                    <button type="button" onclick="pasteFromClipboard()"
+                        class="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg shadow-md transition" title="Paste"><i class="bi bi-clipboard"></i></button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-calendar-date text-lg text-gray-800"></i>
+                    <select id="tglSelect" class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition">
+                        <option value="">Pilih Tanggal Pembayaran</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-bank text-lg text-gray-800"></i>
+                    <select id="bankSelect" class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" disabled>
+                        <option value="">Pilih Kategori Bank</option>
+                        <option value="PBBU">PBBU</option>
+                        <option value="PBBQRIS">PBBQRIS</option>
+                        <option value="PBBVA">PBBVA</option>
+                        <option value="PBBKOLEKTIF">PBBKOLEKTIF</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-clock text-lg text-gray-800"></i>
+                    <select id="waktuSelect" class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" disabled>
+                        <option value="semua">SEMUA TRANSAKSI</option>
+                        <option value="kurang">AKHIR PEMBAYARAN</option>
+                        <option value="lebih">TGL PELIMPAHAN</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-2 w-full mt-2">
+                    <button id="btnTambah" class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition flex-1">
+                        Tampilkan
+                    </button>
+                </div>
+                <button id="btnReset"
+                    class="bg-red-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600 transition w-full flex items-center justify-center gap-2">
+                    <i class="bi bi-arrow-repeat text-lg"></i>
+                    Reset Filter
+                </button>
+            </div>
+
+            <button id="btnBuatCatatan" onclick="buatCatatan()" class="bg-gray-700 text-white px-4 py-2 rounded-lg shadow-md hover:bg-gray-800 transition w-full flex items-center justify-center gap-2 mt-4">
+                <i class="bi bi-journal-text"></i>
+                Buat Catatan
+            </button>
+
+        </aside>
+
+        <!-- Main Content -->
+        <main class="w-full md:w-3/4 px-4 md:px-8 py-6">
+            <div id="summaryCards" class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-blue-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                    <p class="text-sm font-medium text-blue-700 mb-2">Total PBBP2</p>
+                    <div class="flex items-center justify-between">
+                        <p class="text-2xl font-bold text-blue-900">0</p>
+                        <button disabled class="ml-3 text-blue-300">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-yellow-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                    <p class="text-sm font-medium text-yellow-700 mb-2">Pendapatan Denda PBBP2</p>
+                    <div class="flex items-center justify-between">
+                        <p class="text-2xl font-bold text-yellow-900">0</p>
+                        <button disabled class="ml-3 text-yellow-300">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-green-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                    <p class="text-sm font-medium text-green-700 mb-2">Total Mutasi Kredit</p>
+                    <div class="flex items-center justify-between">
+                        <p class="text-2xl font-bold text-green-900">0</p>
+                        <button disabled class="ml-3 text-green-300">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="border rounded-2xl px-4 py-4 bg-white shadow-lg">
+                <div id="fiturGroup" class="flex flex-col md:flex-row gap-2 md:gap-4 text-sm items-center">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-600 font-semibold">Mode:</span>
+                        <div class="flex flex-row gap-4" id="fiturRadioGroup">
+                            <label class="flex items-center gap-1">
+                                <input type="radio" name="fitur" value="versi2" checked />
+                                Tambah
+                            </label>
+                            <label class="flex items-center gap-1">
+                                <input type="radio" name="fitur" value="versi1" />
+                                Kurangi
+                            </label>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 md:ml-auto">
+                        <label for="input-extra-rows" class="text-xs text-gray-600 ml-2">Jumlah Baris:</label>
+                        <input type="number" id="tambahanCount" value="0" min="0"
+                            class="w-16 px-2 py-1 border rounded-lg text-xs text-center focus:ring-2 focus:ring-blue-500 transition" />
+                    </div>
+                    <div class="text-xs text-gray-600">
+                        <span id="jumlahData">Jumlah Data : 0</span>
+                    </div>
+                </div>
+                <div id="tabelData" class="overflow-x-auto mt-4"></div>
+            </div>
+
+            <!-- Container untuk catatan yang tersimpan -->
+            <div id="notesContainer" class="mt-8 bg-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Catatan Tersimpan</h3>
+                <div id="notesList" class="space-y-4">
+                    <!-- Catatan akan dirender di sini -->
+                    <p class="text-gray-500 text-sm">Belum ada catatan yang disimpan.</p>
+                </div>
+                <button id="exportNotesBtn" onclick="exportNotes()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition mt-4">
+                    Ekspor Catatan ke JSON
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Tombol Melayang - Pojok Kiri Atas -->
+    <button onclick="window.location.href='../';"
+        class="group fixed top-0 left-0 bg-white hover:bg-gray-100 text-blue-600 p-3 rounded-br-lg shadow-lg z-50 transition duration-300 ease-in-out">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+        </svg>
+        <span class="absolute top-1/2 left-full ml-2 -translate-y-1/2 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto bg-gray-700 text-white text-xs px-2 py-1 rounded transition-opacity duration-300 whitespace-nowrap">
+            Kembali
+        </span>
+    </button>
+
+    <script>
+        let allData = [];
+        let tambahanCount = 0;
+        let lastState = null;
+        let savedNotes = [];
+
+        const kategoriBankMap = {
+            PBBU: [
+                "Bank BJB - Lainnya",
+                "Bank BJB - Mobile Banking",
+                "Bank BJB - POS",
+                "Bank BJB - Teller",
+                "Bank BJB - Internet Banking"
+            ],
+            PBBQRIS: ["Bank BJB - QRIS"],
+            PBBVA: ["Bank BJB - Virtual Account"],
+            PBBKOLEKTIF: ["Loket Bank BJB - Kolektif"]
+        };
+
+        // Fungsi untuk memuat catatan dari localStorage saat halaman dimuat
+        window.addEventListener("load", () => {
+            const storedNotes = localStorage.getItem('sirekonPBBNotes');
+            if (storedNotes) {
+                savedNotes = JSON.parse(storedNotes);
+                renderNotes();
+            }
+        });
+
+        document.getElementById("fileExcel").addEventListener("change", function (e) {
+            const file = e.target.files[0];
+            const label = document.getElementById("uploadLabel");
+            const uploadIcon = `<i class="bi bi-upload"></i>`;
+            const fileIcon = `<i class="bi bi-file-earmark-excel"></i>`;
+            const loadingSpinner = `<div class="spinner"></div>`;
+
+            if (!file) {
+                label.innerHTML = `${uploadIcon}<span class="truncate max-w-full">Upload File Excel PBB</span>`;
+                return;
+            }
+
+            label.innerHTML = `${loadingSpinner}<span class="truncate max-w-full">Memproses...</span>`;
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                try {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: "array" });
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+                    allData = jsonData.map(item => ({
+                        pokok: parseFloat(item["POKOK PEMBAYARAN"]) || 0,
+                        denda: parseFloat(item["DENDA"]) || 0,
+                        total: parseFloat(item["TOTAL"]) || 0,
+                        pembayaran: item["BANK"] || "",
+                        tglpembayaran: item["TANGGAL PEMBAYARAN"] || ""
+                    }));
+
+                    const tanggalMap = {};
+                    allData.forEach(item => {
+                        const tgl = item.tglpembayaran?.substring(0, 10);
+                        if (tgl && /^\d{4}-\d{2}-\d{2}$/.test(tgl)) {
+                            if (!tanggalMap[tgl]) tanggalMap[tgl] = 0;
+                            tanggalMap[tgl]++;
+                        }
+                    });
+
+                    const select = document.getElementById("tglSelect");
+                    select.innerHTML = `<option value="">Pilih Tanggal Pembayaran</option>`;
+                    Object.keys(tanggalMap).sort().forEach(tgl => {
+                        const option = document.createElement("option");
+                        option.value = tgl;
+                        option.textContent = `${tgl} (${tanggalMap[tgl]} data)`;
+                        select.appendChild(option);
+                    });
+
+                    label.innerHTML = `${fileIcon}<span class="truncate max-w-full">${file.name}</span>`;
+                    showToast(`File "${file.name}" berhasil diunggah.`);
+                } catch (error) {
+                    console.error("Error reading file:", error);
+                    label.innerHTML = `${uploadIcon}<span class="truncate max-w-full">Upload File Excel PBB</span>`;
+                    showToast("Gagal memuat file. Pastikan formatnya benar.", true);
+                }
+            };
+            reader.onerror = function (error) {
+                label.innerHTML = `${uploadIcon}<span class="truncate max-w-full">Upload File Excel PBB</span>`;
+                showToast("Terjadi kesalahan saat membaca file.", true);
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        document.getElementById("tglSelect").addEventListener("change", () => {
+            document.getElementById("bankSelect").disabled = false;
+            document.getElementById("waktuSelect").disabled = false;
+            document.getElementById("bankSelect").value = "";
+            document.getElementById("waktuSelect").value = "semua";
+            document.getElementById("tabelData").innerHTML = "";
+            document.getElementById("jumlahData").textContent = "Jumlah Data : 0";
+            document.querySelectorAll('input[name="fitur"]').forEach(r => r.disabled = false);
+            document.getElementById("tambahanCount").disabled = false;
+            tampilkanTabel();
+        });
+
+        document.getElementById("bankSelect").addEventListener("change", tampilkanTabel);
+        document.getElementById("waktuSelect").addEventListener("change", tampilkanTabel);
+
+        document.querySelectorAll('input[name="fitur"]').forEach(radio => {
+            radio.addEventListener("change", () => {
+                document.getElementById("tambahanCount").value = 0;
+                tambahanCount = 0;
+                tampilkanTabel();
+            });
+        });
+
+        document.getElementById("tambahanCount").addEventListener("input", () => {
+            tambahanCount = parseInt(document.getElementById("tambahanCount").value) || 0;
+            tampilkanTabel();
+        });
+
+        // Fungsi untuk menyalin teks ke clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const toast = document.getElementById("toast");
+                toast.textContent = `Berhasil menyalin: ${text}`;
+                toast.style.opacity = "1";
+                setTimeout(() => { toast.style.opacity = "0"; }, 2000);
+            }).catch(err => {
+                console.error('Gagal menyalin:', err);
+            });
+        }
+
+        // Fungsi untuk menangani paste dari clipboard
+        async function pasteFromClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                const input = document.getElementById("inputTeks");
+                input.value = text;
+                input.dispatchEvent(new Event('input')); // Trigger input event
+            } catch (err) {
+                alert("Gagal menempel dari clipboard: " + err);
+            }
+        }
+
+        // Fungsi untuk mereset filter
+        document.getElementById("btnReset").addEventListener("click", () => {
+            document.getElementById("inputTeks").value = "";
+            document.getElementById("tglSelect").value = "";
+            document.getElementById("bankSelect").value = "";
+            document.getElementById("bankSelect").disabled = true;
+            document.getElementById("waktuSelect").value = "semua";
+            document.getElementById("waktuSelect").disabled = true;
+            document.getElementById("tambahanCount").value = 0;
+            document.querySelectorAll('input[name="fitur"]').forEach(r => r.disabled = true);
+            document.getElementById("tabelData").innerHTML = "";
+            document.getElementById("jumlahData").textContent = "Jumlah Data : 0";
+            resetSummaryCards();
+        });
+
+        function tampilkanTabel() {
+            const selectedDate = document.getElementById("tglSelect").value;
+            const selectedKategori = document.getElementById("bankSelect").value;
+            const waktuFilter = document.getElementById("waktuSelect").value;
+            const fitur = document.querySelector('input[name="fitur"]:checked')?.value;
+
+            if (!selectedDate || !selectedKategori) {
+                document.getElementById("tabelData").innerHTML = "";
+                document.getElementById("jumlahData").textContent = "Jumlah Data : 0";
+                return;
+            }
+
+            if (fitur === "versi1") {
+                tampilkanTabelVersi1(selectedDate, selectedKategori, waktuFilter);
+            } else {
+                tampilkanTabelVersi2(selectedDate, selectedKategori, waktuFilter);
+            }
+        }
+
+        // Fungsi-fungsi asli dari kode Anda
+        function extractInfo() {
+            let text = document.getElementById("inputTeks").value.trim();
+
+            // PERBAIKAN: Jika input teks kosong, reset semua tampilan
+            if (!text) {
+                // Fungsi untuk mereset kartu ringkasan
+                resetSummaryCards();
+                document.getElementById("tabelData").innerHTML = "";
+                document.getElementById("jumlahData").textContent = "Jumlah Data : 0";
+                document.getElementById("tambahanCount").value = 0;
+
+                // Juga reset dropdown filter
+                document.getElementById("tglSelect").value = "";
+                document.getElementById("bankSelect").value = "";
+                document.getElementById("bankSelect").disabled = true;
+                document.getElementById("waktuSelect").value = "semua";
+                document.getElementById("waktuSelect").disabled = true;
+
+                return;
+            }
+
+            let metode = "";
+            let tgl = "";
+            let waktuFilter = "semua";
+
+            const pelimpahanMatch = text.match(/TGL\s*(\d{8}).*?PELIMPAHAN TGL\s*(\d{8})/);
+            const biasaMatch = text.match(/TGL\s*(\d{8})/);
+            const metodeMatch = text.match(/PBB(?:U|QRIS|VA|KOLEKTIF)/);
+
+            if (metodeMatch) {
+                metode = metodeMatch[0];
+            }
+
+            if (pelimpahanMatch) {
+                tgl = pelimpahanMatch[1];
+                waktuFilter = "lebih";
+            } else if (biasaMatch) {
+                tgl = biasaMatch[1];
+                waktuFilter = "kurang";
+            } else {
+                tgl = "";
+            }
+
+
+            if (/^\d{8}$/.test(tgl)) {
+                tgl = formatTgl(tgl);
+            }
+
+            const ada = Array.from(tglSelect.options).some(opt => opt.value === tgl);
+            if (ada) {
+                tglSelect.value = tgl;
+            } else {
+                console.warn(`Tanggal ${tgl} tidak ditemukan di daftar opsi.`);
+            }
+
+            if (["PBBU", "PBBQRIS", "PBBVA", "PBBKOLEKTIF"].includes(metode)) {
+                bankSelect.disabled = false;
+                bankSelect.value = metode;
+                waktuSelect.disabled = false;
+                waktuSelect.value = waktuFilter;
+                document.querySelectorAll('input[name="fitur"]').forEach(r => r.disabled = false);
+                document.getElementById("tambahanCount").disabled = false;
+            } else {
+                bankSelect.disabled = true;
+                bankSelect.value = "";
+                waktuSelect.disabled = true;
+                document.querySelectorAll('input[name="fitur"]').forEach(r => r.disabled = true);
+            }
+
+            tampilkanTabel();
+        }
+
+        function formatTgl(tglStr) {
+            const day = tglStr.substring(0, 2);
+            const month = tglStr.substring(2, 4);
+            const year = tglStr.substring(4, 8);
+            return `${year}-${month}-${day}`;
+        }
+
+        function tampilkanTabelVersi1(selectedDate, selectedKategori, waktuFilter) {
+            const selectedBankList = kategoriBankMap[selectedKategori] || [];
+
+            const tambahanCount = parseInt(document.getElementById("tambahanCount").value) || 0;
+
+            let filtered = allData.filter(item =>
+                item.tglpembayaran &&
+                item.tglpembayaran.startsWith(selectedDate) &&
+                selectedBankList.includes(item.pembayaran)
+            );
+
+            if (waktuFilter !== "semua") {
+                filtered = filtered.filter(item => {
+                    const timeStr = item.tglpembayaran.split(" ")[1];
+                    if (!timeStr) return false;
+
+                    const [jam, menit, detik] = timeStr.split(":").map(Number);
+                    const waktuDalamDetik = jam * 3600 + menit * 60 + detik;
+                    const batasDetik = 17 * 3600;
+
+                    return waktuFilter === "kurang"
+                        ? waktuDalamDetik < batasDetik
+                        : waktuDalamDetik >= batasDetik;
+                });
+            }
+
+            filtered.sort((a, b) => new Date(a.tglpembayaran) - new Date(b.tglpembayaran));
+
+            let finalData;
+            if (waktuSelect.value === "lebih") {
+                finalData = filtered.slice(Math.min(tambahanCount, filtered.length));
+            } else {
+                finalData = filtered.slice(0, Math.max(filtered.length - tambahanCount, 0));
+            }
+
+            renderTabel(finalData, waktuFilter);
+        }
+
+        function tampilkanTabelVersi2(selectedDate, selectedKategori, waktuFilter) {
+            const selectedBankList = kategoriBankMap[selectedKategori] || [];
+
+            let filtered = allData.filter(item =>
+                item.tglpembayaran &&
+                item.tglpembayaran.startsWith(selectedDate) &&
+                selectedBankList.includes(item.pembayaran)
+            );
+
+            if (waktuFilter !== "semua") {
+                filtered = filtered.filter(item => {
+                    const timeStr = item.tglpembayaran.split(" ")[1];
+                    if (!timeStr) return false;
+
+                    const [jam, menit, detik] = timeStr.split(":").map(Number);
+                    const waktuDalamDetik = jam * 3600 + menit * 60 + detik;
+                    const batasDetik = 17 * 3600;
+
+                    return waktuFilter === "kurang"
+                        ? waktuDalamDetik < batasDetik
+                        : waktuDalamDetik >= batasDetik;
+                });
+            }
+
+            let tambahanData = [];
+            const tambahanCount = parseInt(document.getElementById("tambahanCount").value) || 0;
+
+            if (waktuFilter === "kurang") {
+                tambahanData = allData.filter(item =>
+                    item.tglpembayaran?.startsWith(selectedDate) &&
+                    selectedBankList.includes(item.pembayaran)
+                ).filter(item => {
+                    const timeStr = item.tglpembayaran.split(" ")[1];
+                    if (!timeStr) return false;
+                    const [jam, menit, detik] = timeStr.split(":").map(Number);
+                    const waktuDalamDetik = jam * 3600 + menit * 60 + detik;
+                    return waktuDalamDetik >= 17 * 3600;
+                }).sort((a, b) => new Date(a.tglpembayaran) - new Date(b.tglpembayaran));
+            } else if (waktuFilter === "lebih") {
+                tambahanData = allData.filter(item =>
+                    item.tglpembayaran?.startsWith(selectedDate) &&
+                    selectedBankList.includes(item.pembayaran)
+                ).filter(item => {
+                    const timeStr = item.tglpembayaran.split(" ")[1];
+                    if (!timeStr) return false;
+                    const [jam, menit, detik] = timeStr.split(":").map(Number);
+                    const waktuDalamDetik = jam * 3600 + menit * 60 + detik;
+                    return waktuDalamDetik < 17 * 3600;
+                }).sort((a, b) => new Date(b.tglpembayaran) - new Date(a.tglpembayaran));
+            }
+
+            const tambahanYangDitampilkan = tambahanData.slice(0, tambahanCount);
+            const finalData = [...filtered, ...tambahanYangDitampilkan];
+
+            renderTabel(finalData, waktuFilter);
+        }
+
+        function renderTabel(finalData, waktuFilter) {
+            finalData.sort((a, b) => {
+                const tglA = new Date(a.tglpembayaran);
+                const tglB = new Date(b.tglpembayaran);
+                return tglA - tglB;
+            });
+
+            if (finalData.length > 0) {
+                let totalPokok = 0, totalDenda = 0, totalTagihan = 0;
+                finalData.forEach(item => {
+                    totalPokok += parseFloat(item.pokok) || 0;
+                    totalDenda += parseFloat(item.denda) || 0;
+                    totalTagihan += parseFloat(item.total) || 0;
+                });
+
+                document.getElementById("summaryCards").innerHTML = `
+          <div class="bg-blue-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+            <p class="text-sm font-medium text-blue-700 mb-2">Total PBBP2</p>
+            <div class="flex items-center justify-between">
+              <p class="text-2xl font-bold text-blue-900">${totalPokok.toLocaleString('id-ID')}</p>
+              <button onclick="copyToClipboard('${totalPokok}')" class="ml-3 text-blue-500 hover:text-blue-700">
+                <i class="bi bi-clipboard"></i>
+              </button>
+            </div>
+          </div>
+          <div class="bg-yellow-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+            <p class="text-sm font-medium text-yellow-700 mb-2">Pendapatan Denda PBBP2</p>
+            <div class="flex items-center justify-between">
+              <p class="text-2xl font-bold text-yellow-900">${totalDenda.toLocaleString('id-ID')}</p>
+              <button onclick="copyToClipboard('${totalDenda}')" class="ml-3 text-yellow-500 hover:text-yellow-700">
+                <i class="bi bi-clipboard"></i>
+              </button>
+            </div>
+          </div>
+          <div class="bg-green-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+            <p class="text-sm font-medium text-green-700 mb-2">Total Mutasi Kredit</p>
+            <div class="flex items-center justify-between">
+              <p class="text-2xl font-bold text-green-900">${totalTagihan.toLocaleString('id-ID')}</p>
+              <button onclick="copyToClipboard('${totalTagihan}')" class="ml-3 text-green-500 hover:text-green-700">
+                <i class="bi bi-clipboard"></i>
+              </button>
+            </div>
+          </div>
+        `;
+
+                let tableHTML = `
+        <div id="scrollContainer" class="overflow-auto max-h-[60vh] border border-gray-300 rounded-lg shadow-sm">
+          <table id="tableData" class="table-auto w-full border-collapse text-sm">
+            <thead class="bg-gray-100 sticky top-0 shadow-md z-10">
+              <tr>
+                <th class="border-b border-gray-300 p-3 text-right">Pokok</th>
+                <th class="border-b border-gray-300 p-3 text-right">Denda</th>
+                <th class="border-b border-gray-300 p-3 text-right">Total</th>
+                <th class="border-b border-gray-300 p-3 text-left">Bank</th>
+                <th class="border-b border-gray-300 p-3 text-left">Tanggal Pembayaran</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+                finalData.forEach((item, index) => {
+                    const rowBg = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                    tableHTML += `
+          <tr class="${rowBg} hover:bg-green-50 transition-colors cursor-default">
+            <td class="border-b border-gray-200 p-3 text-right">${(item.pokok || 0).toLocaleString('id-ID')}</td>
+            <td class="border-b border-gray-200 p-3 text-right">${(item.denda || 0).toLocaleString('id-ID')}</td>
+            <td class="border-b border-gray-200 p-3 text-right">${(item.total || 0).toLocaleString('id-ID')}</td>
+            <td class="border-b border-gray-200 p-3 text-left">${item.pembayaran || '-'}</td>
+            <td class="border-b border-gray-200 p-3 text-left">${item.tglpembayaran || '-'}</td>
+          </tr>
+        `;
+                });
+
+                tableHTML += `
+          </tbody>
+        </table>
+      </div>
+    `;
+
+                document.getElementById("tabelData").innerHTML = tableHTML;
+                document.getElementById("jumlahData").textContent = `Jumlah Data : ${finalData.length}`;
+            } else {
+                document.getElementById("tabelData").innerHTML = `<p class="text-center text-gray-500 mt-4">Data tidak tersedia untuk filter tersebut.</p>`;
+                document.getElementById("jumlahData").textContent = "Jumlah Data : 0";
+            }
+
+            const scrollContainer = document.getElementById("scrollContainer");
+            if (waktuFilter === "kurang" && scrollContainer) {
+                // PERBAIKAN: Menggunakan setTimeout untuk memastikan DOM telah diperbarui
+                setTimeout(() => {
+                    scrollContainer.scrollTop = scrollContainer.scrollHeight;
+                }, 100);
+            } else if (scrollContainer) {
+                scrollContainer.scrollTop = 0;
+            }
+        }
+
+        // Fungsi untuk mereset tampilan kartu ringkasan
+        function resetSummaryCards() {
+            document.getElementById("summaryCards").innerHTML = `
+        <div class="bg-blue-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+          <p class="text-sm font-medium text-blue-700 mb-2">Total PBBP2</p>
+          <div class="flex items-center justify-between">
+            <p class="text-2xl font-bold text-blue-900">0</p>
+            <button disabled class="ml-3 text-blue-300">
+              <i class="bi bi-clipboard"></i>
+            </button>
+          </div>
+        </div>
+        <div class="bg-yellow-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+          <p class="text-sm font-medium text-yellow-700 mb-2">Pendapatan Denda PBBP2</p>
+          <div class="flex items-center justify-between">
+            <p class="text-2xl font-bold text-yellow-900">0</p>
+            <button disabled class="ml-3 text-yellow-300">
+              <i class="bi bi-clipboard"></i>
+            </button>
+          </div>
+        </div>
+        <div class="bg-green-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+          <p class="text-sm font-medium text-green-700 mb-2">Total Mutasi Kredit</p>
+          <div class="flex items-center justify-between">
+            <p class="text-2xl font-bold text-green-900">0</p>
+            <button disabled class="ml-3 text-green-300">
+              <i class="bi bi-clipboard"></i>
+            </button>
+          </div>
+        </div>
+      `;
+        }
+
+        // Fungsi baru untuk membuat catatan
+        function buatCatatan() {
+            const keterangan = document.getElementById("inputTeks").value.trim();
+            const tglPembayaran = document.getElementById("tglSelect").value;
+            const kategoriBank = document.getElementById("bankSelect").value;
+            const jenisTransaksi = document.getElementById("waktuSelect").options[document.getElementById("waktuSelect").selectedIndex].text;
+            const mode = document.querySelector('input[name="fitur"]:checked').value === "versi2" ? "Tambah" : "Kurangi";
+            const jumlahBaris = document.getElementById("tambahanCount").value;
+            const jumlahData = document.getElementById("jumlahData").textContent.replace("Jumlah Data : ", "");
+
+            if (!keterangan || !tglPembayaran || !kategoriBank || !jenisTransaksi) {
+                showToast("Harap isi semua filter yang diperlukan sebelum membuat catatan.", true);
+                return;
+            }
+
+            const newNote = {
+                keterangan,
+                tglPembayaran,
+                kategoriBank,
+                jenisTransaksi,
+                mode,
+                jumlahBaris,
+                jumlahData,
+                timestamp: new Date().toISOString()
+            };
+
+            savedNotes.push(newNote);
+            localStorage.setItem('sirekonPBBNotes', JSON.stringify(savedNotes));
+            renderNotes();
+            showToast("Catatan berhasil disimpan!");
+        }
+
+        // Fungsi baru untuk merender catatan yang tersimpan
+        function renderNotes() {
+            const notesList = document.getElementById('notesList');
+            const exportNotesBtn = document.getElementById('exportNotesBtn');
+            if (savedNotes.length === 0) {
+                notesList.innerHTML = `<p class="text-gray-500 text-sm">Belum ada catatan yang disimpan.</p>`;
+                exportNotesBtn.classList.add('hidden');
+            } else {
+                exportNotesBtn.classList.remove('hidden');
+                let notesHTML = '';
+                savedNotes.forEach((note, index) => {
+                    notesHTML += `
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 relative">
+                    <p class="font-medium text-gray-800">Keterangan: <span class="font-normal">${note.keterangan}</span></p>
+                    <ul class="list-disc list-inside text-sm text-gray-600 mt-2">
+                        <li>Tanggal: ${note.tglPembayaran}</li>
+                        <li>Kategori Bank: ${note.kategoriBank}</li>
+                        <li>Jenis Transaksi: ${note.jenisTransaksi}</li>
+                        <li>Mode: ${note.mode}</li>
+                        <li>Jumlah Baris: ${note.jumlahBaris}</li>
+                        <li>Jumlah Data: ${note.jumlahData}</li>
+                    </ul>
+                    <button onclick="deleteNote(${index})" class="absolute top-2 right-2 text-red-500 hover:text-red-700 transition">
+                        <i class="bi bi-x-circle-fill"></i>
+                    </button>
+                </div>
+                `;
+                });
+                notesList.innerHTML = notesHTML;
+            }
+        }
+
+        // Fungsi baru untuk menghapus catatan
+        function deleteNote(index) {
+            if (confirm("Apakah Anda yakin ingin menghapus catatan ini?")) {
+                savedNotes.splice(index, 1);
+                localStorage.setItem('sirekonPBBNotes', JSON.stringify(savedNotes));
+                renderNotes();
+                showToast("Catatan berhasil dihapus.");
+            }
+        }
+
+        // Fungsi baru untuk mengekspor catatan
+        function exportNotes() {
+            const dataStr = JSON.stringify(savedNotes, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', 'catatan_sirekonpbb.json');
+            linkElement.click();
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.className = `fixed bottom-5 right-5 px-4 py-2 rounded-xl shadow-lg opacity-100 transition-opacity duration-300 z-50 ${isError ? 'bg-red-500' : 'bg-green-500'} text-white`;
+
+            setTimeout(() => {
+                toast.style.opacity = "0";
+            }, 3000);
+        }
+
+        // Panggil fungsi tampilkanTabel saat DOMContentLoaded
+        window.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("btnTambah").addEventListener("click", tampilkanTabel);
+            document.getElementById("inputTeks").addEventListener("input", extractInfo);
+        });
+    </script>
+</body>
+
+</html>
