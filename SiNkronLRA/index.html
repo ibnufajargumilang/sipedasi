@@ -16,18 +16,17 @@
         <div
             class="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
 
-            <!-- Judul -->
             <h1 class="text-lg md:text-xl font-bold text-gray-800 whitespace-nowrap">Sistem Sinkronisasi LRA</h1>
 
-            <!-- Form Upload + Tombol -->
             <div class="flex flex-col md:flex-row md:items-center gap-3 w-full md:w-auto">
 
-                <!-- Upload File Utama -->
+                <!-- Upload File Utama (REKON) -->
                 <div class="relative">
                     <input type="file" id="utamaFile" accept=".xlsx, .xls" class="sr-only" />
                     <label for="utamaFile"
-                        class="inline-flex items-center gap-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-md shadow">
-                        <i class="bi bi-upload"></i> Upload File Utama
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg shadow-sm cursor-pointer hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        <i class="bi bi-upload"></i>
+                        <span id="utamaFileName">Upload File Utama (REKON)</span>
                     </label>
                 </div>
 
@@ -35,202 +34,283 @@
                 <div class="relative">
                     <input type="file" id="konsolidasiFile" accept=".xlsx, .xls" class="sr-only" />
                     <label for="konsolidasiFile"
-                        class="inline-flex items-center gap-2 cursor-pointer bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded-md shadow">
-                        <i class="bi bi-upload"></i> Upload File Konsolidasi
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-lg shadow-sm cursor-pointer hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                        <i class="bi bi-upload"></i>
+                        <span id="konsolidasiFileName">Upload File Konsolidasi</span>
                     </label>
                 </div>
 
+                <!-- Month Selector -->
+                <div class="relative">
+                    <select id="monthSelector"
+                        class="w-full md:w-auto bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                        <option value="3">Januari</option>
+                        <option value="4">Februari</option>
+                        <option value="5">Maret</option>
+                        <option value="6">April</option>
+                        <option value="7">Mei</option>
+                        <option value="8">Juni</option>
+                        <option value="9">Juli</option>
+                        <option value="10">Agustus</option>
+                        <option value="11">September</option>
+                        <option value="12">Oktober</option>
+                        <option value="13">November</option>
+                        <option value="14">Desember</option>
+                    </select>
+                </div>
+
+                <!-- Input Jumlah Baris -->
+                <div class="relative">
+                    <input type="number" id="rowCount"
+                        class="w-full md:w-auto bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5"
+                        placeholder="Jumlah baris" value="50">
+                </div>
+
                 <!-- Tombol Proses -->
-                <button onclick="processFiles()"
-                    class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-md shadow text-sm whitespace-nowrap">
-                    <i class="bi bi-arrow-repeat"></i> Proses & Bandingkan
+                <button id="processButton"
+                    class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled>
+                    <i class="bi bi-gear"></i>
+                    Proses Data
                 </button>
             </div>
-
         </div>
     </div>
 
     <!-- Konten Utama -->
-    <div class="flex-1 max-w-7xl mx-auto px-4 py-6 w-full">
-        <div class="bg-white rounded-xl shadow overflow-hidden">
-            <div class="overflow-auto max-h-[70vh]" id="result" class="text-sm"></div>
+    <main class="flex-grow container mx-auto p-4">
+        <div id="output" class="bg-white p-6 rounded-lg shadow-lg overflow-x-auto">
+            <p class="text-gray-500 text-center">Silakan unggah File Utama (REKON) dan File Konsolidasi, pilih bulan,
+                lalu klik "Proses Data".</p>
+        </div>
+    </main>
+
+    <!-- Floating Summary Bar -->
+    <div id="summaryBar"
+        class="fixed bottom-0 left-0 right-0 bg-gray-800 text-white shadow-lg p-4 z-20 hidden transition-transform duration-300 transform translate-y-full">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 text-center relative">
+            <div>
+                <h4 class="text-sm font-semibold text-gray-400 uppercase">Total Realisasi Utama</h4>
+                <p id="totalRealisasiUtama" class="text-xl font-bold">Rp 0</p>
+            </div>
+            <div>
+                <h4 class="text-sm font-semibold text-gray-400 uppercase">Total Realisasi Konsolidasi</h4>
+                <p id="totalRealisasiKonsolidasi" class="text-xl font-bold">Rp 0</p>
+            </div>
+            <div>
+                <h4 class="text-sm font-semibold text-gray-400 uppercase">Selisih</h4>
+                <p id="totalSelisih" class="text-xl font-bold">Rp 0</p>
+            </div>
+            <button id="closeSummary" class="absolute -top-2 -right-2 text-gray-400 hover:text-white">
+                <i class="bi bi-x-circle-fill text-2xl"></i>
+            </button>
         </div>
     </div>
 
-    <a href="../"
-        class="group fixed top-0 left-0 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-br-lg shadow-lg z-50 transition duration-300 ease-in-out"
-        title="Kembali ke Beranda">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-            stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                d="M3 9.75L12 3l9 6.75M4.5 10.5v9a1.5 1.5 0 001.5 1.5h3.75a.75.75 0 00.75-.75V15a.75.75 0 01.75-.75h2.25a.75.75 0 01.75.75v5.25c0 .414.336.75.75.75H18a1.5 1.5 0 001.5-1.5v-9" />
-        </svg>
-        <div
-            class="absolute top-1/2 left-full ml-2 -translate-y-1/2 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto bg-gray-700 text-white text-xs px-2 py-1 rounded transition-opacity duration-300 whitespace-nowrap">
-            Beranda
+    <footer class="bg-white mt-8 py-4 border-t">
+        <div class="max-w-7xl mx-auto px-4 text-center text-sm text-gray-500">
+            <p>&copy; 2024 SiNkronLRA. Dibuat untuk memudahkan sinkronisasi data.</p>
         </div>
-    </a>
+    </footer>
 
     <script>
-        let utamaData = [];
-        let konsolidasiDataMap = {};
-        let jumlahPendapatanTransferKons = 0; // NILAI TOTAL dari file konsolidasi
-        let jumlahPendapatanAsliDaerahKons = 0;
-        let jumlahPendapatanTppKons = 0;
+        // DOM Elements
+        const utamaFileInput = document.getElementById("utamaFile");
+        const konsolidasiFileInput = document.getElementById("konsolidasiFile");
+        const processButton = document.getElementById("processButton");
+        const outputDiv = document.getElementById("output");
+        const utamaFileNameSpan = document.getElementById("utamaFileName");
+        const konsolidasiFileNameSpan = document.getElementById("konsolidasiFileName");
+        const summaryBar = document.getElementById("summaryBar");
+        const closeSummaryButton = document.getElementById("closeSummary");
+        const monthSelector = document.getElementById("monthSelector");
 
-        function readExcel(file, startRow, callback) {
+        let utamaData = null;
+        let konsolidasiData = null;
+
+        const checkFiles = () => {
+            processButton.disabled = !(utamaFileInput.files.length > 0 && konsolidasiFileInput.files.length > 0);
+        };
+
+        utamaFileInput.addEventListener("change", (e) => {
+            handleFileUpload(e, "utama");
+            utamaFileNameSpan.textContent = e.target.files[0] ? e.target.files[0].name : "Upload File Utama (REKON)";
+            checkFiles();
+        });
+
+        konsolidasiFileInput.addEventListener("change", (e) => {
+            handleFileUpload(e, "konsolidasi");
+            konsolidasiFileNameSpan.textContent = e.target.files[0] ? e.target.files[0].name : "Upload File Konsolidasi";
+            checkFiles();
+        });
+
+        processButton.addEventListener("click", () => {
+            if (utamaData && konsolidasiData) {
+                processData(utamaData, konsolidasiData);
+            } else {
+                alert("Mohon unggah kedua file terlebih dahulu.");
+            }
+        });
+
+        closeSummaryButton.addEventListener("click", () => {
+            summaryBar.classList.add("translate-y-full");
+            setTimeout(() => {
+                summaryBar.classList.add("hidden");
+            }, 300);
+        });
+
+        const handleFileUpload = (event, type) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
             const reader = new FileReader();
             reader.onload = (e) => {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: "array" });
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                const json = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
-                const sliced = json.slice(startRow);
-                callback(sliced);
+
+                if (type === "utama") {
+                    // --- PERUBAHAN LOGIKA: Membaca sheet "LRA" ---
+                    const sheetName = "LRA";
+                    if (!workbook.SheetNames.includes(sheetName)) {
+                        alert(`File utama tidak memiliki sheet dengan nama "${sheetName}". Mohon periksa kembali file Anda.`);
+                        utamaFileInput.value = ""; // Reset file input
+                        utamaFileNameSpan.textContent = "Upload File Utama (REKON)";
+                        checkFiles();
+                        return;
+                    }
+                    const worksheet = workbook.Sheets[sheetName];
+                    utamaData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                } else { // type === 'konsolidasi'
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    konsolidasiData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                }
             };
             reader.readAsArrayBuffer(file);
-        }
+        };
 
-        function processFiles() {
-            const fileUtama = document.getElementById("utamaFile").files[0];
-            const fileKonsolidasi = document.getElementById("konsolidasiFile").files[0];
+        const processData = (dataUtama, dataKonsolidasi) => {
+            const findStartRow = (data, keyword = "KODE REKENING") => {
+                for (let i = 0; i < data.length; i++) {
+                    if (data[i] && data[i].some(cell => typeof cell === 'string' && cell.toUpperCase().includes(keyword))) {
+                        return i + 1;
+                    }
+                }
+                return 0;
+            };
 
-            if (!fileUtama || !fileKonsolidasi) {
-                alert("Silakan upload kedua file Excel.");
+            const startRowUtama = findStartRow(dataUtama);
+            const startRowKonsolidasi = findStartRow(dataKonsolidasi);
+            const selectedMonthIndex = parseInt(monthSelector.value);
+
+            const cleanAndMap = (data, startRow, type) => {
+                return data.slice(startRow)
+                    .map(row => {
+                        if (!row || !row[0] || !row[1]) return null;
+                        let realisasiValue = 0;
+                        if (type === 'konsolidasi') {
+                            realisasiValue = row[3] || 0; // Column D for Realisasi in Konsolidasi
+                        } else { // type === 'utama'
+                            // --- PERUBAHAN LOGIKA: Mengambil data dari kolom bulan yang dipilih ---
+                            realisasiValue = row[selectedMonthIndex] || 0;
+                        }
+                        return {
+                            kode: String(row[0]).trim(),
+                            uraian: String(row[1]).trim(),
+                            realisasi: realisasiValue,
+                        };
+                    })
+                    .filter(item => item && item.kode && item.uraian);
+            };
+
+            const mappedUtama = cleanAndMap(dataUtama, startRowUtama, 'utama');
+            const mappedKonsolidasi = cleanAndMap(dataKonsolidasi, startRowKonsolidasi, 'konsolidasi');
+
+            const mergedData = mappedUtama.map(utamaItem => {
+                const konsolidasiItem = mappedKonsolidasi.find(konsItem => konsItem.kode === utamaItem.kode);
+                return {
+                    kode: utamaItem.kode,
+                    uraian: utamaItem.uraian,
+                    realisasiUtama: utamaItem.realisasi,
+                    realisasiKonsolidasi: konsolidasiItem ? konsolidasiItem.realisasi : 0,
+                };
+            });
+
+            const detailAccountRegex = /^\d\.\d\.\d{2}\.\d{2}\.\d{2}\.\d{4}$/;
+            const filteredData = mergedData.filter(item => detailAccountRegex.test(item.kode));
+
+            displayResult(filteredData);
+        };
+
+        const displayResult = (data) => {
+            const formatRupiah = (val) => {
+                return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
+            };
+
+            if (data.length === 0) {
+                outputDiv.innerHTML = `<p class="text-gray-500 text-center">Tidak ada data rekening detail yang cocok ditemukan.</p>`;
+                summaryBar.classList.add("translate-y-full");
+                summaryBar.classList.add("hidden");
                 return;
             }
 
-            readExcel(fileKonsolidasi, 8, (dataKonsolidasi) => {
-                konsolidasiDataMap = {};
-                jumlahPendapatanTransferKons = 0;
-                jumlahPendapatanAsliDaerahKons = 0;
-                jumlahPendapatanTppKons = 0;
-
-                for (let row of dataKonsolidasi) {
-                    const kode = row[0];
-                    const uraian = (row[1] || "").toString().trim().toLowerCase();
-                    const nilaiAsli = row[3] || "";
-
-                    if (kode) konsolidasiDataMap[kode] = nilaiAsli;
-
-                    // Ambil nilai JUMLAH PENDAPATAN TRANSFER
-                    if (uraian === "jumlah pendapatan transfer") {
-                        let nilaiStr = nilaiAsli.toString();
-                        nilaiStr = nilaiStr.replace(/\.00$/, "");
-                        nilaiStr = nilaiStr.replace(/,/g, ".");
-                        jumlahPendapatanTransferKons = parseInt(nilaiStr.replace(/\./g, "")) || 0;
-                    }
-
-                    // Ambil nilai JUMLAH PENDAPATAN ASLI DAERAH
-                    if (uraian === "jumlah pendapatan asli daerah") {
-                        let nilaiPad = nilaiAsli.toString();
-                        nilaiPad = nilaiPad.replace(/\.00$/, "");
-                        nilaiPad = nilaiPad.replace(/,/g, ".");
-                        jumlahPendapatanAsliDaerahKons = parseInt(nilaiPad.replace(/\./g, "")) || 0;
-                    }
-
-                    if (uraian === "jumlah pendapatan transfer pemerintah pusat - lainnya") {
-                        let nilaiTpp = nilaiAsli.toString();
-                        nilaiTpp = nilaiTpp.replace(/\.00$/, "");
-                        nilaiTpp = nilaiTpp.replace(/,/g, ".");
-                        jumlahPendapatanTppKons = parseInt(nilaiTpp.replace(/\./g, "")) || 0;
-                    }
-                }
-
-                readExcel(fileUtama, 1, (dataUtama) => {
-                    utamaData = dataUtama;
-                    tampilkanPerbandingan();
-                });
-            });
-        }
-
-        function tampilkanPerbandingan() {
-            const container = document.getElementById("result");
-
-            // Ambil nilai "Total Pendapatan Transfer" dari file utama
-            let totalPendapatanTransferUtama = 0;
-            for (let row of utamaData) {
-                if ((row[1] || "").toString().trim().toLowerCase() === "total pendapatan transfer") {
-                    const raw = (row[2] || "").toString().replace(/\./g, "").replace(/,/g, "");
-                    totalPendapatanTransferUtama = parseInt(raw) || 0;
-                    break;
-                }
-            }
-
             let html = `
-<table class="min-w-full bg-white border border-gray-300 rounded overflow-hidden">
-    <thead class="bg-gray-200 text-gray-800 text-sm font-semibold">
-        <tr>
-            <th class="border px-4 py-2 text-left">No</th>
-            <th class="border px-4 py-2 text-left">Kode Rekening</th>
-            <th class="border px-4 py-2 text-left">Uraian</th>
-            <th class="border px-4 py-2 text-right">Realisasi Utama</th>
-            <th class="border px-4 py-2 text-right">Realisasi Konsolidasi</th>
-            <th class="border px-4 py-2 text-right">Selisih (KONS - UTAMA)</th>
-        </tr>
-    </thead>
-    <tbody class="text-sm text-gray-700">`;
+                <h2 class="text-2xl font-bold mb-4 text-center">Hasil Perbandingan LRA (Rekening Detail)</h2>
+                <table class="min-w-full bg-white border border-gray-200">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="border px-4 py-2">No</th>
+                            <th class="border px-4 py-2">Kode Rekening</th>
+                            <th class="border px-4 py-2">Uraian</th>
+                            <th class="border px-4 py-2">Realisasi Utama</th>
+                            <th class="border px-4 py-2">Realisasi Konsolidasi</th>
+                            <th class="border px-4 py-2">Selisih</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
 
-            for (let i = 0; i < utamaData.length && i < 231; i++) {
-                const row = utamaData[i];
-                const kode = row[0];
-                const uraian = row[1];
+            const rowCount = parseInt(document.getElementById("rowCount").value) || data.length;
+            const slicedData = data.slice(0, rowCount);
 
-                let rawUtama = (row[2] || "").toString().replace(/\./g, "").replace(/,/g, "");
-                let nilaiUtamaNum = parseInt(rawUtama) || 0;
+            const totals = slicedData.reduce((acc, item) => {
+                acc.realisasiUtama += Number(item.realisasiUtama) || 0;
+                acc.realisasiKonsolidasi += Number(item.realisasiKonsolidasi) || 0;
+                return acc;
+            }, { realisasiUtama: 0, realisasiKonsolidasi: 0 });
+            totals.selisih = totals.realisasiUtama - totals.realisasiKonsolidasi;
 
-                let nilaiKonsStr = "";
-                const uraianLower = (uraian || "").toString().trim().toLowerCase();
+            slicedData.forEach((item, i) => {
+                const realisasiUtamaNum = Number(item.realisasiUtama) || 0;
+                const realisasiKonsolidasiNum = Number(item.realisasiKonsolidasi) || 0;
+                const selisih = realisasiUtamaNum - realisasiKonsolidasiNum;
+                const mismatch = selisih !== 0;
 
-                if (uraianLower === "total pendapatan transfer") {
-                    nilaiKonsStr = jumlahPendapatanTransferKons.toString();
-                } else if (uraianLower === "jumlah pendapatan asli daerah") {
-                    nilaiKonsStr = jumlahPendapatanAsliDaerahKons.toString();
-                } else if (uraianLower === "jumlah pendapatan transfer pemerintah pusat - lainnya") {
-                    nilaiKonsStr = jumlahPendapatanTppKons.toString();
-                } else {
-                    nilaiKonsStr = konsolidasiDataMap[kode] || "";
-                }
-
-                nilaiKonsStr = nilaiKonsStr.toString().replace(/([,.])00$/, "").replace(/,/g, ".");
-                let nilaiKonsNum = parseInt(nilaiKonsStr.replace(/\./g, "")) || 0;
-
-                let selisih = nilaiKonsNum - nilaiUtamaNum;
-                const mismatch = Math.abs(selisih) > 0;
-
-                // Baris dengan background abu-abu (prioritas utama)
-                const isGrayRow = (i >= 48 && i <= 53) || (i >= 57 && i <= 58);
-
-                // Cek baris khusus untuk background kuning jika mismatch
-                const isSpecialUraian = uraianLower === "jumlah pendapatan transfer antar daerah" || uraianLower === "total pendapatan daerah";
-
-                // Logika warna baris
-                let rowClass = "";
-                if (isGrayRow) {
-                    rowClass = "bg-gray-200";
-                } else if (mismatch && (isSpecialUraian || true)) {
-                    // 'true' supaya semua mismatch juga kuning, kalau mau hanya khusus bisa hapus true
-                    rowClass = "bg-yellow-100 font-semibold";
-                }
-
-                const formatRupiah = (val) => val.toLocaleString("id-ID");
+                let rowClass = mismatch ? "bg-yellow-100" : "";
 
                 html += `
-        <tr class="${rowClass}">
-            <td class="border px-4 py-2">${i + 1}</td>
-            <td class="border px-4 py-2">${kode || ""}</td>
-            <td class="border px-4 py-2">${uraian || ""}</td>
-            <td class="border px-4 py-2 text-right">${formatRupiah(nilaiUtamaNum)}</td>
-            <td class="border px-4 py-2 text-right">${formatRupiah(nilaiKonsNum)}</td>
-            <td class="border px-4 py-2 text-right">${formatRupiah(selisih)}</td>
-        </tr>`;
-            }
+                    <tr class="${rowClass}">
+                        <td class="border px-4 py-2 text-center">${i + 1}</td>
+                        <td class="border px-4 py-2">${item.kode || ""}</td>
+                        <td class="border px-4 py-2">${item.uraian || ""}</td>
+                        <td class="border px-4 py-2 text-right">${formatRupiah(realisasiUtamaNum)}</td>
+                        <td class="border px-4 py-2 text-right">${formatRupiah(realisasiKonsolidasiNum)}</td>
+                        <td class="border px-4 py-2 text-right">${formatRupiah(selisih)}</td>
+                    </tr>`;
+            });
 
             html += "</tbody></table>";
-            container.innerHTML = html;
-        }
-    </script>
+            outputDiv.innerHTML = html;
 
+            document.getElementById("totalRealisasiUtama").textContent = formatRupiah(totals.realisasiUtama);
+            document.getElementById("totalRealisasiKonsolidasi").textContent = formatRupiah(totals.realisasiKonsolidasi);
+            document.getElementById("totalSelisih").textContent = formatRupiah(totals.selisih);
+            summaryBar.classList.remove("hidden");
+            setTimeout(() => {
+                summaryBar.classList.remove("translate-y-full");
+            }, 10);
+        };
+    </script>
 </body>
 
 </html>

@@ -1,221 +1,589 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="auto">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Daftar Catatan</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>CATATAN — SIPEDASI</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
-    <!-- SweetAlert2 CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --max-w: 1280px;
+            --bg: #f6f9fc;
+            --surface: #fff;
+            --muted: #6b7280;
+            --text: #0f1724;
+            --accent: #1d9bf0;
+            --border: rgba(15, 23, 36, 0.06);
+            --card: linear-gradient(180deg, rgba(15, 23, 36, 0.02), rgba(15, 23, 36, 0.01));
+        }
+
+        [data-theme="dark"] {
+            --bg: #071026;
+            --surface: #07122a;
+            --muted: #9ca3b3;
+            --text: #e6eef8;
+            --accent: #38bdf8;
+            --border: rgba(255, 255, 255, 0.04);
+            --card: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(180deg, #0f172a 0%, #071031 60%);
-            color: #e6eef8;
+            height: 100%;
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased
         }
 
-        ::-webkit-scrollbar {
-            width: 8px;
+        a {
+            color: inherit;
+            text-decoration: none
         }
 
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.03);
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 60;
+            padding: 12px 0;
+            backdrop-filter: blur(6px);
+            background: transparent
+        }
+
+        .container {
+            max-width: var(--max-w);
+            margin: 0 auto;
+            padding: 0 16px
+        }
+
+        .bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: space-between;
+            background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 96%, transparent), transparent);
+            border: 1px solid var(--border);
+            padding: 10px;
+            border-radius: 12px
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            min-width: 0
+        }
+
+        .logo {
+            width: 44px;
+            height: 44px;
             border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.08);
+        .brand .title {
+            display: flex;
+            flex-direction: column;
+            min-width: 0
+        }
+
+        .brand .title .desktop {
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .brand .title .subtitle {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 3px
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: auto
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
             border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            cursor: pointer;
+            transition: transform .12s ease, color .12s ease;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.12);
+        .icon-btn:focus {
+            outline: 3px solid color-mix(in srgb, var(--accent) 24%, transparent);
+            outline-offset: 2px
         }
 
-        .toast-enter-active,
-        .toast-leave-active {
-            transition: opacity 0.5s ease;
+        .icon-btn:hover {
+            color: var(--accent);
+            transform: translateY(-2px)
         }
 
-        .toast-enter-from,
-        .toast-leave-to {
-            opacity: 0;
+        /* Search row below header (desktop) */
+        .search-row {
+            max-width: var(--max-w);
+            margin: 14px auto;
+            padding: 0 16px
         }
 
-        /* X-like accent */
-        .x-accent {
-            color: #1d9bf0;
+        .search-box {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            background: transparent
         }
 
-        .card-bg {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
+        .search-input {
+            flex: 1;
+            min-width: 0;
+            padding: 12px 16px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            box-shadow: 0 8px 24px rgba(2, 6, 23, 0.03);
+            color: var(--text)
         }
 
-        .muted {
-            color: rgba(230, 238, 248, 0.6);
+        .search-clear {
+            display: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            cursor: pointer
+        }
+
+        /* Notes list */
+        main {
+            max-width: var(--max-w);
+            margin: 0 auto;
+            padding: 18px 16px 64px
+        }
+
+        .list {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
+
+        .note {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            cursor: pointer;
+            transition: transform .12s ease, box-shadow .12s ease
+        }
+
+        .note:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(2, 6, 23, 0.06)
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent), #0ea5e9);
+            color: #000
+        }
+
+        .note-body {
+            flex: 1;
+            min-width: 0
+        }
+
+        .note-title {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .note-meta {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 6px
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 70
+        }
+
+        .modal {
+            width: 100%;
+            max-width: 820px;
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 18px;
+            border: 1px solid var(--border);
+            color: var(--text);
+            max-height: 90vh;
+            overflow: auto
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px
         }
 
         .pill {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 10px;
+            background: var(--card);
+            border: 1px solid var(--border)
         }
 
-        /* Modal enhancements */
-        #detailModal .modal-panel {
-            transform: translateY(10px);
-            transition: transform 180ms ease, opacity 180ms ease;
-            opacity: 0;
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            /* Memindahkan tombol ke kanan */
         }
 
-        #detailModal.show .modal-panel {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .field-label {
-            color: rgba(230, 238, 248, 0.7);
-            font-size: 0.85rem;
-        }
-
-        .field-value {
-            color: #e6eef8;
+        /* Perbaikan pada tombol di modal */
+        .modal-actions .btn {
+            padding: 12px 20px;
+            border-radius: 12px;
             font-weight: 600;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            transition: transform .12s ease, box-shadow .12s ease;
         }
 
-        .small-muted {
-            color: rgba(230, 238, 248, 0.55);
-            font-size: 0.85rem;
+        .modal-actions .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(2, 6, 23, 0.05);
         }
 
-        .copy-btn {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.03);
+        .modal-actions .btn-delete {
+            background: #fecaca;
+            border-color: #fca5a5;
+            color: #b91c1c;
+        }
+
+        [data-theme="dark"] .modal-actions .btn-delete {
+            background: #b91c1c;
+            color: #fecaca;
+            border-color: #ef4444;
+        }
+
+        .modal-actions .btn-close {
+            background: var(--card);
+        }
+
+        [data-theme="dark"] .modal-actions .btn-close {
+            background: var(--surface);
+        }
+
+        .modal-actions .btn-close:hover {
+            background: var(--surface);
+        }
+
+        /* Mobile behavior */
+        .search-toggle {
+            display: none
+        }
+
+        @media(max-width:768px) {
+            .brand .title .desktop {
+                display: none
+            }
+
+            .brand .title .subtitle {
+                display: none
+            }
+
+            .brand .title .mobile {
+                display: block;
+                font-weight: 700
+            }
+
+            .search-row {
+                margin: 10px 12px
+            }
+
+            .search-input {
+                display: none
+            }
+
+            /* we show mobile overlay instead */
+            .search-toggle {
+                display: inline-flex;
+                width: 44px;
+                height: 44px;
+                border-radius: 10px;
+                border: 1px solid var(--surface);
+                background: var(--surface);
+                align-items: center;
+                justify-content: center;
+                color: var(--muted)
+            }
+        }
+
+        /* little helpers */
+        .muted {
+            color: var(--muted)
+        }
+
+        .x-accent {
+            color: var(--accent);
+            font-weight: 600
+        }
+
+        .sr-only {
+            position: absolute;
+            left: -10000px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden
+        }
+
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 
-<body class="min-h-screen p-4">
-    <div id="toast"
-        class="fixed bottom-5 right-5 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg opacity-0 transition-opacity duration-300 z-50">
-    </div>
+<body>
+    <header>
+        <div class="container">
+            <div class="bar" role="banner" aria-label="Header">
+                <div class="brand" role="heading" aria-level="1">
+                    <div class="logo" aria-hidden="true">S</div>
+                    <div class="title">
+                        <div class="desktop">SIPEDASI — Catatan</div>
+                        <div class="mobile">CATATAN</div>
+                        <div class="subtitle muted">Daftar catatan Anda</div>
+                    </div>
+                </div>
 
-    <!-- Header mirip X -->
-    <header class="flex items-center justify-between py-4 px-3 sticky top-0 z-40 backdrop-blur bg-black/20 rounded-xl">
-        <div class="flex items-center gap-3">
-            <div class="flex items-center justify-center w-10 h-10 rounded-full bg-white text-black font-bold">X</div>
-            <div>
-                <h1 class="text-lg font-semibold">Catatan — SiRekonPBB</h1>
-                <p class="text-sm muted">Daftar catatan Anda</p>
+                <div class="actions" role="group" aria-label="Aksi">
+                    <button id="searchToggle" class="search-toggle" aria-label="Cari (mobile)"><i class="bi bi-search"
+                            style="font-size:16px"></i></button>
+                    <button id="themeToggle" class="icon-btn" aria-label="Toggle tema"><i id="themeIcon"
+                            class="bi bi-moon"></i></button>
+                    <button onclick="history.back()" class="icon-btn" aria-label="Kembali"><i
+                            class="bi bi-arrow-left"></i></button>
+                </div>
             </div>
         </div>
-        <div class="flex items-center gap-2">
-            <input id="searchInput" type="text" placeholder="Cari keterangan, tanggal, total..."
-                class="pill rounded-full px-4 py-2 w-64 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#1d9bf0] placeholder:muted" />
-            <button onclick="window.history.back();" title="Kembali"
-                class="rounded-full bg-white/6 hover:bg-white/10 p-2">
-                <i class="bi bi-arrow-left x-accent"></i>
-            </button>
+
+        <!-- mobile search overlay -->
+        <div id="mobileSearch"
+            style="display:none;position:fixed;left:0;right:0;top:0;height:64px;background:linear-gradient(180deg,color-mix(in srgb,var(--surface) 96%, transparent),transparent);border-bottom:1px solid var(--border);z-index:65;align-items:center;padding:10px;">
+            <div class="container" style="display:flex;gap:8px;align-items:center">
+                <input id="mobileSearchInput" class="search-input" style="display:block;flex:1"
+                    placeholder="Cari keterangan, tanggal, total..." aria-label="Cari catatan mobile" />
+                <button id="mobileSearchClose" class="icon-btn" aria-label="Tutup pencarian"><i
+                        class="bi bi-x-lg"></i></button>
+            </div>
         </div>
     </header>
 
-    <main class="container mx-auto py-6 w-full md:px-8">
-        <div id="catatanList" class="flex flex-col gap-3 w-full mt-4">
-            <p class="text-center muted p-6">Memuat catatan...</p>
+    <!-- search row (desktop-focused) -->
+    <div class="search-row" role="search" aria-label="Cari catatan">
+        <div class="search-box container">
+            <input id="searchInput" class="search-input" placeholder="Cari keterangan, tanggal, total..."
+                aria-label="Cari catatan" />
+            <button id="clearSearch" class="icon-btn" title="Bersihkan" aria-label="Bersihkan pencarian"
+                style="display: none;"><i class="bi bi-x-lg"></i></button>
+        </div>
+    </div>
+
+    <main>
+        <div class="container">
+            <div id="catatanList" class="list" aria-live="polite">
+                <p class="muted text-center p-6">Memuat catatan...</p>
+            </div>
         </div>
     </main>
 
-    <!-- Modal for full note details (updated layout) -->
-    <div id="detailModal"
-        class="hidden fixed inset-0 bg-black bg-opacity-60 z-[100] flex items-center justify-center px-4">
-        <div class="modal-panel bg-[#07122a] p-5 rounded-2xl shadow-xl w-full max-w-2xl relative max-h-[90vh] overflow-y-auto card-bg border border-white/5">
-            <div class="flex items-start gap-4">
-                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[#1d9bf0] to-[#0ea5e9] flex items-center justify-center text-black font-bold text-xl">
-                    N
+    <!-- modal (hidden by default) -->
+    <div id="modalBackdrop" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="modal" id="detailModal">
+            <div style="display:flex;gap:12px">
+                <div style="flex:0 0 64px">
+                    <div
+                        style="width:64px;height:64px;border-radius:999px;background:linear-gradient(90deg,var(--accent),#0ea5e9);display:flex;align-items:center;justify-content:center;font-weight:700;color:#000">
+                        N</div>
                 </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-start justify-between gap-4">
-                        <div class="min-w-0">
-                            <div id="modalTitle" class="text-xl font-semibold text-white truncate">Judul Catatan</div>
-                            <div id="modalSub" class="small-muted mt-1">Tanggal · Waktu · Bank</div>
+                <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+                        <div style="min-width:0">
+                            <div id="modalTitle"
+                                style="font-weight:700;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                                Judul</div>
+                            <div id="modalSub" class="muted" style="margin-top:6px">Tanggal · Waktu · Bank</div>
                         </div>
-
-                        <div class="flex items-center gap-2">
-                            <button id="copyBtn" class="copy-btn p-2 rounded-full hover:bg-white/6" title="Salin detail">
-                                <i class="bi bi-clipboard"></i>
-                            </button>
-                            <button id="editBtn" class="copy-btn p-2 rounded-full hover:bg-white/6" title="Edit (jika ada)">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button id="closeModalBtn" class="p-2 rounded-full hover:bg-white/6" title="Tutup">
-                                <i class="bi bi-x-lg muted"></i>
-                            </button>
+                        <div style="display:flex;gap:8px;align-items:center">
+                            <button id="copyBtn" class="icon-btn" title="Salin"><i class="bi bi-clipboard"></i></button>
+                            <button id="editBtn" class="icon-btn" title="Edit"><i class="bi bi-pencil"></i></button>
+                            <button id="closeModalBtn" class="icon-btn" title="Tutup"><i
+                                    class="bi bi-x-lg"></i></button>
                         </div>
                     </div>
 
-                    <div class="mt-4 grid grid-cols-2 gap-4">
-                        <div class="p-3 rounded-lg pill">
-                            <div class="field-label">Bank</div>
-                            <div id="modalBank" class="field-value mt-1">-</div>
+                    <!-- Perbaikan Layout Modal -->
+                    <div style="margin-top:12px" class="grid-2">
+                        <div class="pill">
+                            <div class="muted">Pokok PBBP2</div>
+                            <div id="modalPokokPbb" style="margin-top:6px">-</div>
                         </div>
-                        <div class="p-3 rounded-lg pill">
-                            <div class="field-label">Mode</div>
-                            <div id="modalMode" class="field-value mt-1">-</div>
-                        </div>
-                        <div class="p-3 rounded-lg pill">
-                            <div class="field-label">Jumlah Baris</div>
-                            <div id="modalRows" class="field-value mt-1">-</div>
-                        </div>
-                        <div class="p-3 rounded-lg pill">
-                            <div class="field-label">Total Mutasi</div>
-                            <div id="modalTotal" class="field-value mt-1 x-accent text-lg">-</div>
-                        </div>
-
-                        <div class="p-3 rounded-lg pill">
-                            <div class="field-label">Total Denda</div>
-                            <div id="modalDenda" class="field-value mt-1">-</div>
-                        </div>
-                        <div class="p-3 rounded-lg pill">
-                            <div class="field-label">Total PBB</div>
-                            <div id="modalPbb" class="field-value mt-1">-</div>
+                        <div class="pill">
+                            <div class="muted">Denda PBBP2</div>
+                            <div id="modalDendaPbb" style="margin-top:6px">-</div>
                         </div>
                     </div>
 
-                    <div class="mt-4">
-                        <div class="field-label">Catatan Tambahan</div>
-                        <div id="modalNote" class="mt-2 p-3 rounded-lg"
-                            style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03);">
-                            <div class="text-sm muted">-</div>
+                    <div style="margin-top:12px" class="grid-2">
+                        <div class="pill">
+                            <div class="muted">Bank</div>
+                            <div id="modalBank" style="margin-top:6px">-</div>
+                        </div>
+                        <div class="pill">
+                            <div class="muted">Total Mutasi Kredit</div>
+                            <div id="modalTotal" class="x-accent" style="margin-top:6px">-</div>
                         </div>
                     </div>
 
-                    <div class="mt-5 flex items-center gap-3">
-                        <button id="deleteModalBtn"
-                            class="w-full md:w-auto bg-red-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-700 transition">
-                            <i class="bi bi-trash"></i> Hapus
-                        </button>
-                        <button onclick="closeModal()"
-                            class="w-full md:w-auto bg-white/6 text-white px-4 py-2 rounded-lg hover:bg-white/10 transition">
-                            Tutup
-                        </button>
+                    <div style="margin-top:12px" class="grid-2">
+                        <div class="pill">
+                            <div class="muted">Mode</div>
+                            <div id="modalMode" style="margin-top:6px">-</div>
+                        </div>
+                        <div class="pill">
+                            <div class="muted">Jumlah Baris</div>
+                            <div id="modalRows" style="margin-top:6px">-</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px">
+                        <div class="muted">Catatan Tambahan</div>
+                        <div id="modalNote" class="pill" style="margin-top:8px">
+                            <div class="muted">-</div>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <!-- Tombol Hapus dan Tutup yang diperbaiki -->
+                        <button id="deleteModalBtn" class="btn btn-delete" title="Hapus"><i class="bi bi-trash"></i>
+                            &nbsp;Hapus</button>
+                        <button id="modalCloseBtn" class="btn btn-close" title="Tutup">Tutup</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
-    <!-- SweetAlert2 JS -->
+    <!-- custom toast, hidden by default -->
+    <div id="toast" style="opacity:0;transition:opacity 0.3s ease;z-index:90;"></div>
+
+    <!-- libs -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-database.js"></script>
 
     <script>
+        // theme + UI behaviors
+        (function () {
+            const root = document.documentElement;
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const saved = localStorage.getItem('sipedasi:theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let theme = saved || (prefersDark ? 'dark' : 'light');
+
+            function applyTheme(t) {
+                root.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+                themeIcon.className = t === 'dark' ? 'bi bi-sun' : 'bi bi-moon';
+            }
+            applyTheme(theme);
+            themeToggle?.addEventListener('click', () => {
+                theme = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                localStorage.setItem('sipedasi:theme', theme);
+                applyTheme(theme);
+            });
+            // header responsive title
+            function updateTitle() {
+                const m = window.innerWidth <= 768;
+                document.querySelectorAll('.brand .title .mobile').forEach(el => el.style.display = m ? 'block' : 'none');
+                document.querySelectorAll('.brand .title .desktop').forEach(el => el.style.display = m ? 'none' : 'block');
+            }
+            updateTitle();
+            window.addEventListener('resize', updateTitle);
+            // mobile search overlay toggle
+            const searchToggle = document.getElementById('searchToggle');
+            const mobileSearch = document.getElementById('mobileSearch');
+            const mobileClose = document.getElementById('mobileSearchClose');
+            const mobileInput = document.getElementById('mobileSearchInput');
+            searchToggle?.addEventListener('click', () => {
+                mobileSearch.style.display = 'flex';
+                mobileSearch.setAttribute('aria-hidden', 'false');
+                setTimeout(() => mobileInput?.focus(), 80);
+            });
+            mobileClose?.addEventListener('click', () => {
+                mobileSearch.style.display = 'none';
+                mobileSearch.setAttribute('aria-hidden', 'true');
+                mobileInput.value = '';
+                mobileInput.dispatchEvent(new Event('input'));
+            });
+        })();
+    </script>
+
+    <script>
+        // firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBWiWtq8Ir-_KPlqSwYEGJkOmM9TTp1pDk",
             authDomain: "rc-notedsbapenda.firebaseapp.com",
@@ -228,247 +596,167 @@
         };
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-
         let allNotes = [];
-        let selectedNoteId = null;
+        let selectedId = null;
 
-        function showToast(message, isError = false) {
-            const toast = document.getElementById("toast");
-            if (toast) {
-                toast.textContent = message;
-                toast.className = `fixed bottom-5 right-5 px-4 py-2 rounded-xl shadow-lg opacity-100 transition-opacity duration-300 z-50 ${isError ? 'bg-red-500' : 'bg-green-500'} text-white`;
-                setTimeout(() => {
-                    toast.style.opacity = "0";
-                }, 3000);
-            }
+        // Menampilkan pesan toast
+        function showToast(msg, err = false) {
+            const t = document.getElementById('toast');
+            if (!t) return;
+            t.textContent = msg;
+            t.style.opacity = '1';
+            t.className = `fixed bottom-5 right-5 rounded-xl px-4 py-2 shadow-lg ${err ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`;
+            setTimeout(() => t.style.opacity = '0', 2800);
         }
-
-        function formatCurrency(val) {
-            if (val === undefined || val === null || val === '') return '-';
-            let s = String(val).trim();
-            // Normalize common formats:
-            // - Indonesian style: "38.236" (thousand separator '.')
-            // - If both '.' and ',' present, assume '.' thousands and ',' decimals -> remove '.' and change ',' -> '.'
-            if (s.indexOf('.') !== -1 && s.indexOf(',') !== -1) {
-                s = s.replace(/\./g, '').replace(',', '.');
-            } else if (s.indexOf('.') !== -1 && s.indexOf(',') === -1) {
-                // only dots -> treat as thousand separators, remove them
-                s = s.replace(/\./g, '');
-            } else if (s.indexOf(',') !== -1 && s.indexOf('.') === -1) {
-                // only commas -> treat comma as decimal separator
-                s = s.replace(',', '.');
-            }
-            // remove anything left that's not digit, minus or dot
-            s = s.replace(/[^\d\.-]+/g, '');
-            const num = Number(s);
-            if (Number.isNaN(num)) return val;
-            return num.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
-        }
-
-        window.openModal = function (noteId) {
-            const modal = document.getElementById('detailModal');
-            const panel = modal.querySelector('.modal-panel');
-            const note = allNotes.find(n => n.id === noteId);
-
-            if (note) {
-                selectedNoteId = note.id;
-
-                // Fill header
-                document.getElementById('modalTitle').textContent = note.keterangan || 'Tidak ada keterangan';
-                document.getElementById('modalSub').textContent = `${note.tanggal || 'N/A'} · ${note.waktu || ''} · ${note.bank || '-'}`;
-
-                // Fill fields
-                document.getElementById('modalBank').textContent = note.bank || '-';
-                document.getElementById('modalMode').textContent = note.mode || '-';
-                document.getElementById('modalRows').textContent = note.jumlahBaris || '-';
-                document.getElementById('modalTotal').textContent = formatCurrency(note.totalMutasi ?? note.total ?? '-');
-                // tambahan: tampilkan totalDenda dan totalPbb jika ada
-                document.getElementById('modalDenda').textContent = formatCurrency(note.totalDenda ?? '-');
-                document.getElementById('modalPbb').textContent = formatCurrency(note.totalPbb ?? '-');
-                document.getElementById('modalNote').innerHTML = `<div class="text-sm">${(note.catatanTambahan && note.catatanTambahan.trim()) ? note.catatanTambahan : '<span class="muted">-</span>'}</div>`;
-
-                // show modal with animation class
-                modal.classList.remove('hidden');
-                setTimeout(() => modal.classList.add('show'), 10);
-
-                // copy button
-                const copyBtn = document.getElementById('copyBtn');
-                copyBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    const text = [
-                        `Keterangan: ${note.keterangan || '-'}`,
-                        `Tanggal: ${note.tanggal || '-'}`,
-                        `Waktu: ${note.waktu || '-'}`,
-                        `Bank: ${note.bank || '-'}`,
-                        `Mode: ${note.mode || '-'}`,
-                        `Jumlah Baris: ${note.jumlahBaris || '-'}`,
-                        `Total Mutasi: ${formatCurrency(note.totalMutasi ?? note.total ?? '-')}`,
-                        `Total Denda: ${formatCurrency(note.totalDenda ?? '-')}`,
-                        `Total PBB: ${formatCurrency(note.totalPbb ?? '-')}`,
-                        `Catatan Tambahan: ${note.catatanTambahan || '-'}`
-                    ].join('\n');
-                    navigator.clipboard?.writeText(text).then(() => showToast('Detail disalin.'), () => showToast('Gagal menyalin.', true));
-                };
-
-                // delete button inside modal
-                document.getElementById('deleteModalBtn').onclick = function (ev) {
-                    ev.stopPropagation();
-                    hapusCatatanModal();
-                };
-
-                // close btn
-                document.getElementById('closeModalBtn').onclick = (ev) => { ev.stopPropagation(); closeModal(); };
-
-                // optional edit - if you have edit flow, hook here
-                document.getElementById('editBtn').onclick = (ev) => { ev.stopPropagation(); showToast('Fungsi edit belum tersedia.'); };
-
-            }
-        }
-
-        window.closeModal = function () {
-            const modal = document.getElementById('detailModal');
-            modal.classList.remove('show');
-            setTimeout(() => modal.classList.add('hidden'), 180);
-            selectedNoteId = null;
-        }
-
-        // close when clicking backdrop
-        document.getElementById('detailModal').addEventListener('click', function (e) {
-            if (e.target === this) closeModal();
-        });
-
-        // close on ESC
-        window.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') {
-                const modal = document.getElementById('detailModal');
-                if (!modal.classList.contains('hidden')) closeModal();
-            }
-        });
-
-        window.hapusCatatanModal = function () {
-            if (!selectedNoteId) return;
-            Swal.fire({
-                title: 'Hapus catatan?',
-                text: 'Yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Hapus',
-                cancelButtonText: 'Batal',
-                confirmButtonColor: '#d33',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    database.ref('catatan/' + selectedNoteId).remove()
-                        .then(() => {
-                            showToast("Catatan berhasil dihapus.");
-                            closeModal();
-                        })
-                        .catch(error => {
-                            console.error("Gagal menghapus catatan:", error);
-                            showToast("Gagal menghapus catatan.", true);
-                        });
-                }
+        // Format nilai mata uang
+        function formatCurrency(v) {
+            if (v === undefined || v === null || v === '') return '-';
+            let s = String(v).replace(/[^\d\-,.]/g, '')
+            if (s.indexOf(',') !== -1 && s.indexOf('.') === -1) s = s.replace(',', '.');
+            s = s.replace(/\./g, '');
+            const n = Number(s);
+            if (Number.isNaN(n)) return v;
+            return n.toLocaleString('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                maximumFractionDigits: 0
             });
         }
-
-        window.hapusCatatan = function (catatanId) {
-            if (!catatanId) return;
-            Swal.fire({
-                title: 'Hapus catatan?',
-                text: 'Yakin ingin menghapus catatan ini? Tindakan ini tidak dapat dibatalkan.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Hapus',
-                cancelButtonText: 'Batal',
-                confirmButtonColor: '#d33',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    database.ref('catatan/' + catatanId).remove()
-                        .then(() => {
-                            showToast("Catatan berhasil dihapus.");
-                        })
-                        .catch(error => {
-                            console.error("Gagal menghapus catatan:", error);
-                            showToast("Gagal menghapus catatan.", true);
-                        });
-                }
+        // Escape HTML untuk mencegah XSS
+        function escapeHtml(s) {
+            return String(s || '').replace(/[&<>"'`]/g, c => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;',
+                "`": '&#96;'
+            }[c]));
+        }
+        // Render list catatan
+        function render(notes) {
+            const list = document.getElementById('catatanList');
+            list.innerHTML = '';
+            if (!notes || notes.length === 0) {
+                list.innerHTML = `<p class="muted text-center p-6">Tidak ada catatan.</p>`;
+                return;
+            }
+            notes.forEach(n => {
+                const el = document.createElement('div');
+                el.className = 'note';
+                el.tabIndex = 0;
+                el.innerHTML = `
+          <div class="avatar" aria-hidden="true">${escapeHtml((n.keterangan || 'N').trim().charAt(0).toUpperCase() || 'N')}</div>
+          <div class="note-body">
+            <div class="note-title">${escapeHtml(n.keterangan || 'Tidak ada keterangan')}</div>
+            <div class="note-meta">${escapeHtml(n.tanggal || '-')} · ${escapeHtml(n.bank || '-')} · <span class="x-accent">${escapeHtml(formatCurrency(n.totalMutasi ?? n.total ?? '-'))}</span></div>
+          </div>
+        `;
+                el.addEventListener('click', () => openModal(n.id));
+                list.appendChild(el);
             });
         }
-
-        function renderCatatan(notes) {
-            const catatanList = document.getElementById("catatanList");
-            catatanList.innerHTML = '';
-            if (notes.length > 0) {
-                notes.forEach(note => {
-                    const noteElement = document.createElement('div');
-                    noteElement.className = 'flex gap-4 items-start p-4 rounded-xl card-bg border border-white/4 hover:translate-y-[-2px] transition cursor-pointer';
-                    noteElement.setAttribute('onclick', `openModal('${note.id}')`);
-
-                    const formattedKeterangan = note.keterangan || 'Tidak ada keterangan';
-                    const formattedTanggal = note.tanggal || '';
-                    const formattedMutasi = formatCurrency(note.totalMutasi || note.total || '-');
-                    const formattedBank = note.bank || '-';
-                    // tampilkan seluruh keterangan di list (hilangkan pemotongan jika ingin lengkap).
-                    const preview = formattedKeterangan;
-
-                    noteElement.innerHTML = `
-                        <div class="flex-shrink-0">
-                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#1d9bf0] to-[#0ea5e9] flex items-center justify-center text-black font-bold">
-                                ${(note.keterangan && note.keterangan.trim().charAt(0)) ? note.keterangan.trim().charAt(0).toUpperCase() : 'N'}
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <div class="flex items-center justify-between">
-                                <div class="min-w-0">
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-semibold text-white">${preview}</span>
-                                    </div>
-                                    <div class="text-sm muted mt-1 truncate">
-                                        ${formattedTanggal} · ${formattedBank} · <span class="x-accent font-semibold">${formattedMutasi}</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2 ml-4">
-                                    <button onclick="event.stopPropagation(); hapusCatatan('${note.id}')" class="p-2 rounded-full hover:bg-white/5">
-                                        <i class="bi bi-x-lg muted"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    catatanList.appendChild(noteElement);
-                });
-            } else {
-                catatanList.innerHTML = `<p class="text-center muted p-6">Tidak ada catatan.</p>`;
-            }
-        }
-
+        // Ambil data catatan dari Firebase
         function ambilCatatan() {
-            const catatanRef = database.ref('catatan').orderByChild('timestamp');
-            catatanRef.on('value', (snapshot) => {
-                const data = snapshot.val();
+            const ref = database.ref('catatan').orderByChild('timestamp');
+            ref.on('value', snap => {
+                const data = snap.val();
                 allNotes = [];
-                if (data) {
-                    allNotes = Object.keys(data).map(key => ({
-                        id: key,
-                        ...data[key]
-                    })).reverse();
-                }
-                renderCatatan(allNotes);
+                if (data) allNotes = Object.keys(data).map(k => ({
+                    id: k,
+                    ...data[k]
+                })).reverse();
+                render(allNotes);
+            }, err => {
+                console.error(err);
+                document.getElementById('catatanList').innerHTML = '<p class="muted text-center p-6">Gagal memuat catatan.</p>'
             });
         }
-
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const filteredNotes = allNotes.filter(note =>
-                (note.keterangan && note.keterangan.toLowerCase().includes(searchTerm)) ||
-                (note.tanggal && note.tanggal.toLowerCase().includes(searchTerm)) ||
-                (note.totalMutasi && String(note.totalMutasi).toLowerCase().includes(searchTerm))
-            );
-            renderCatatan(filteredNotes);
+        // Fungsi pencarian
+        document.getElementById('searchInput').addEventListener('input', e => {
+            const q = (e.target.value || '').toLowerCase();
+            const filtered = allNotes.filter(n => (n.keterangan && n.keterangan.toLowerCase().includes(q)) || (n.tanggal && n.tanggal.toLowerCase().includes(q)) || (n.totalMutasi && String(n.totalMutasi).toLowerCase().includes(q)));
+            render(filtered);
+            // Menampilkan atau menyembunyikan tombol clear search
+            document.getElementById('clearSearch').style.display = e.target.value ? 'inline-flex' : 'none';
         });
-
-        window.addEventListener("DOMContentLoaded", () => {
+        // mobile overlay input mirrors desktop input
+        const mobileIn = document.getElementById('mobileSearchInput');
+        mobileIn?.addEventListener('input', e => {
+            document.getElementById('searchInput').value = e.target.value;
+            document.getElementById('searchInput').dispatchEvent(new Event('input'));
+        });
+        // Bersihkan pencarian
+        document.getElementById('clearSearch').addEventListener('click', () => {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchInput').dispatchEvent(new Event('input'));
+            document.getElementById('clearSearch').style.display = 'none';
+            document.getElementById('searchInput').focus();
+        });
+        // modal
+        function openModal(id) {
+            const note = allNotes.find(x => x.id === id);
+            if (!note) return;
+            selectedId = id;
+            document.getElementById('modalTitle').textContent = note.keterangan || 'Tidak ada keterangan';
+            document.getElementById('modalSub').textContent = `${note.tanggal || '-'} · ${note.waktu || ''} · ${note.bank || '-'}`;
+            document.getElementById('modalPokokPbb').textContent = formatCurrency(note.totalPbb ?? '-');
+            document.getElementById('modalDendaPbb').textContent = formatCurrency(note.totalDenda ?? '-');
+            document.getElementById('modalBank').textContent = note.bank || '-';
+            document.getElementById('modalTotal').textContent = formatCurrency(note.totalMutasi ?? note.total ?? '-');
+            document.getElementById('modalRows').textContent = note.jumlahBaris || '-';
+            document.getElementById('modalMode').textContent = note.mode || '-';
+            document.getElementById('modalNote').innerHTML = `<div class="muted">${escapeHtml(note.catatanTambahan || '-')}</div>`;
+            // show modal
+            document.getElementById('modalBackdrop').classList.remove('hidden');
+            document.getElementById('modalBackdrop').setAttribute('aria-hidden', 'false');
+        }
+        function closeModal() {
+            document.getElementById('modalBackdrop').classList.add('hidden');
+            document.getElementById('modalBackdrop').setAttribute('aria-hidden', 'true');
+            selectedId = null;
+        }
+        document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+        document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            if (!selectedId) return;
+            const note = allNotes.find(x => x.id === selectedId);
+            if (!note) return;
+            const text = [`Keterangan: ${note.keterangan || '-'}`, `Tanggal: ${note.tanggal || '-'}`, `Total Mutasi: ${formatCurrency(note.totalMutasi ?? note.total ?? '-')}`].join('\n');
+            navigator.clipboard?.writeText(text).then(() => showToast('Detail disalin.'), () => showToast('Gagal menyalin.', true));
+        });
+        // Hapus catatan dengan SweetAlert2
+        function hapusCatatan(id) {
+            Swal.fire({
+                title: 'Hapus catatan?',
+                text: 'Tindakan ini tidak dapat dibatalkan.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Hapus',
+                cancelButtonText: 'Batal',
+            }).then(res => {
+                if (res.isConfirmed) {
+                    database.ref('catatan/' + id).remove().then(() => showToast('Catatan dihapus.')).catch(() => showToast('Gagal menghapus.', true));
+                }
+            });
+        }
+        document.getElementById('deleteModalBtn').addEventListener('click', () => {
+            if (selectedId) hapusCatatan(selectedId);
+        });
+        // backdrop click & ESC
+        document.getElementById('modalBackdrop').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modalBackdrop')) {
+                closeModal();
+            }
+        });
+        window.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                document.getElementById('mobileSearch').style.display = 'none';
+                closeModal();
+            }
+        });
+        // init
+        window.addEventListener('DOMContentLoaded', () => {
             ambilCatatan();
         });
     </script>
