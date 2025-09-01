@@ -93,7 +93,8 @@
             <div class="mb-2">
                 <div class="flex space-x-2 items-center">
                     <input id="paste-input" type="text" placeholder="Tempelkan Keterangan Disini"
-                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" spellcheck="false" />
+                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition"
+                        spellcheck="false" />
                     <button id="btn-paste-text"
                         class="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg shadow-md transition"
                         title="Paste"><i class="bi bi-clipboard"></i></button>
@@ -147,6 +148,15 @@
                         <option value="">-- Semua Uraian Pajak --</option>
                     </select>
                 </div>
+            </div>
+
+            <div class="mb-2">
+                <button id="btnResetPJDL"
+                    class="mt-2 bg-red-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600 transition w-full flex items-center justify-center gap-2"
+                    title="Reset Filter">
+                    <i class="bi bi-arrow-repeat"></i>
+                    Reset Filter
+                </button>
             </div>
 
         </aside>
@@ -216,7 +226,8 @@
                     </div>
                 </div>
 
-                <div id="table-scroll-container" class="overflow-x-auto overflow-y-auto max-h-[60vh] bg-white rounded-b-lg shadow border border-gray-200 border-t-0">
+                <div id="table-scroll-container"
+                    class="overflow-x-auto overflow-y-auto max-h-[60vh] bg-white rounded-b-lg shadow border border-gray-200 border-t-0">
                     <table id="excel-table" class="min-w-full table-auto border-collapse text-sm">
                         <!-- Table content di-generate oleh JS -->
                     </table>
@@ -643,6 +654,13 @@
         }
 
         function renderTable(data) {
+            // jika hanya ada header (data.length <= 1) => kosongkan tabel dan kembalikan
+            if (!data || data.length <= 1) {
+                const table = document.getElementById('excel-table');
+                if (table) table.innerHTML = '';
+                return;
+            }
+
             const table = document.getElementById('excel-table');
             table.innerHTML = '';
 
@@ -1033,6 +1051,38 @@
             } catch (err) {
                 showCopyNotification("Gagal mengambil teks dari clipboard. Izinkan akses clipboard.");
             }
+        });
+        // Reset khusus untuk halaman PJDL
+        document.getElementById('btnResetPJDL').addEventListener('click', function () {
+            // reset inputs & selects
+            document.getElementById('paste-input').value = '';
+            document.getElementById('jenispajak-select').value = '';
+            document.getElementById('tempatbayar-select').value = '';
+            document.getElementById('waktu-select').value = '';
+            document.getElementById('tanggal-select').value = '';
+            document.getElementById('uraianspajak-select').value = '';
+            document.getElementById('tambahanCount').value = 0;
+
+            // reset radio mode -> default 'tambah'
+            document.querySelectorAll('input[name="fitur"]').forEach(r => r.checked = (r.value === 'tambah'));
+
+            // rebuild dependent option lists
+            renderJenisPajakOptions();
+            renderTanggalOptions();
+            renderUraianPajakOptions();
+
+            // clear table completely (jangan tampilkan header kosong)
+            const table = document.getElementById('excel-table');
+            if (table) table.innerHTML = '';
+
+            // reset jumlah data & summary cards
+            const jumlahEl = document.getElementById('jumlahData');
+            if (jumlahEl) jumlahEl.textContent = 'Jumlah Data : 0';
+            updateSummaryCards([]);
+
+            // reset scroll
+            const scrollContainer = document.getElementById('table-scroll-container');
+            if (scrollContainer) scrollContainer.scrollTop = 0;
         });
         // ...existing code...
     </script>

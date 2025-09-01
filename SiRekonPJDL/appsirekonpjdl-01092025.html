@@ -449,6 +449,8 @@
 
         function renderTanggalOptions() {
             const select = document.getElementById('tanggal-select');
+            // simpan nilai terpilih sebelum rebuild
+            const prevSelected = select.value;
             select.innerHTML = '<option value="">-- Semua Tanggal --</option>';
 
             const jenis = document.getElementById('jenispajak-select').value;
@@ -456,15 +458,13 @@
             const uraian = document.getElementById('uraianspajak-select').value;
             const waktu = document.getElementById('waktu-select').value;
 
-            const tanggalCount = {};
-
+            // kumpulkan semua tanggal relevan berdasarkan jenis/tempat/uraian (tanpa waktu)
+            const allDatesSet = new Set();
             unfilteredData.forEach(row => {
-                // filter by jenis
                 if (jenis) {
                     const val = normalizeJenis(row[currentCols['Jenis Pajak']]);
                     if (val !== jenis) return;
                 }
-                // filter by tempat
                 if (tempat) {
                     const tempatVal = typeof row[currentCols['Tempat Bayar']] === 'string' ? row[currentCols['Tempat Bayar']].trim() : String(row[currentCols['Tempat Bayar']] || '').trim();
                     if (tempat === 'PJDLU') {
@@ -475,29 +475,59 @@
                         if (tempatVal !== 'Bank BJB - Virtual Account') return;
                     }
                 }
-                // filter by uraian
                 if (uraian) {
                     const uraianVal = typeof row[currentCols['Uraian Pajak']] === 'string' ? row[currentCols['Uraian Pajak']].trim() : String(row[currentCols['Uraian Pajak']] || '').trim();
                     if (uraianVal !== uraian) return;
                 }
-                // filter by waktu (jam)
-                if (waktu && waktu !== '') {
-                    const tglFull = String(row[currentCols['Tanggal Bayar']] || '').trim();
-                    const match = tglFull.match(/\b(\d{2}:\d{2}:\d{2})|\b(\d{2}:\d{2})/);
-                    const jamMenit = match ? match[1] || match[2] : '';
-                    if (!jamMenit) return;
-                    if (waktu === 'akhir' && !(jamMenit < '17:00')) return;
-                    if (waktu === 'pelimpahan' && !(jamMenit >= '17:00')) return;
+                const tanggalBayarValue = row[currentCols['Tanggal Bayar']];
+                const tglFull = typeof tanggalBayarValue === 'string' ? tanggalBayarValue.trim() : String(tanggalBayarValue || '').trim();
+                const tgl = tglFull.substr(0, 10);
+                if (tgl && tgl !== 'undefined' && tgl !== '') allDatesSet.add(tgl);
+            });
+
+            // init counts 0 untuk semua tanggal relevan
+            const tanggalCount = {};
+            Array.from(allDatesSet).forEach(d => tanggalCount[d] = 0);
+
+            // hitung jumlah baris per tanggal sesuai filter waktu (jika ada)
+            unfilteredData.forEach(row => {
+                if (jenis) {
+                    const val = normalizeJenis(row[currentCols['Jenis Pajak']]);
+                    if (val !== jenis) return;
+                }
+                if (tempat) {
+                    const tempatVal = typeof row[currentCols['Tempat Bayar']] === 'string' ? row[currentCols['Tempat Bayar']].trim() : String(row[currentCols['Tempat Bayar']] || '').trim();
+                    if (tempat === 'PJDLU') {
+                        if (!['Bank BJB - Internet Banking', 'Bank BJB - Mobile Banking', 'Bank BJB - TELER', 'Bank BJB - Lainnya', 'Bank BJB - POS'].includes(tempatVal)) return;
+                    } else if (tempat === 'PJDLQRIS') {
+                        if (tempatVal !== 'Bank BJB - QRIS') return;
+                    } else if (tempat === 'PJDLVA') {
+                        if (tempatVal !== 'Bank BJB - Virtual Account') return;
+                    }
+                }
+                if (uraian) {
+                    const uraianVal = typeof row[currentCols['Uraian Pajak']] === 'string' ? row[currentCols['Uraian Pajak']].trim() : String(row[currentCols['Uraian Pajak']] || '').trim();
+                    if (uraianVal !== uraian) return;
                 }
 
                 const tanggalBayarValue = row[currentCols['Tanggal Bayar']];
                 const tglFull = typeof tanggalBayarValue === 'string' ? tanggalBayarValue.trim() : String(tanggalBayarValue || '').trim();
                 const tgl = tglFull.substr(0, 10);
-                if (tgl && tgl !== 'undefined' && tgl !== '') {
-                    tanggalCount[tgl] = (tanggalCount[tgl] || 0) + 1;
+                if (!tgl || tgl === 'undefined') return;
+
+                // jika waktu dipilih, hanya hitung baris yang cocok dengan waktu tersebut
+                if (waktu && waktu !== '') {
+                    const timeMatch = tglFull.match(/(\d{1,2}):(\d{2})(?::\d{2})?/);
+                    if (!timeMatch) return;
+                    const jam = parseInt(timeMatch[1], 10);
+                    if (waktu === 'akhir' && !(jam < 17)) return;
+                    if (waktu === 'pelimpahan' && !(jam >= 17)) return;
                 }
+
+                if (tanggalCount.hasOwnProperty(tgl)) tanggalCount[tgl] = (tanggalCount[tgl] || 0) + 1;
             });
 
+            // render semua tanggal (termasuk yang count = 0)
             Object.keys(tanggalCount)
                 .sort((a, b) => {
                     const toSortable = s => {
@@ -519,6 +549,12 @@
                     opt.textContent = `${tgl} - (${tanggalCount[tgl]})`;
                     select.appendChild(opt);
                 });
+
+            // restore selection jika masih valid
+            if (prevSelected) {
+                const exists = Array.from(select.options).some(o => o.value === prevSelected);
+                select.value = exists ? prevSelected : '';
+            }
         }
 
         function renderJenisPajakOptions() {
@@ -863,40 +899,122 @@
                     filterAndRender();
                     return;
                 }
-                const paymentTypeMatch = inputText.match(/PJK\s+([A-Z]+)/);
-                const paymentType = paymentTypeMatch ? paymentTypeMatch[1] : '';
-                const dateMatch = inputText.match(/TGL\s+(\d{8})\//);
-                let rawDate = dateMatch ? dateMatch[1] : '';
+
+                // ambil tipe pembayaran (PJDLU / PJDLQRIS / PJDLVA) jika ada
+                const paymentTypeMatch = inputText.match(/PJK\s+([A-Z]+)/i);
+                const paymentType = paymentTypeMatch ? paymentTypeMatch[1].toUpperCase() : '';
+
+                // ambil semua tanggal (yyyymmdd) yang ada di teks
+                const dateMatches = Array.from(inputText.matchAll(/(\d{8})/g)).map(m => m[1]);
+
+                // default: akhir pembayaran
+                let waktuValue = 'akhir';
                 let formattedDate = '';
-                if (rawDate.length === 8) {
-                    const day = rawDate.slice(0, 2);
-                    const month = rawDate.slice(2, 4);
-                    const year = rawDate.slice(4);
-                    formattedDate = `${day}-${month}-${year}`;
+
+                // ambil jenis/label pajak mentah dari pola setelah slash tanggal (mis: 15072025/RESTORANPELIMPAHAN)
+                let taxRaw = '';
+                let origTaxRaw = '';
+                const taxSlashMatch = inputText.match(/(\d{8})\/([A-Z0-9]+)/i);
+                if (taxSlashMatch) {
+                    origTaxRaw = taxSlashMatch[2];
+                    taxRaw = origTaxRaw;
+                } else {
+                    const anySlash = inputText.match(/\/([A-Z]{3,})/i);
+                    origTaxRaw = anySlash ? anySlash[1] : '';
+                    taxRaw = origTaxRaw;
                 }
-                const taxTypeMatch = inputText.match(/\/([A-Z]+)$/);
-                const taxType = taxTypeMatch ? taxTypeMatch[1] : '';
 
-                const bayarSelect = document.getElementById('tempatbayar-select');
-                bayarSelect.value = paymentType ? bayarSelect.querySelector(`option[value="${paymentType.toUpperCase()}"]`)?.value || "" : "";
+                // Jika taxRaw berakhiran PELIMPAHAN -> itu indikator waktu pelimpahan
+                if (taxRaw && /PELIMPAHAN$/i.test(taxRaw)) {
+                    waktuValue = 'pelimpahan';
+                    // hapus suffix PELIMPAHAN dari nama pajak untuk pencocokan jenis
+                    const rawWithoutSuffix = taxRaw.replace(/PELIMPAHAN$/i, '').trim();
+                    taxRaw = rawWithoutSuffix;
 
-                const tglSelect = document.getElementById('tanggal-select');
-                tglSelect.value = formattedDate ? tglSelect.querySelector(`option[value="${formattedDate}"]`)?.value || "" : "";
+                    // prioritas tanggal untuk kasus ".../RESTORANPELIMPAHAN TGL 16072025"
+                    // 1) cari tanggal yang tepat sebelum slash yang mengantar jenis (mis: 15072025/RESTORANPELIMPAHAN) -> ini prioritas utama
+                    // 2) jika tidak ditemukan, cari tanggal setelah jenis (RESTORANPELIMPAHAN TGL ...)
+                    // 3) pola "PELIMPAHAN TGL #######"
+                    // 4) tanggal kedua, lalu tanggal pertama
+                    const escapeForRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    let found = null;
 
-                const pajakSelect = document.getElementById('jenispajak-select');
-                let matchedTaxOptionValue = "";
-                if (taxType) {
-                    for (let i = 0; i < pajakSelect.options.length; i++) {
-                        if (pajakSelect.options[i].value.toLowerCase() === taxType.toLowerCase()) {
-                            matchedTaxOptionValue = pajakSelect.options[i].value;
-                            break;
-                        }
+                    if (origTaxRaw) {
+                        const reBeforeSlash = new RegExp('(\\d{8})\\s*\\/\\s*' + escapeForRegex(origTaxRaw), 'i');
+                        const mBefore = inputText.match(reBeforeSlash);
+                        if (mBefore) found = mBefore[1];
+                    }
+
+                    if (!found && rawWithoutSuffix) {
+                        const reAfterType = new RegExp(escapeForRegex(rawWithoutSuffix) + '\\s*(?:TGL\\s*)?(\\d{8})', 'i');
+                        const m = inputText.match(reAfterType);
+                        if (m) found = m[1];
+                    }
+
+                    if (!found) {
+                        const pelDateMatch = inputText.match(/PELIMPAHAN\s*TGL\s*(\d{8})/i);
+                        if (pelDateMatch) found = pelDateMatch[1];
+                    }
+
+                    if (!found && dateMatches.length > 1) found = dateMatches[1];
+                    if (!found && dateMatches.length === 1) found = dateMatches[0];
+
+                    formattedDate = found || '';
+                } else {
+                    // normal: pilih tanggal sebelum slash jika ada, else tanggal pertama yang ditemukan
+                    const beforeSlash = inputText.match(/(\d{8})\/[A-Z0-9]/i);
+                    if (beforeSlash) {
+                        formattedDate = beforeSlash[1];
+                    } else if (dateMatches.length > 0) {
+                        formattedDate = dateMatches[0];
                     }
                 }
-                pajakSelect.value = matchedTaxOptionValue;
 
-                document.getElementById('waktu-select').value = 'akhir';
+                taxRaw = (taxRaw || '').replace(/[^A-Z0-9\s-]/ig, '').trim();
 
+                // set pilihan Tempat Bayar
+                const bayarSelect = document.getElementById('tempatbayar-select');
+                if (bayarSelect) {
+                    bayarSelect.value = paymentType ? (bayarSelect.querySelector(`option[value="${paymentType}"]`)?.value || "") : "";
+                }
+
+                // set pilihan Jenis Pajak dan Waktu terlebih dahulu, lalu rebuild opsi tanggal, baru set tanggal
+                const pajakSelect = document.getElementById('jenispajak-select');
+                if (pajakSelect) {
+                    let matchedTaxOptionValue = "";
+                    if (taxRaw) {
+                        for (let i = 0; i < pajakSelect.options.length; i++) {
+                            const optVal = String(pajakSelect.options[i].value || '');
+                            if (!optVal) continue;
+                            if (optVal.toLowerCase() === taxRaw.toLowerCase() || optVal.toLowerCase().includes(taxRaw.toLowerCase())) {
+                                matchedTaxOptionValue = pajakSelect.options[i].value;
+                                break;
+                            }
+                        }
+                    }
+                    pajakSelect.value = matchedTaxOptionValue;
+                }
+
+                // set waktu (transaksi)
+                const waktuSelect = document.getElementById('waktu-select');
+                if (waktuSelect) waktuSelect.value = waktuValue;
+
+                // rebuild opsi tanggal sesuai Jenis/Tempat/Waktu yang sudah diset
+                renderTanggalOptions();
+
+                // set pilihan Tanggal (format option value sama seperti di renderTanggalOptions)
+                const tglSelect = document.getElementById('tanggal-select');
+                if (tglSelect && formattedDate) {
+                    if (/^\d{8}$/.test(formattedDate)) {
+                        const d = formattedDate.slice(0, 2), m = formattedDate.slice(2, 4), y = formattedDate.slice(4);
+                        const asOption = `${d}-${m}-${y}`;
+                        tglSelect.value = tglSelect.querySelector(`option[value="${asOption}"]`)?.value || "";
+                    } else {
+                        tglSelect.value = tglSelect.querySelector(`option[value="${formattedDate}"]`)?.value || "";
+                    }
+                }
+
+                // sekarang render uraian dan tabel
                 renderUraianPajakOptions();
                 filterAndRender();
 

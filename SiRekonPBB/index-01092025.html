@@ -138,6 +138,12 @@
                     </select>
                 </div>
 
+                <div class="flex gap-2 w-full mt-2">
+                    <button id="btnTambah"
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition flex-1">
+                        Tampilkan
+                    </button>
+                </div>
                 <button id="btnReset"
                     class="bg-red-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600 transition w-full flex items-center justify-center gap-2">
                     <i class="bi bi-arrow-repeat text-lg"></i>
@@ -1054,10 +1060,11 @@
         }
 
         window.addEventListener("DOMContentLoaded", () => {
-             document.getElementById("inputTeks").addEventListener("input", extractInfo);
-             document.getElementById("btnSimpanCatatan").addEventListener("click", simpanCatatan);
-             ambilCatatan();
-         });
+            document.getElementById("btnTambah").addEventListener("click", tampilkanTabel);
+            document.getElementById("inputTeks").addEventListener("input", extractInfo);
+            document.getElementById("btnSimpanCatatan").addEventListener("click", simpanCatatan);
+            ambilCatatan();
+        });
     </script>
 </body>
 

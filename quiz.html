@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rangkuman Interaktif - Tata Naskah Dinas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            background-color: #eff6ff;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Quiz Styles */
+        .quiz-option.selected {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+        }
+
+        .quiz-option.correct {
+            background-color: #dcfce7;
+            border-color: #22c55e;
+        }
+
+        .quiz-option.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+
+        .quiz-option.correct.selected {
+            background-color: #dcfce7;
+            border-color: #22c55e;
+        }
+
+        .quiz-option.incorrect.selected {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Rangkuman Interaktif: Tata Naskah Dinas</h1>
+            <p class="text-slate-600 mt-2">Materi PKTBT berdasarkan Permendagri Nomor 1 Tahun 2023</p>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <div class="mb-6 border-b border-slate-200">
+            <nav class="flex flex-wrap -mb-px" aria-label="Tabs">
+                <button onclick="showTab('materi')"
+                    class="tab-button active w-1/2 md:w-auto text-center border-b-2 font-medium px-4 py-3 text-slate-600 hover:text-blue-600 hover:border-blue-300"
+                    id="tab-materi">
+                    Materi Pembelajaran
+                </button>
+                <button onclick="showTab('kuis')"
+                    class="tab-button w-1/2 md:w-auto text-center border-b-2 font-medium px-4 py-3 text-slate-600 hover:text-blue-600 hover:border-blue-300"
+                    id="tab-kuis">
+                    Kuis Pemahaman
+                </button>
+            </nav>
+        </div>
+
+        <!-- Content Sections -->
+        <main>
+            <!-- Materi Section -->
+            <section id="materi" class="content-section active">
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h2 class="text-2xl font-bold mb-4 border-b pb-2">BAB I: Konsep Tata Naskah Dinas</h2>
+
+                    <h3 class="text-lg font-semibold mt-4">1. Definisi</h3>
+                    <p class="mt-2 text-slate-700"><strong>Naskah Dinas</strong> adalah informasi tertulis sebagai alat
+                        komunikasi kedinasan yang dibuat/dikeluarkan oleh pejabat berwenang di lingkungan Pemerintah
+                        Daerah.</p>
+                    <p class="mt-2 text-slate-700"><strong>Tata Naskah Dinas</strong> adalah pengaturan tentang jenis,
+                        susunan, bentuk, pembuatan, pengamanan, hingga pengendalian naskah dinas dalam komunikasi
+                        kedinasan.</p>
+
+                    <h3 class="text-lg font-semibold mt-6">2. Fungsi Tata Naskah Dinas</h3>
+                    <ul class="list-disc list-inside mt-2 space-y-1 text-slate-700">
+                        <li>Alat komunikasi tertulis resmi.</li>
+                        <li>Pedoman dalam melaksanakan tugas.</li>
+                        <li>Alat bukti tertulis yang sah.</li>
+                        <li>Sarana pengingat (arsip).</li>
+                        <li>Cermin profesionalisme dan kualitas lembaga.</li>
+                        <li>Pendukung fungsi administratif pemerintahan.</li>
+                    </ul>
+
+                    <h3 class="text-lg font-semibold mt-6">3. Jenis dan Bentuk Naskah Dinas</h3>
+                    <p class="mt-2 text-slate-700">Berdasarkan Permendagri No. 1 Tahun 2023, Naskah Dinas dibagi menjadi
+                        3 jenis utama:</p>
+                    <div class="mt-4 space-y-4">
+                        <div class="p-4 bg-slate-50 rounded-md border border-slate-200">
+                            <strong class="font-semibold text-slate-800">a. Naskah Dinas Arahan</strong>
+                            <ul class="list-disc list-inside ml-4 mt-2 space-y-2">
+                                <li><strong>Pengaturan:</strong> Perda, Perkada, Peraturan DPRD.</li>
+                                <li><strong>Penetapan:</strong> Keputusan Kepala Daerah, Keputusan DPRD.</li>
+                                <li><strong>Penugasan:</strong> Surat Perintah, Surat Tugas, Surat Perjalanan Dinas
+                                    (SPD).</li>
+                            </ul>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-md border border-slate-200">
+                            <strong class="font-semibold text-slate-800">b. Naskah Dinas Korespondensi</strong>
+                            <ul class="list-disc list-inside ml-4 mt-2 space-y-2">
+                                <li><strong>Internal:</strong> Nota Dinas, Memo, Disposisi.</li>
+                                <li><strong>Eksternal:</strong> Surat Dinas.</li>
+                            </ul>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-md border border-slate-200">
+                            <strong class="font-semibold text-slate-800">c. Naskah Dinas Khusus (22 Jenis)</strong>
+                            <p class="text-sm text-slate-600">Contohnya: Instruksi, Surat Edaran, Surat Kuasa, Berita
+                                Acara, Pengumuman, Laporan, Notula, Surat Undangan, Sertifikat, Piagam, Surat
+                                Perjanjian, dll.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm mt-6">
+                    <h2 class="text-2xl font-bold mb-4 border-b pb-2">BAB II: Pembuatan Naskah Dinas</h2>
+
+                    <h3 class="text-lg font-semibold mt-4">1. Media Pembuatan</h3>
+                    <p class="mt-2 text-slate-700">Dapat menggunakan <strong>Media Rekam Kertas</strong> (dicetak dan
+                        tanda tangan basah) atau <strong>Media Rekam Elektronik</strong> (file digital dan Tanda Tangan
+                        Elektronik/TTE).</p>
+
+                    <h3 class="text-lg font-semibold mt-6">2. Unsur-Unsur Pembuatan Naskah Dinas</h3>
+                    <div class="grid md:grid-cols-2 gap-4 mt-2">
+                        <div class="bg-slate-50 p-3 rounded"><strong>Kop Surat:</strong> Dibedakan antara Kop Jabatan
+                            Kepala Daerah (menggunakan Lambang Negara Garuda) dan Kop Perangkat Daerah (menggunakan Logo
+                            Daerah).</div>
+                        <div class="bg-slate-50 p-3 rounded"><strong>Penomoran:</strong> Sesuai ketentuan
+                            perundang-undangan.</div>
+                        <div class="bg-slate-50 p-3 rounded"><strong>Kertas:</strong> Umumnya HVS A4 minimal 70 gram.
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded"><strong>Tinta:</strong> Hitam (ketik), Biru Tua (tanda
+                            tangan & paraf), Ungu (stempel dinas), Merah (stempel rahasia).</div>
+                        <div class="bg-slate-50 p-3 rounded"><strong>Huruf:</strong> Umumnya Arial 12. Bookman Old Style
+                            12 untuk naskah pengaturan/penetapan.</div>
+                        <div class="bg-slate-50 p-3 rounded"><strong>Batas Tepi (Margin):</strong> Atas (min. 2 cm),
+                            Kiri (min. 3 cm), Bawah (min. 2,5 cm), Kanan (min. 2 cm).</div>
+                        <div class="bg-slate-50 p-3 rounded"><strong>Paraf:</strong> Ada paraf hierarki (berjenjang,
+                            maks. 3 pejabat) dan paraf koordinasi (antar unit terkait).</div>
+                        <div class="bg-slate-50 p-3 rounded"><strong>Stempel:</strong> Berbentuk lingkaran (Jabatan &
+                            Perangkat Daerah) dan persegi panjang (Pengamanan). Digunakan hanya pada naskah media
+                            kertas.</div>
+                    </div>
+                    <h3 class="text-lg font-semibold mt-6">3. Pengamanan dan Pengendalian</h3>
+                    <p class="mt-2 text-slate-700"><strong>Pengamanan</strong>: Klasifikasi keamanan (Sangat Rahasia/SR,
+                        Rahasia/R, Terbatas/T, Biasa/B) untuk melindungi informasi.</p>
+                    <p class="mt-2 text-slate-700"><strong>Pengendalian</strong>: Prosedur untuk naskah dinas masuk
+                        (diagendakan, didistribusikan) dan keluar (diberi nomor, diarsipkan).</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-sm mt-6">
+                    <h2 class="text-2xl font-bold mb-4 border-b pb-2">BAB III: Pembinaan dan Pengawasan</h2>
+                    <p class="mt-4 text-slate-700">Pembinaan dan pengawasan penyelenggaraan Tata Naskah Dinas dilakukan
+                        secara berjenjang untuk memastikan semua aturan ditaati.</p>
+                    <ul class="list-disc list-inside mt-2 space-y-1 text-slate-700">
+                        <li><strong>Tingkat Nasional:</strong> Menteri Dalam Negeri dan Kepala Arsip Nasional RI.</li>
+                        <li><strong>Tingkat Daerah:</strong> Gubernur sebagai wakil pemerintah pusat melakukan pembinaan
+                            dan pengawasan di lingkungan pemerintah provinsi dan kab/kota.</li>
+                    </ul>
+                    <p class="mt-4 text-slate-700">Aspek-aspeknya meliputi: penyusunan pedoman, pelatihan, audit
+                        periodik, dan pemanfaatan teknologi.</p>
+                </div>
+            </section>
+
+            <!-- Kuis Section -->
+            <section id="kuis" class="content-section">
+                <div id="quiz-start" class="text-center bg-white p-8 rounded-lg shadow-sm">
+                    <h2 class="text-2xl font-bold">Uji Pemahaman Anda</h2>
+                    <p class="mt-2 text-slate-600">Gunakan kuis ini sebagai pre-test sebelum belajar dan post-test
+                        setelahnya untuk mengukur pemahaman Anda. Terdiri dari 11 soal pilihan ganda.</p>
+                    <button onclick="startQuiz()"
+                        class="mt-6 bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition">
+                        Mulai Kuis
+                    </button>
+                </div>
+
+                <div id="quiz-container" class="hidden bg-white p-6 md:p-8 rounded-lg shadow-sm">
+                    <div id="question-header" class="mb-6">
+                        <p class="text-sm text-slate-500" id="question-counter"></p>
+                        <h3 class="text-xl font-semibold mt-1" id="question-text"></h3>
+                    </div>
+                    <div id="options-container" class="space-y-3"></div>
+                    <div class="flex justify-between mt-8">
+                        <button onclick="prevQuestion()" id="prev-btn"
+                            class="bg-slate-200 text-slate-700 font-semibold py-2 px-5 rounded-lg hover:bg-slate-300 transition">Kembali</button>
+                        <button onclick="nextQuestion()" id="next-btn"
+                            class="bg-blue-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-blue-700 transition">Selanjutnya</button>
+                        <button onclick="submitQuiz()" id="submit-btn"
+                            class="hidden bg-green-600 text-white font-semibold py-2 px-5 rounded-lg hover:bg-green-700 transition">Selesai
+                            Kuis</button>
+                    </div>
+                </div>
+
+                <div id="results-container" class="hidden text-center bg-white p-8 rounded-lg shadow-sm">
+                    <h2 class="text-2xl font-bold">Hasil Kuis Anda</h2>
+                    <p class="text-5xl font-bold my-4" id="score-text"></p>
+                    <p class="text-slate-600" id="score-message"></p>
+                    <div class="mt-6 flex justify-center gap-4">
+                        <button onclick="restartQuiz()"
+                            class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition">
+                            Ulangi Kuis
+                        </button>
+                        <button onclick="showReview()"
+                            class="bg-slate-200 text-slate-700 font-semibold py-2 px-6 rounded-lg hover:bg-slate-300 transition">
+                            Cek Jawaban
+                        </button>
+                    </div>
+                </div>
+
+                <div id="review-container" class="hidden space-y-6 mt-4">
+                    <!-- Review content will be generated here -->
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const tabs = ['materi', 'kuis'];
+        const tabButtons = {};
+        const tabContents = {};
+
+        tabs.forEach(tab => {
+            tabButtons[tab] = document.getElementById(`tab-${tab}`);
+            tabContents[tab] = document.getElementById(tab);
+        });
+
+        function showTab(tabName) {
+            tabs.forEach(tab => {
+                const isSelected = tab === tabName;
+                tabButtons[tab].classList.toggle('active', isSelected);
+                tabContents[tab].classList.toggle('active', isSelected);
+            });
+        }
+
+        // --- Quiz Logic ---
+        const quizData = [
+            { question: "Pedoman utama yang mengatur Tata Naskah Dinas di Lingkungan Pemerintah Daerah saat ini adalah...", options: ["Permendagri No. 54 Tahun 2009", "Permendagri No. 1 Tahun 2023", "UU No. 23 Tahun 2014", "Peraturan LAN No. 6 Tahun 2018"], answer: "Permendagri No. 1 Tahun 2023" },
+            { question: "Berikut ini yang BUKAN merupakan fungsi dari Tata Naskah Dinas adalah...", options: ["Alat bukti tertulis", "Pedoman pelaksanaan tugas", "Sarana komunikasi pribadi", "Cermin profesionalisme lembaga"], answer: "Sarana komunikasi pribadi" },
+            { question: "Surat Perintah dan Surat Tugas termasuk dalam jenis naskah dinas...", options: ["Pengaturan", "Penetapan", "Penugasan", "Korespondensi Internal"], answer: "Penugasan" },
+            { question: "Nota Dinas dan Memo merupakan sarana komunikasi kedinasan yang termasuk dalam jenis...", options: ["Naskah Dinas Khusus", "Korespondensi Eksternal", "Naskah Dinas Arahan", "Korespondensi Internal"], answer: "Korespondensi Internal" },
+            { question: "Sesuai aturan, warna tinta yang digunakan untuk penandatanganan naskah dinas dan paraf adalah...", options: ["Hitam", "Biru Tua", "Merah", "Ungu"], answer: "Biru Tua" },
+            { question: "Jenis kertas yang umum digunakan untuk naskah dinas korespondensi dan khusus adalah...", options: ["HVS A4 70 gram", "Kertas Buram F4", "Art Paper A3", "Concorde A4 90 gram"], answer: "HVS A4 70 gram" },
+            { question: "Kop Naskah Dinas yang ditandatangani oleh Gubernur menggunakan lambang...", options: ["Logo Daerah", "Logo Perangkat Daerah", "Lambang Negara Garuda Pancasila", "Logo Kementerian Dalam Negeri"], answer: "Lambang Negara Garuda Pancasila" },
+            { question: "Stempel untuk naskah dinas yang bersifat 'Sangat Rahasia' menggunakan tinta berwarna...", options: ["Ungu", "Hitam", "Biru Tua", "Merah"], answer: "Merah" },
+            { question: "Kode klasifikasi keamanan 'SR' pada naskah dinas berarti...", options: ["Surat Resmi", "Sangat Rahasia", "Segera Rampungkan", "Sesuai Referensi"], answer: "Sangat Rahasia" },
+            { question: "Siapakah yang melakukan pembinaan dan pengawasan penyelenggaraan Tata Naskah Dinas di lingkungan pemerintah provinsi dan kabupaten/kota sebagai wakil pemerintah pusat?", options: ["Sekretaris Daerah", "Kepala Arsip Nasional RI", "Gubernur", "Bupati/Walikota"], answer: "Gubernur" },
+            { question: "Pelimpahan wewenang penandatanganan naskah dinas kepada pejabat satu tingkat di bawahnya menggunakan singkatan...", options: ["u.p. (untuk perhatian)", "a.n. (atas nama)", "u.b. (untuk beliau)", "Plt. (Pelaksana Tugas)"], answer: "a.n. (atas nama)" }
+        ];
+
+        const quizStartEl = document.getElementById('quiz-start');
+        const quizContainerEl = document.getElementById('quiz-container');
+        const resultsContainerEl = document.getElementById('results-container');
+        const reviewContainerEl = document.getElementById('review-container');
+
+        const questionCounterEl = document.getElementById('question-counter');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainerEl = document.getElementById('options-container');
+
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+
+        const scoreTextEl = document.getElementById('score-text');
+        const scoreMessageEl = document.getElementById('score-message');
+
+        let currentQuestion = 0;
+        let score = 0;
+        let userAnswers = [];
+
+        function startQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            userAnswers = new Array(quizData.length).fill(null);
+            quizStartEl.classList.add('hidden');
+            resultsContainerEl.classList.add('hidden');
+            reviewContainerEl.classList.add('hidden');
+            reviewContainerEl.innerHTML = '';
+            quizContainerEl.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const data = quizData[currentQuestion];
+            questionCounterEl.textContent = `Soal ${currentQuestion + 1} dari ${quizData.length}`;
+            questionTextEl.textContent = data.question;
+            optionsContainerEl.innerHTML = '';
+
+            data.options.forEach(option => {
+                const optionEl = document.createElement('button');
+                optionEl.textContent = option;
+                optionEl.classList.add('quiz-option', 'w-full', 'text-left', 'p-4', 'border-2', 'rounded-lg', 'transition', 'hover:bg-slate-100');
+                if (userAnswers[currentQuestion] === option) {
+                    optionEl.classList.add('selected');
+                }
+                optionEl.onclick = () => selectAnswer(option, optionEl);
+                optionsContainerEl.appendChild(optionEl);
+            });
+
+            updateNavButtons();
+        }
+
+        function selectAnswer(option, element) {
+            userAnswers[currentQuestion] = option;
+            document.querySelectorAll('.quiz-option').forEach(btn => btn.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        function updateNavButtons() {
+            prevBtn.classList.toggle('hidden', currentQuestion === 0);
+            nextBtn.classList.toggle('hidden', currentQuestion === quizData.length - 1);
+            submitBtn.classList.toggle('hidden', currentQuestion !== quizData.length - 1);
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < quizData.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion();
+            }
+        }
+
+        function submitQuiz() {
+            score = 0;
+            quizData.forEach((item, index) => {
+                if (userAnswers[index] === item.answer) {
+                    score++;
+                }
+            });
+
+            quizContainerEl.classList.add('hidden');
+            resultsContainerEl.classList.remove('hidden');
+
+            scoreTextEl.textContent = `${score} / ${quizData.length}`;
+
+            let message = "Terus belajar dan coba lagi!";
+            if (score > 8) message = "Luar biasa! Pemahaman Anda sangat baik.";
+            else if (score > 5) message = "Bagus! Anda sudah cukup paham.";
+            scoreMessageEl.textContent = message;
+        }
+
+        function restartQuiz() {
+            startQuiz();
+        }
+
+        function showReview() {
+            reviewContainerEl.innerHTML = '';
+            reviewContainerEl.classList.remove('hidden');
+            resultsContainerEl.classList.add('hidden');
+
+            quizData.forEach((data, index) => {
+                const reviewEl = document.createElement('div');
+                reviewEl.classList.add('bg-white', 'p-5', 'rounded-lg', 'shadow-sm');
+
+                let reviewHTML = `
+                    <p class="font-semibold">${index + 1}. ${data.question}</p>
+                    <div class="mt-3 space-y-2">
+                `;
+
+                data.options.forEach(option => {
+                    let optionClass = 'quiz-option';
+                    const isSelected = userAnswers[index] === option;
+                    const isCorrect = option === data.answer;
+
+                    if (isCorrect) {
+                        optionClass += ' correct';
+                    } else if (isSelected && !isCorrect) {
+                        optionClass += ' incorrect';
+                    }
+                    if (isSelected) {
+                        optionClass += ' selected';
+                    }
+
+                    reviewHTML += `<div class="${optionClass} p-3 border-2 rounded">${option}</div>`;
+                });
+
+                reviewHTML += '</div>';
+                reviewEl.innerHTML = reviewHTML;
+                reviewContainerEl.appendChild(reviewEl);
+            });
+            // Add a button to return to quiz start
+            const returnButton = document.createElement('button');
+            returnButton.textContent = 'Kembali ke Awal Kuis';
+            returnButton.className = "mt-6 mx-auto block bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition";
+            returnButton.onclick = () => {
+                reviewContainerEl.classList.add('hidden');
+                quizStartEl.classList.remove('hidden');
+            };
+            reviewContainerEl.appendChild(returnButton);
+        }
+
+        // Initialize the first tab
+        document.addEventListener('DOMContentLoaded', () => {
+            showTab('materi');
+        });
+
+    </script>
+
+</body>
+
+</html>
