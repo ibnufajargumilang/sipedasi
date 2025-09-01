@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SiRekon BPHTB | Sistem Rekonsiliasi</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 1rem;
+            height: 1rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 to-white min-h-screen p-4">
+
+    <!-- Toast message untuk notifikasi -->
+    <div id="toast"
+        class="fixed bottom-5 right-5 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg opacity-0 transition-opacity duration-300 z-50">
+    </div>
+
+    <div class="flex flex-col md:flex-row w-full min-h-screen bg-white rounded-2xl shadow-xl">
+        <!-- Sidebar -->
+        <aside
+            class="w-full md:w-1/4 max-w-full md:max-w-xs bg-white shadow-lg p-6 flex flex-col gap-6 border-b md:border-b-0 md:border-r border-gray-200 rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none">
+            <div class="flex items-center gap-3 mb-2 justify-center">
+                <i class="bi bi-files text-blue-700 text-2xl"></i>
+                <h2 class="text-xl font-bold text-gray-700">Sistem Rekonsiliasi BPHTB</h2>
+            </div>
+
+            <div class="flex flex-col gap-2 text-sm text-gray-600 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="flex justify-between items-center">
+                    <span>Data Monitoring:</span>
+                    <span id="totalMonitoring" class="font-bold text-gray-800">0</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span>Data Ke-2:</span>
+                    <span id="totalData2" class="font-bold text-gray-800">0</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <!-- Upload File Monitoring -->
+                <div>
+                    <label for="fileMonitoring" class="block w-full cursor-pointer">
+                        <span id="uploadLabelMonitoring"
+                            class="w-full flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md transition">
+                            <i class="bi bi-upload"></i>
+                            <span class="truncate">Upload File Monitoring</span>
+                        </span>
+                    </label>
+                    <input type="file" id="fileMonitoring" accept=".xlsx, .xls, .csv" class="hidden" />
+                </div>
+                <!-- Upload File Data Ke-2 -->
+                <div>
+                    <label for="fileData2" class="block w-full cursor-pointer">
+                        <span id="uploadLabelData2"
+                            class="w-full flex justify-center items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md transition">
+                            <i class="bi bi-upload"></i>
+                            <span class="truncate">Upload File Data Ke-2</span>
+                        </span>
+                    </label>
+                    <input type="file" id="fileData2" accept=".xlsx, .xls, .csv" class="hidden" />
+                </div>
+                <!-- Filter Tanggal -->
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-calendar-date text-lg text-gray-800"></i>
+                    <select id="tglSelect"
+                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" disabled>
+                        <option value="">Pilih Tanggal</option>
+                    </select>
+                </div>
+                <!-- Filter Tipe Transaksi -->
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-clock text-lg text-gray-800"></i>
+                    <select id="waktuSelect"
+                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" disabled>
+                        <option value="semua">SEMUA TRANSAKSI</option>
+                        <option value="kurang">AKHIR PEMBAYARAN</option>
+                        <option value="lebih">TGL PELIMPAHAN</option>
+                    </select>
+                </div>
+
+                <!-- Filter Keterangan (baru) -->
+                <div class="flex items-start gap-2">
+                    <i class="bi bi-file-earmark-text text-lg text-gray-800 mt-1"></i>
+                    <div class="w-full">
+                        <div class="flex gap-2 mb-2 text-sm">
+                            <label class="inline-flex items-center gap-2">
+                                <input type="radio" name="keteranganMode" id="ketModeDetail" value="detail" checked>
+                                <span>Detail</span>
+                            </label>
+                            <label class="inline-flex items-center gap-2">
+                                <input type="radio" name="keteranganMode" id="ketModeRingkas" value="ringkas">
+                                <span>Ringkas</span>
+                            </label>
+                        </div>
+                        <select id="keteranganSelect"
+                            class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" disabled>
+                            <option value="">-- Semua Keterangan --</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Tombol Reset -->
+                <button id="btnReset"
+                    class="bg-red-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600 transition w-full flex items-center justify-center gap-2"
+                    disabled>
+                    <i class="bi bi-arrow-repeat text-lg"></i>
+                    Reset Filter
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="w-full md:w-3/4 px-4 md:px-8 py-6">
+            <div id="summaryCards" class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-blue-50 p-6 rounded-2xl shadow-md">
+                    <p class="text-sm font-medium text-blue-700 mb-2">Total Pembayaran</p>
+                    <p id="totalPembayaran" class="text-2xl font-bold text-blue-900">0</p>
+                </div>
+                <div class="bg-yellow-50 p-6 rounded-2xl shadow-md">
+                    <p class="text-sm font-medium text-yellow-700 mb-2">Total Denda</p>
+                    <p id="totalDenda" class="text-2xl font-bold text-yellow-900">0</p>
+                </div>
+                <div class="bg-green-50 p-6 rounded-2xl shadow-md">
+                    <p class="text-sm font-medium text-green-700 mb-2">Total Mutasi Kredit</p>
+                    <p id="totalMutasi" class="text-2xl font-bold text-green-900">0</p>
+                </div>
+            </div>
+
+            <div id="hasilGabungan" class="border rounded-2xl p-4 bg-white shadow-lg">
+                <!-- Kontrol (Mode / Jumlah Baris / Jumlah Data) seperti di SiRekonPJDL -->
+                <div class="mb-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-gray-600 font-semibold">Mode:</span>
+                        <div id="fiturRadioGroup" class="flex gap-4 ml-2">
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="radio" name="fitur" value="tambah" checked />
+                                <span>Tambah</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="radio" name="fitur" value="kurangi" />
+                                <span>Kurangi</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <label for="tambahanCount" class="text-xs text-gray-600">Jumlah Baris:</label>
+                        <input type="number" id="tambahanCount" value="0" min="0"
+                            class="w-16 px-2 py-1 border rounded-lg text-xs text-center focus:ring-2 focus:ring-blue-500 transition" />
+                        <div class="text-xs text-gray-600 ml-4">
+                            <span id="jumlahData">Jumlah Data : 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Placeholder + Tabel -->
+                <div id="table-placeholder" class="text-center text-gray-500 py-10">Silakan unggah kedua file untuk melihat hasil gabungannya.</div>
+                <div id="table-scroll-container" class="hidden overflow-auto max-h-[70vh] border border-gray-200 rounded-lg">
+                    <table id="excel-table" class="w-full text-sm text-left">
+                        <!-- isi tabel di-render oleh JS -->
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Tombol Kembali (pojok kiri atas) -->
+    <button onclick="window.history.back()"
+        class="group fixed top-0 left-0 bg-white hover:bg-gray-100 text-blue-600 p-3 rounded-br-lg shadow-lg z-50 transition duration-300 ease-in-out">
+        <svg xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+        </svg>
+    </button>
+
+    <script>
+        let dataMonitoringList = [];
+        let dataKeduaList = [];
+        let fullCombinedData = []; // Menyimpan data gabungan asli
+
+        // --- FUNGSI EVENT LISTENER ---
+        document.getElementById("fileMonitoring").addEventListener("change", function (e) {
+            processFile(e.target.files[0], this.previousElementSibling.querySelector('span'), (result) => {
+                // PERUBAHAN: Langsung urutkan data tanggal Z-A
+                dataMonitoringList = result.sort((a, b) => b.localeCompare(a));
+                document.getElementById("totalMonitoring").textContent = dataMonitoringList.length.toLocaleString('id-ID');
+                combineAndRenderData();
+            });
+        });
+
+        document.getElementById("fileData2").addEventListener("change", function (e) {
+            processFile(e.target.files[0], this.previousElementSibling.querySelector('span'), (result) => {
+                dataKeduaList = result;
+                document.getElementById("totalData2").textContent = dataKeduaList.length.toLocaleString('id-ID');
+                combineAndRenderData();
+            });
+        });
+
+        document.getElementById("tglSelect").addEventListener("change", applyFilters);
+        document.getElementById("waktuSelect").addEventListener("change", applyFilters);
+        document.getElementById("keteranganSelect").addEventListener("change", applyFilters);
+        // mode radio listeners untuk rebuild opsi & filter saat berubah
+        document.querySelectorAll('input[name="keteranganMode"]').forEach(r => {
+            r.addEventListener('change', () => {
+                populateKeteranganFilter(fullCombinedData || []);
+                applyFilters();
+            });
+        });
+        // mode fitur (tambah/kurangi) & tambahanCount listeners (kontrol tabel)
+        document.getElementById('fiturRadioGroup')?.addEventListener('change', () => {
+            applyFilters();
+        });
+        document.getElementById('tambahanCount')?.addEventListener('input', () => {
+            applyFilters();
+        });
+
+        document.getElementById("btnReset").addEventListener("click", function () {
+            document.getElementById("tglSelect").value = "";
+            document.getElementById("waktuSelect").value = "semua";
+            document.getElementById("keteranganSelect").value = "";
+            applyFilters();
+        });
+
+        // --- FUNGSI PEMROSESAN FILE GENERIK ---
+        function processFile(file, labelElement, callback) {
+            const uploadIcon = `<i class="bi bi-upload"></i>`;
+            const fileIcon = `<i class="bi bi-file-earmark-excel"></i>`;
+            const loadingSpinner = `<div class="spinner"></div>`;
+            const originalLabel = labelElement.innerHTML;
+
+            if (!file) { labelElement.innerHTML = originalLabel; return; }
+
+            labelElement.innerHTML = `${loadingSpinner}<span class="truncate">Memproses...</span>`;
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                try {
+                    const data = new Uint8Array(event.target.result);
+                    const workbook = XLSX.read(data, { type: "array" });
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+
+                    let resultData;
+
+                    // PERUBAHAN: Logika Sederhana untuk file monitoring
+                    if (labelElement.id === 'uploadLabelMonitoring') {
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: null, raw: true });
+                        const sanitizedJsonData = jsonData.map(row => {
+                            const newRow = {};
+                            for (const key in row) { if (Object.prototype.hasOwnProperty.call(row, key)) newRow[key.trim()] = row[key]; }
+                            return newRow;
+                        });
+                        resultData = sanitizedJsonData
+                            .map(row => excelSerialToDateTimeString(row['Tanggal Pembayaran']))
+                            .filter(val => val);
+
+                        // PERUBAHAN: File ke-2 mengambil semua kolom yang diperlukan
+                    } else if (labelElement.id === 'uploadLabelData2') {
+                        const rowsAsArray = XLSX.utils.sheet_to_json(worksheet, { defval: null, header: 1 });
+                        let headerRowIndex = -1, headerRow = [];
+                        for (let i = 0; i < Math.min(rowsAsArray.length, 10); i++) {
+                            const row = rowsAsArray[i];
+                            if (row && row.map(h => String(h || '').trim()).includes('NO') && row.map(h => String(h || '').trim()).includes('NAMA WP')) {
+                                headerRowIndex = i;
+                                headerRow = row.map(h => String(h || '').trim());
+                                break;
+                            }
+                        }
+
+                        if (headerRowIndex === -1) throw new Error("Header (NO, NAMA WP) tidak ditemukan.");
+
+                        const colIndices = { no: headerRow.indexOf('NO'), nama: headerRow.indexOf('NAMA WP'), pembayaran: headerRow.indexOf('PEMBAYARAN'), denda: headerRow.indexOf('DENDA'), ket: headerRow.indexOf('KET') };
+                        const dataRows = rowsAsArray.slice(headerRowIndex + 1);
+                        resultData = dataRows
+                            .map(row => ({
+                                'No': row[colIndices.no],
+                                'Nama': row[colIndices.nama],
+                                'Pembayaran': row[colIndices.pembayaran],
+                                'Denda': row[colIndices.denda],
+                                'Keterangan': row[colIndices.ket]
+                            }))
+                            .filter(row => row.No != null && String(row.No).trim() !== "");
+                    }
+
+                    labelElement.innerHTML = `${fileIcon}<span class="truncate">${file.name}</span>`;
+                    showToast(`File "${file.name}" berhasil diproses.`, false);
+                    callback(resultData);
+
+                } catch (error) {
+                    console.error("Gagal membaca file Excel:", error);
+                    labelElement.innerHTML = originalLabel;
+                    showToast(error.message || "Gagal memuat file.", true);
+                }
+            };
+            reader.onerror = function (error) { labelElement.innerHTML = originalLabel; showToast("Terjadi kesalahan fundamental saat membaca file.", true); };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function excelSerialToDateTimeString(serial) {
+            if (typeof serial !== 'number' || serial <= 1) return null;
+            const days = Math.floor(serial - 25569);
+            const date = new Date(days * 86400 * 1000);
+            const fractionalDay = serial - Math.floor(serial);
+            const totalSeconds = Math.floor((fractionalDay * 86400) + 0.5);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            const pad = (num) => String(num).padStart(2, '0');
+            const datePart = `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+            const timePart = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+            return `${datePart} ${timePart}`;
+        }
+
+        // PERUBAHAN: Logika penggabungan baru
+        function combineAndRenderData() {
+            if (dataMonitoringList.length === 0 || dataKeduaList.length === 0) return;
+
+            fullCombinedData = dataKeduaList.map((data2Row, index) => {
+                return {
+                    ...data2Row,
+                    TanggalPembayaran: dataMonitoringList[index] || ''
+                };
+            });
+
+            populateDateFilter(fullCombinedData);
+            populateKeteranganFilter(fullCombinedData);
+            applyFilters();
+
+            document.getElementById('tglSelect').disabled = false;
+            document.getElementById('waktuSelect').disabled = false;
+            document.getElementById('keteranganSelect').disabled = false;
+            document.getElementById('btnReset').disabled = false;
+            // aktifkan kontrol tabel
+            const fiturGroup = document.getElementById('fiturRadioGroup');
+            const tambahanInput = document.getElementById('tambahanCount');
+            if (fiturGroup) fiturGroup.querySelectorAll('input').forEach(i => i.disabled = false);
+            if (tambahanInput) tambahanInput.disabled = false;
+        }
+
+        function applyFilters() {
+            const selectedDate = document.getElementById("tglSelect").value;
+            const selectedTime = document.getElementById("waktuSelect").value;
+            const selectedKeterangan = document.getElementById("keteranganSelect")?.value || "";
+            const ketMode = document.querySelector('input[name="keteranganMode"]:checked')?.value || 'detail';
+            const fiturMode = document.querySelector('input[name="fitur"]:checked')?.value || 'tambah';
+            const tambahanCount = parseInt(document.getElementById('tambahanCount')?.value || '0', 10) || 0;
+
+            // mulai dari fullCombinedData lalu aplikasikan filter non-waktu (tanggal + keterangan)
+            let baseFiltered = fullCombinedData.slice();
+            if (selectedDate) {
+                baseFiltered = baseFiltered.filter(row => (row.TanggalPembayaran || '').startsWith(selectedDate));
+            }
+
+            // keterangan: dua mode
+            if (ketMode === 'detail') {
+                if (selectedKeterangan) {
+                    baseFiltered = baseFiltered.filter(row => {
+                        const k = (row.Keterangan || "").toString().trim();
+                        return k === selectedKeterangan;
+                    });
+                }
+            } else {
+                if (selectedKeterangan === 'BPHTB-Pemberian Hak Baru') {
+                    baseFiltered = baseFiltered.filter(row => isPemberianHakBaru(row.Keterangan));
+                } else if (selectedKeterangan === 'BPHTB-Pemindahan Hak') {
+                    baseFiltered = baseFiltered.filter(row => !isPemberianHakBaru(row.Keterangan));
+                }
+            }
+
+            // sekarang proses waktu + mode tambah/kurangi
+            let finalData = baseFiltered;
+            if (selectedTime !== 'semua') {
+                const matchFn = (row) => {
+                    const timePart = (row.TanggalPembayaran || '').split(' ')[1];
+                    if (!timePart) return false;
+                    return selectedTime === 'kurang' ? timePart < '17:00:00' : timePart >= '17:00:00';
+                };
+
+                const dataWaktuFilter = baseFiltered.filter(matchFn);
+                const dataWaktuLawan = baseFiltered.filter(r => !matchFn(r));
+
+                if (fiturMode === 'tambah' && tambahanCount > 0) {
+                    // tambahkan sejumlah baris dari lawan (susun berdasarkan tanggal/waktu naik)
+                    const sortedLawan = dataWaktuLawan.slice().sort((a, b) => (a.TanggalPembayaran || '').localeCompare(b.TanggalPembayaran || ''));
+                    if (selectedTime === 'kurang') {
+                        finalData = [...dataWaktuFilter, ...sortedLawan.slice(0, tambahanCount)];
+                    } else {
+                        // untuk 'lebih', ambil dari akhir lawan, lalu pertahankan urutan
+                        const sliceRows = sortedLawan.slice(-tambahanCount);
+                        finalData = [...dataWaktuFilter, ...sliceRows];
+                    }
+                } else if (fiturMode === 'kurangi' && tambahanCount > 0) {
+                    if (selectedTime === 'kurang') {
+                        finalData = dataWaktuFilter.slice(0, Math.max(0, dataWaktuFilter.length - tambahanCount));
+                    } else {
+                        finalData = dataWaktuFilter.slice(tambahanCount);
+                    }
+                } else {
+                    finalData = dataWaktuFilter;
+                }
+            }
+
+            // assign hasil akhir (pastikan variabel dideklarasikan)
+            const filteredData = finalData.slice();
+            updateSummaryCards(filteredData);
+            renderHasilGabungan(filteredData);
+            // perbarui teks jumlah data
+            const jumlahEl = document.getElementById('jumlahData');
+            if (jumlahEl) jumlahEl.textContent = `Jumlah Data : ${filteredData.length}`;
+        }
+
+        // helper: deteksi 'pemberian hak baru diluar pelepasan hak' (exact match, case-insensitive)
+        function isPemberianHakBaru(keterangan) {
+            if (!keterangan) return false;
+            const s = String(keterangan).trim().toLowerCase();
+            return s === 'pemberian hak baru diluar pelepasan hak';
+        }
+
+        function updateSummaryCards(data) {
+            let totalPembayaran = 0, totalDenda = 0;
+            (data || []).forEach(row => {
+                // bersihkan format teks (ribuan) lalu parse
+                const toNumber = v => {
+                    if (v == null) return 0;
+                    const s = String(v).replace(/\./g, '').replace(/,/g, '.').replace(/[^\d\.\-]/g, '');
+                    const n = parseFloat(s);
+                    return Number.isFinite(n) ? n : 0;
+                };
+                totalPembayaran += toNumber(row.Pembayaran);
+                totalDenda += toNumber(row.Denda);
+            });
+            const totalMutasi = totalPembayaran + totalDenda;
+            document.getElementById('totalPembayaran').textContent = totalPembayaran.toLocaleString('id-ID');
+            document.getElementById('totalDenda').textContent = totalDenda.toLocaleString('id-ID');
+            document.getElementById('totalMutasi').textContent = totalMutasi.toLocaleString('id-ID');
+        }
+
+        function renderHasilGabungan(dataList) {
+            const placeholder = document.getElementById('table-placeholder');
+            const tableWrapper = document.getElementById('table-scroll-container');
+            const table = document.getElementById('excel-table');
+
+            if (!table || !tableWrapper || !placeholder) return;
+
+            if (!dataList || dataList.length === 0) {
+                table.innerHTML = '';
+                tableWrapper.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                return;
+            }
+
+            placeholder.classList.add('hidden');
+            tableWrapper.classList.remove('hidden');
+
+            let thead = `<thead class="bg-gray-100 sticky top-0">
+                            <tr>
+                                <th class="p-3">No</th>
+                                <th class="p-3">Nama Wajib Pajak</th>
+                                <th class="p-3 text-right">Pembayaran</th>
+                                <th class="p-3 text-right">Denda</th>
+                                <th class="p-3">Keterangan</th>
+                                <th class="p-3">Tanggal Pembayaran</th>
+                            </tr>
+                        </thead>`;
+
+            let tbody = `<tbody class="divide-y divide-gray-200">`;
+            dataList.forEach((row) => {
+                const pembayaran = typeof row.Pembayaran === 'number' ? row.Pembayaran.toLocaleString('id-ID') : (row.Pembayaran || 0);
+                const denda = typeof row.Denda === 'number' ? row.Denda.toLocaleString('id-ID') : (row.Denda || 0);
+                tbody += `<tr class="hover:bg-gray-50">
+                                <td class="p-3">${row.No || ''}</td>
+                                <td class="p-3">${row.Nama || ''}</td>
+                                <td class="p-3 text-right font-mono">${pembayaran}</td>
+                                <td class="p-3 text-right font-mono">${denda}</td>
+                                <td class="p-3">${row.Keterangan || ''}</td>
+                                <td class="p-3 font-mono">${row.TanggalPembayaran}</td>
+                              </tr>`;
+            });
+            tbody += `</tbody>`;
+
+            table.innerHTML = thead + tbody;
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.className = `fixed bottom-5 right-5 px-4 py-2 rounded-xl shadow-lg opacity-100 transition-opacity duration-300 z-50 ${isError ? 'bg-red-500' : 'bg-green-500'} text-white`;
+            setTimeout(() => { toast.style.opacity = "0"; }, 3000);
+        }
+
+        // isi dropdown tanggal berdasarkan field TanggalPembayaran
+        function populateDateFilter(data) {
+            const sel = document.getElementById('tglSelect');
+            if (!sel) return;
+            // default
+            sel.innerHTML = '<option value="">Pilih Tanggal</option>';
+            const counts = {};
+            (data || []).forEach(r => {
+                const tp = (r.TanggalPembayaran || '').toString().split(' ')[0];
+                if (tp) counts[tp] = (counts[tp] || 0) + 1;
+            });
+            // urut Z-A
+            Object.keys(counts).sort((a, b) => b.localeCompare(a)).forEach(date => {
+                const opt = document.createElement('option');
+                opt.value = date;
+                opt.textContent = `${date} (${counts[date]})`;
+                sel.appendChild(opt);
+            });
+        }
+
+        // isi dropdown keterangan (detail / ringkas)
+        function populateKeteranganFilter(data) {
+            const sel = document.getElementById('keteranganSelect');
+            if (!sel) return;
+            const prev = sel.value;
+            sel.innerHTML = '<option value="">-- Semua Keterangan --</option>';
+            const mode = document.querySelector('input[name="keteranganMode"]:checked')?.value || 'detail';
+
+            if (mode === 'ringkas') {
+                const opt1 = document.createElement('option');
+                opt1.value = 'BPHTB-Pemberian Hak Baru';
+                opt1.textContent = 'BPHTB-Pemberian Hak Baru';
+                sel.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = 'BPHTB-Pemindahan Hak';
+                opt2.textContent = 'BPHTB-Pemindahan Hak';
+                sel.appendChild(opt2);
+            } else {
+                const set = new Set();
+                (data || []).forEach(r => {
+                    const k = (r.Keterangan == null ? '' : String(r.Keterangan).trim());
+                    if (k) set.add(k);
+                });
+                Array.from(set).sort().forEach(k => {
+                    const o = document.createElement('option');
+                    o.value = k;
+                    o.textContent = k;
+                    sel.appendChild(o);
+                });
+            }
+
+            if (prev) {
+                const exists = Array.from(sel.options).some(o => o.value === prev);
+                sel.value = exists ? prev : '';
+            }
+        }
+
+    </script>
+</body>
+
+</html>
