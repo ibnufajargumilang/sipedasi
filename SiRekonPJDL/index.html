@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SiRekon PJDL | Sistem Rekonsiliasi PJDL</title>
+
+    <!-- Icons & Tailwind & XLSX (menyamakan dengan layout SiRekonPBB) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #e5e7eb;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 1rem;
+            height: 1rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-4">
+    <!-- Toast untuk notifikasi salin / upload -->
+    <div id="toast"
+        class="fixed bottom-5 right-5 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg opacity-0 transition-opacity duration-300 z-50">
+    </div>
+
+    <!-- Layout mengikuti struktur index.html (SiRekonPBB) -->
+    <div class="flex flex-col md:flex-row w-full min-h-screen bg-white rounded-2xl shadow-xl">
+        <!-- Sidebar -->
+        <aside
+            class="w-full md:w-1/4 max-w-full md:max-w-xs bg-white shadow-lg p-6 flex flex-col gap-4 border-b md:border-b-0 md:border-r border-gray-200 rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none mx-auto md:mx-0">
+
+            <div class="flex items-center gap-3 mb-2 justify-center">
+                <i class="bi bi-cash-coin text-blue-700 text-2xl"></i>
+                <h2 class="text-xl font-bold text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis">Sistem
+                    Rekonsiliasi PJDL</h2>
+            </div>
+
+            <div>
+                <label for="input-excel" class="block w-full cursor-pointer">
+                    <span id="upload-text"
+                        class="w-full flex justify-center items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md transition overflow-hidden whitespace-nowrap">
+                        <i class="bi bi-upload"></i>
+                        <span class="truncate max-w-full">Upload File Excel PJDL</span>
+                    </span>
+                </label>
+                <input type="file" id="input-excel" accept=".xlsx,.xls,.csv" class="hidden" />
+            </div>
+
+            <div class="mb-2">
+                <div class="flex space-x-2 items-center">
+                    <input id="paste-input" type="text" placeholder="Tempelkan Keterangan Disini"
+                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" spellcheck="false" />
+                    <button id="btn-paste-text"
+                        class="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg shadow-md transition"
+                        title="Paste"><i class="bi bi-clipboard"></i></button>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-tags text-lg text-gray-800"></i>
+                    <select id="jenispajak-select"
+                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition">
+                        <option value="">-- Semua Jenis Pajak --</option>
+                    </select>
+                </div>
+
+                <!-- pindah: Tempat Bayar menjadi setelah Jenis Pajak -->
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-bank text-lg text-gray-800"></i>
+                    <select id="tempatbayar-select"
+                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition">
+                        <option value="">-- Semua Tempat Bayar --</option>
+                        <option value="PJDLU">PJDLU</option>
+                        <option value="PJDLQRIS">PJDLQRIS</option>
+                        <option value="PJDLVA">PJDLVA</option>
+                    </select>
+                </div>
+
+                <!-- urutan baru: Waktu/Transaksi dulu -->
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-clock text-lg text-gray-800"></i>
+                    <select id="waktu-select"
+                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition">
+                        <option value="">-- Semua Transaksi --</option>
+                        <option value="akhir">Akhir Pembayaran</option>
+                        <option value="pelimpahan">Tgl Pelimpahan</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-calendar-date text-lg text-gray-800"></i>
+                    <select id="tanggal-select"
+                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition">
+                        <option value="">-- Semua Tanggal --</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-file-earmark-text text-lg text-gray-800"></i>
+                    <select id="uraianspajak-select"
+                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition">
+                        <option value="">-- Semua Uraian Pajak --</option>
+                    </select>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- Main Content -->
+        <main class="w-full md:w-3/4 px-4 md:px-8 py-6">
+            <div id="summaryCards" class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Total Pokok -->
+                <div class="bg-blue-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                    <p class="text-sm font-medium text-blue-700 mb-2">Total Pokok</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-pokok" class="text-2xl font-bold text-blue-900">0</p>
+                        <button onclick="copyTotal('total-pokok')" class="ml-3 text-blue-500 hover:text-blue-700">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Total Denda -->
+                <div class="bg-yellow-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                    <p class="text-sm font-medium text-yellow-700 mb-2">Total Denda</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-denda" class="text-2xl font-bold text-yellow-900">0</p>
+                        <button onclick="copyTotal('total-denda')" class="ml-3 text-yellow-500 hover:text-yellow-700">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Total Jumlah Bayar -->
+                <div class="bg-green-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                    <p class="text-sm font-medium text-green-700 mb-2">Total Jumlah Bayar</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-jumlah" class="text-2xl font-bold text-green-900">0</p>
+                        <button onclick="copyTotal('total-jumlah')" class="ml-3 text-green-500 hover:text-green-700">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- fiturGroup dipindahkan ke dalam card tabel supaya kontrol berada di satu card dengan tabel -->
+            <div class="border rounded-2xl px-4 py-4 bg-white shadow-lg">
+                <!-- Kontrol (Mode / Jumlah Baris / Jumlah Data) berada di dalam card tabel -->
+                <div class="mb-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-gray-600 font-semibold">Mode:</span>
+                        <div id="fiturRadioGroup" class="flex gap-4 ml-2">
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="radio" name="fitur" value="tambah" checked />
+                                Tambah
+                            </label>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="radio" name="fitur" value="kurangi" />
+                                Kurangi
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <label for="tambahanCount" class="text-xs text-gray-600">Jumlah Baris:</label>
+                        <input type="number" id="tambahanCount" value="0" min="0"
+                            class="w-16 px-2 py-1 border rounded-lg text-xs text-center focus:ring-2 focus:ring-blue-500 transition" />
+                        <div class="text-xs text-gray-600 ml-4">
+                            <span id="jumlahData">Jumlah Data : 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="table-scroll-container" class="overflow-x-auto overflow-y-auto max-h-[60vh] bg-white rounded-b-lg shadow border border-gray-200 border-t-0">
+                    <table id="excel-table" class="min-w-full table-auto border-collapse text-sm">
+                        <!-- Table content di-generate oleh JS -->
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Tombol Kembali -->
+    <button onclick="window.history.back()"
+        class="group fixed top-0 left-0 bg-white hover:bg-gray-100 text-blue-600 p-3 rounded-br-lg shadow-lg z-50 transition duration-300 ease-in-out">
+        <svg xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+        </svg>
+    </button>
+
+    <div id="copy-notif"
+        class="fixed top-6 right-6 bg-green-500 text-white px-4 py-2 rounded-full shadow z-50 transition-opacity duration-300 opacity-0">
+        Berhasil disalin!
+    </div>
+
+    <!-- Script: menggunakan skrip original (tetap dipertahankan) -->
+    <script>
+        // ...existing code...
+        let excelData = [];
+        let headers = [];
+        let isNewFormat = false;
+
+        const oldFormatCols = {
+            'Jenis Pajak': 1,
+            'Uraian Pajak': 3,
+            'Pokok (Rp)': 13,
+            'Denda (Rp)': 14,
+            'Pokok Opsen (Rp)': 15,
+            'Denda Opsen (Rp)': 16,
+            'Jumlah Bayar (Rp)': 17,
+            'Tanggal Bayar': 20,
+            'Tempat Bayar': 22,
+            'Keterangan': 23
+        };
+
+        const newFormatCols = {
+            'Jenis Pajak': 1,
+            'Uraian Pajak': 3,
+            'Pokok (Rp)': 15,
+            'Denda (Rp)': 16,
+            'Pokok Opsen (Rp)': 17,
+            'Denda Opsen (Rp)': 18,
+            'Jumlah Bayar (Rp)': 19,
+            'Tanggal Bayar': 22,
+            'Tempat Bayar': 24,
+            'Keterangan': 25
+        };
+
+        let currentCols = {};
+        let unfilteredData = [];
+
+        document.getElementById('input-excel').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('upload-text').textContent = file.name;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                headers = excelData[0];
+
+                isNewFormat = headers.includes('Kecamatan OP') && headers.includes('Kelurahan OP');
+                currentCols = isNewFormat ? newFormatCols : oldFormatCols;
+
+                while (excelData.length > 1 && (excelData[1][0] === null || excelData[1][0] === undefined || String(excelData[1][0]).trim() === '' || isNaN(parseInt(String(excelData[1][0]).trim())))) {
+                    excelData.splice(1, 1);
+                }
+
+                for (let i = excelData.length - 1; i >= 1; i--) {
+                    const row = excelData[i];
+                    if (row[0] === null || row[0] === undefined || String(row[0]).trim() === '' || isNaN(parseInt(String(row[0]).trim()))) {
+                        excelData.pop();
+                    } else {
+                        break;
+                    }
+                }
+
+                const sorted = [headers].concat(sortByTanggalWaktu(excelData.slice(1)));
+                excelData = sorted;
+                unfilteredData = excelData.slice(1);
+
+                renderJenisPajakOptions();
+                renderTanggalOptions();
+                renderUraianPajakOptions();
+                filterAndRender();
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function getFilteredData() {
+            const jenis = document.getElementById('jenispajak-select').value;
+            const tgl = document.getElementById('tanggal-select').value;
+            const tempat = document.getElementById('tempatbayar-select').value;
+            const uraian = document.getElementById('uraianspajak-select').value;
+
+            let filtered = unfilteredData.slice();
+
+            if (jenis) {
+                filtered = filtered.filter(row => normalizeJenis(row[currentCols['Jenis Pajak']]) === jenis);
+            }
+            if (tgl) {
+                filtered = filtered.filter(row => {
+                    const tanggalBayarValue = row[currentCols['Tanggal Bayar']];
+                    const tglFull = typeof tanggalBayarValue === 'string' ? tanggalBayarValue.trim() : String(tanggalBayarValue || '').trim();
+                    return tglFull.substr(0, 10) === tgl;
+                });
+            }
+            if (tempat) {
+                filtered = filtered.filter(row => {
+                    const tempatVal = typeof row[currentCols['Tempat Bayar']] === 'string' ? row[currentCols['Tempat Bayar']].trim() : String(row[currentCols['Tempat Bayar']] || '').trim();
+                    if (tempat === 'PJDLU') {
+                        return [
+                            'Bank BJB - Internet Banking',
+                            'Bank BJB - Mobile Banking',
+                            'Bank BJB - TELER',
+                            'Bank BJB - Lainnya',
+                            'Bank BJB - POS'
+                        ].includes(tempatVal);
+                    }
+                    if (tempat === 'PJDLQRIS') {
+                        return tempatVal === 'Bank BJB - QRIS';
+                    }
+                    if (tempat === 'PJDLVA') {
+                        return tempatVal === 'Bank BJB - Virtual Account';
+                    }
+                    return true;
+                });
+            }
+            if (uraian) {
+                filtered = filtered.filter(row => {
+                    const uraianVal = typeof row[currentCols['Uraian Pajak']] === 'string' ? row[currentCols['Uraian Pajak']].trim() : String(row[currentCols['Uraian Pajak']] || '').trim();
+                    return uraianVal === uraian;
+                });
+            }
+
+            return filtered;
+        }
+
+        function filterAndRender() {
+            let filteredData = getFilteredData();
+
+            const mode = document.querySelector('input[name="fitur"]:checked')?.value || 'tambah';
+            const tambahanCount = parseInt(document.getElementById('tambahanCount').value) || 0;
+            const waktu = document.getElementById('waktu-select').value;
+            const tgl = document.getElementById('tanggal-select').value;
+
+            let finalData = filteredData;
+
+            if (waktu && waktu !== '') {
+                let dataWaktuFilter = filteredData.filter(row => {
+                    const tglFull = String(row[currentCols['Tanggal Bayar']] || '').trim();
+                    const match = tglFull.match(/\b(\d{2}:\d{2}:\d{2})|\b(\d{2}:\d{2})/);
+                    const jamMenit = match ? match[1] || match[2] : '';
+                    if (!jamMenit) return false;
+
+                    return waktu === 'akhir' ? jamMenit < '17:00' : jamMenit >= '17:00';
+                });
+
+                if (mode === 'tambah' && tambahanCount > 0) {
+                    let dataWaktuLawan = getFilteredData().filter(row => {
+                        const tglFull = String(row[currentCols['Tanggal Bayar']] || '').trim();
+                        const match = tglFull.match(/\b(\d{2}:\d{2}:\d{2})|\b(\d{2}:\d{2})/);
+                        const jamMenit = match ? match[1] || match[2] : '';
+                        if (!jamMenit || tglFull.substr(0, 10) !== tgl) return false;
+
+                        return waktu === 'akhir' ? jamMenit >= '17:00' : jamMenit < '17:00';
+                    });
+
+                    if (waktu === 'akhir') {
+                        dataWaktuLawan = sortByTanggalWaktu(dataWaktuLawan);
+                        finalData = [...dataWaktuFilter, ...dataWaktuLawan.slice(0, tambahanCount)];
+                    } else {
+                        dataWaktuLawan = sortByTanggalWaktu(dataWaktuLawan).reverse();
+                        const rowsToAdd = dataWaktuLawan.slice(0, tambahanCount).reverse();
+                        finalData = [...dataWaktuFilter, ...rowsToAdd];
+                    }
+
+                } else if (mode === 'kurangi' && tambahanCount > 0) {
+                    if (waktu === 'akhir') {
+                        finalData = dataWaktuFilter.slice(0, dataWaktuFilter.length - tambahanCount);
+                    } else {
+                        finalData = dataWaktuFilter.slice(tambahanCount);
+                    }
+                } else {
+                    finalData = dataWaktuFilter;
+                }
+            }
+
+            finalData = sortByTanggalWaktu(finalData);
+            renderTable([headers].concat(finalData));
+            updateSummaryCards(finalData);
+            // Perbarui teks "Jumlah Data" seperti di index.html
+            const jumlahEl = document.getElementById('jumlahData');
+            if (jumlahEl) jumlahEl.textContent = `Jumlah Data : ${finalData.length}`;
+
+            const scrollContainer = document.getElementById('table-scroll-container');
+            if (scrollContainer) {
+                if (mode === 'kurangi' && waktu === 'akhir') {
+                    setTimeout(() => scrollContainer.scrollTop = scrollContainer.scrollHeight, 0);
+                } else {
+                    scrollContainer.scrollTop = 0;
+                }
+            }
+        }
+
+        function debounce(func, delay) {
+            let timeout;
+            return function (...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), delay);
+            };
+        }
+
+        const debouncedFilterAndRender = debounce(filterAndRender, 300);
+
+        function renderTanggalOptions() {
+            const select = document.getElementById('tanggal-select');
+            // simpan nilai terpilih sebelum rebuild
+            const prevSelected = select.value;
+            select.innerHTML = '<option value="">-- Semua Tanggal --</option>';
+
+            const jenis = document.getElementById('jenispajak-select').value;
+            const tempat = document.getElementById('tempatbayar-select').value;
+            const uraian = document.getElementById('uraianspajak-select').value;
+            const waktu = document.getElementById('waktu-select').value;
+
+            // kumpulkan semua tanggal relevan berdasarkan jenis/tempat/uraian (tanpa waktu)
+            const allDatesSet = new Set();
+            unfilteredData.forEach(row => {
+                if (jenis) {
+                    const val = normalizeJenis(row[currentCols['Jenis Pajak']]);
+                    if (val !== jenis) return;
+                }
+                if (tempat) {
+                    const tempatVal = typeof row[currentCols['Tempat Bayar']] === 'string' ? row[currentCols['Tempat Bayar']].trim() : String(row[currentCols['Tempat Bayar']] || '').trim();
+                    if (tempat === 'PJDLU') {
+                        if (!['Bank BJB - Internet Banking', 'Bank BJB - Mobile Banking', 'Bank BJB - TELER', 'Bank BJB - Lainnya', 'Bank BJB - POS'].includes(tempatVal)) return;
+                    } else if (tempat === 'PJDLQRIS') {
+                        if (tempatVal !== 'Bank BJB - QRIS') return;
+                    } else if (tempat === 'PJDLVA') {
+                        if (tempatVal !== 'Bank BJB - Virtual Account') return;
+                    }
+                }
+                if (uraian) {
+                    const uraianVal = typeof row[currentCols['Uraian Pajak']] === 'string' ? row[currentCols['Uraian Pajak']].trim() : String(row[currentCols['Uraian Pajak']] || '').trim();
+                    if (uraianVal !== uraian) return;
+                }
+                const tanggalBayarValue = row[currentCols['Tanggal Bayar']];
+                const tglFull = typeof tanggalBayarValue === 'string' ? tanggalBayarValue.trim() : String(tanggalBayarValue || '').trim();
+                const tgl = tglFull.substr(0, 10);
+                if (tgl && tgl !== 'undefined' && tgl !== '') allDatesSet.add(tgl);
+            });
+
+            // init counts 0 untuk semua tanggal relevan
+            const tanggalCount = {};
+            Array.from(allDatesSet).forEach(d => tanggalCount[d] = 0);
+
+            // hitung jumlah baris per tanggal sesuai filter waktu (jika ada)
+            unfilteredData.forEach(row => {
+                if (jenis) {
+                    const val = normalizeJenis(row[currentCols['Jenis Pajak']]);
+                    if (val !== jenis) return;
+                }
+                if (tempat) {
+                    const tempatVal = typeof row[currentCols['Tempat Bayar']] === 'string' ? row[currentCols['Tempat Bayar']].trim() : String(row[currentCols['Tempat Bayar']] || '').trim();
+                    if (tempat === 'PJDLU') {
+                        if (!['Bank BJB - Internet Banking', 'Bank BJB - Mobile Banking', 'Bank BJB - TELER', 'Bank BJB - Lainnya', 'Bank BJB - POS'].includes(tempatVal)) return;
+                    } else if (tempat === 'PJDLQRIS') {
+                        if (tempatVal !== 'Bank BJB - QRIS') return;
+                    } else if (tempat === 'PJDLVA') {
+                        if (tempatVal !== 'Bank BJB - Virtual Account') return;
+                    }
+                }
+                if (uraian) {
+                    const uraianVal = typeof row[currentCols['Uraian Pajak']] === 'string' ? row[currentCols['Uraian Pajak']].trim() : String(row[currentCols['Uraian Pajak']] || '').trim();
+                    if (uraianVal !== uraian) return;
+                }
+
+                const tanggalBayarValue = row[currentCols['Tanggal Bayar']];
+                const tglFull = typeof tanggalBayarValue === 'string' ? tanggalBayarValue.trim() : String(tanggalBayarValue || '').trim();
+                const tgl = tglFull.substr(0, 10);
+                if (!tgl || tgl === 'undefined') return;
+
+                // jika waktu dipilih, hanya hitung baris yang cocok dengan waktu tersebut
+                if (waktu && waktu !== '') {
+                    const timeMatch = tglFull.match(/(\d{1,2}):(\d{2})(?::\d{2})?/);
+                    if (!timeMatch) return;
+                    const jam = parseInt(timeMatch[1], 10);
+                    if (waktu === 'akhir' && !(jam < 17)) return;
+                    if (waktu === 'pelimpahan' && !(jam >= 17)) return;
+                }
+
+                if (tanggalCount.hasOwnProperty(tgl)) tanggalCount[tgl] = (tanggalCount[tgl] || 0) + 1;
+            });
+
+            // render semua tanggal (termasuk yang count = 0)
+            Object.keys(tanggalCount)
+                .sort((a, b) => {
+                    const toSortable = s => {
+                        const [datePart] = s.split(' ');
+                        let date = datePart;
+                        if (/^\d{2}-\d{2}-\d{4}$/.test(datePart)) {
+                            const [d, m, y] = datePart.split('-');
+                            date = `${y}-${m}-${d}`;
+                        } else if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+                            date = datePart;
+                        }
+                        return date;
+                    };
+                    return toSortable(a).localeCompare(toSortable(b));
+                })
+                .forEach(tgl => {
+                    const opt = document.createElement('option');
+                    opt.value = tgl;
+                    opt.textContent = `${tgl} - (${tanggalCount[tgl]})`;
+                    select.appendChild(opt);
+                });
+
+            // restore selection jika masih valid
+            if (prevSelected) {
+                const exists = Array.from(select.options).some(o => o.value === prevSelected);
+                select.value = exists ? prevSelected : '';
+            }
+        }
+
+        function renderJenisPajakOptions() {
+            const jenisPajakIdx = currentCols['Jenis Pajak'];
+            const select = document.getElementById('jenispajak-select');
+            select.innerHTML = '<option value="">-- Semua Jenis Pajak --</option>';
+            const jenisSet = new Set();
+            unfilteredData.forEach(row => {
+                let jenis = normalizeJenis(row[jenisPajakIdx]);
+                if (jenis && jenis !== 'undefined' && jenis !== '') jenisSet.add(jenis);
+            });
+            Array.from(jenisSet).sort().forEach(jenis => {
+                const opt = document.createElement('option');
+                opt.value = jenis;
+                opt.textContent = jenis;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderUraianPajakOptions() {
+            const select = document.getElementById('uraianspajak-select');
+            select.innerHTML = '<option value="">-- Semua Uraian Pajak --</option>';
+
+            const jenis = document.getElementById('jenispajak-select').value;
+            const tgl = document.getElementById('tanggal-select').value;
+            const tempat = document.getElementById('tempatbayar-select').value;
+            const waktu = document.getElementById('waktu-select').value;
+
+            let filtered = unfilteredData.slice();
+
+            if (jenis) {
+                filtered = filtered.filter(row => normalizeJenis(row[currentCols['Jenis Pajak']]) === jenis);
+            }
+            if (tgl) {
+                filtered = filtered.filter(row => {
+                    const tanggalBayarValue = row[currentCols['Tanggal Bayar']];
+                    const tglFull = typeof tanggalBayarValue === 'string' ? tanggalBayarValue.trim() : String(tanggalBayarValue || '').trim();
+                    return tglFull.substr(0, 10) === tgl;
+                });
+            }
+            if (tempat) {
+                filtered = filtered.filter(row => {
+                    const tempatVal = typeof row[currentCols['Tempat Bayar']] === 'string' ? row[currentCols['Tempat Bayar']].trim() : String(row[currentCols['Tempat Bayar']] || '').trim();
+                    if (tempat === 'PJDLU') {
+                        return [
+                            'Bank BJB - Internet Banking',
+                            'Bank BJB - Mobile Banking',
+                            'Bank BJB - TELER',
+                            'Bank BJB - Lainnya',
+                            'Bank BJB - POS'
+                        ].includes(tempatVal);
+                    }
+                    if (tempat === 'PJDLQRIS') {
+                        return tempatVal === 'Bank BJB - QRIS';
+                    }
+                    if (tempat === 'PJDLVA') {
+                        return tempatVal === 'Bank BJB - Virtual Account';
+                    }
+                    return true;
+                });
+            }
+            if (waktu && waktu !== '') {
+                filtered = filtered.filter(row => {
+                    const tglFull = String(row[currentCols['Tanggal Bayar']] || '').trim();
+                    const match = tglFull.match(/\b(\d{2}:\d{2}:\d{2})|\b(\d{2}:\d{2})/);
+                    const jamMenit = match ? match[1] || match[2] : '';
+                    if (!jamMenit) return false;
+
+                    return waktu === 'akhir' ? jamMenit < '17:00' : jamMenit >= '17:00';
+                });
+            }
+
+            const uraianSet = new Set();
+            filtered.forEach(row => {
+                let uraian = row[currentCols['Uraian Pajak']];
+                if (typeof uraian !== 'string') uraian = String(uraian || '').trim();
+                if (uraian && uraian !== 'undefined' && uraian !== '') uraianSet.add(uraian);
+            });
+
+            Array.from(uraianSet).sort().forEach(uraian => {
+                const opt = document.createElement('option');
+                opt.value = uraian;
+                opt.textContent = uraian;
+                select.appendChild(opt);
+            });
+        }
+
+        function renderTable(data) {
+            const table = document.getElementById('excel-table');
+            table.innerHTML = '';
+
+            let displayHeaders = ['Jenis Pajak', 'Uraian Pajak', 'Pokok (Rp)', 'Denda (Rp)', 'Jumlah Bayar (Rp)', 'Tanggal Bayar', 'Tempat Bayar'];
+
+            const jenisPajakSelected = document.getElementById('jenispajak-select').value;
+            if (jenisPajakSelected && jenisPajakSelected.toLowerCase().includes('mineral')) {
+                displayHeaders = ['Jenis Pajak', 'Uraian Pajak', 'Pokok (Rp)', 'Denda (Rp)', 'Pokok Opsen (Rp)', 'Denda Opsen (Rp)', 'Jumlah Bayar (Rp)', 'Tanggal Bayar', 'Tempat Bayar'];
+            }
+
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            displayHeaders.forEach(h => {
+                const th = document.createElement('th');
+                th.textContent = h;
+                th.className = "bg-gray-100 border-b font-semibold text-gray-700 px-3 py-2 text-left sticky top-0";
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            data.slice(1).forEach(row => {
+                const tr = document.createElement('tr');
+                displayHeaders.forEach(h => {
+                    const td = document.createElement('td');
+                    let cellValue = row[currentCols[h]] !== undefined ? row[currentCols[h]] : '';
+
+                    if (h.includes('(Rp)')) {
+                        const numericValue = parseFloat(String(cellValue).replace(/[^0-9.-]/g, '')) || 0;
+                        cellValue = numericValue.toLocaleString('id-ID');
+                    } else if (h === 'Tanggal Bayar' && typeof cellValue === 'string') {
+                        cellValue = cellValue.trim();
+                    } else if (h === 'Tempat Bayar') {
+                        if (typeof cellValue !== 'string') {
+                            cellValue = String(cellValue);
+                        }
+                        const keterangan = row[currentCols['Keterangan']];
+                        if (keterangan && keterangan.includes('VA')) {
+                            cellValue = 'Bank BJB - Virtual Account';
+                        }
+                    }
+
+                    td.textContent = cellValue;
+                    td.className = "border-b px-3 py-1";
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+
+            const waktu = document.getElementById('waktu-select').value;
+            const scrollContainer = document.getElementById('table-scroll-container');
+            if (scrollContainer) {
+                if (waktu === 'akhir') {
+                    setTimeout(() => scrollContainer.scrollTop = scrollContainer.scrollHeight, 0);
+                } else {
+                    scrollContainer.scrollTop = 0;
+                }
+            }
+        }
+
+        function updateSummaryCards(data) {
+            const jenisPajakSelected = document.getElementById('jenispajak-select').value;
+            const isMineral = jenisPajakSelected && jenisPajakSelected.toLowerCase().includes('mineral');
+
+            const cardOpsenPokok = document.getElementById('card-opsen-pokok');
+            const cardOpsenDenda = document.getElementById('card-opsen-denda');
+            const cardPokokDendaGabungan = document.getElementById('card-pokok-denda-gabungan');
+            const cardOpsenGabungan = document.getElementById('card-opsen-gabungan');
+            const cardTotalGabungan = document.getElementById('card-total-gabungan');
+            const cardJumlahBayar = document.getElementById('card-jumlah-bayar');
+            const summaryCardsDiv = document.getElementById('summaryCards');
+
+            if (isMineral) {
+                summaryCardsDiv.classList.remove('md:grid-cols-3', 'lg:grid-cols-3');
+                summaryCardsDiv.classList.add('md:grid-cols-4', 'lg:grid-cols-4');
+            } else {
+                summaryCardsDiv.classList.remove('md:grid-cols-4', 'lg:grid-cols-4');
+                summaryCardsDiv.classList.add('md:grid-cols-3', 'lg:grid-cols-3');
+            }
+
+            if (isMineral && cardOpsenPokok && cardOpsenDenda && cardPokokDendaGabungan && cardOpsenGabungan && cardTotalGabungan && cardJumlahBayar) {
+                cardOpsenPokok.classList.remove('hidden');
+                cardOpsenDenda.classList.remove('hidden');
+                cardPokokDendaGabungan.classList.remove('hidden');
+                cardOpsenGabungan.classList.remove('hidden');
+                cardTotalGabungan.classList.remove('hidden');
+                cardJumlahBayar.classList.add('hidden');
+            } else if (cardJumlahBayar) {
+                cardJumlahBayar.classList.remove('hidden');
+                if (cardOpsenPokok) cardOpsenPokok.classList.add('hidden');
+                if (cardOpsenDenda) cardOpsenDenda.classList.add('hidden');
+                if (cardPokokDendaGabungan) cardPokokDendaGabungan.classList.add('hidden');
+                if (cardOpsenGabungan) cardOpsenGabungan.classList.add('hidden');
+                if (cardTotalGabungan) cardTotalGabungan.classList.add('hidden');
+            }
+
+            let totalPokok = 0, totalDenda = 0, totalPokokOpsen = 0, totalDendaOpsen = 0, totalJumlah = 0;
+
+            data.forEach(row => {
+                let pokok = parseFloat(String(row[currentCols['Pokok (Rp)']] || '0').replace(/[^0-9.-]/g, '')) || 0;
+                let denda = parseFloat(String(row[currentCols['Denda (Rp)']] || '0').replace(/[^0-9.-]/g, '')) || 0;
+                let jumlah = parseFloat(String(row[currentCols['Jumlah Bayar (Rp)']] || '0').replace(/[^0-9.-]/g, '')) || 0;
+
+                totalPokok += pokok;
+                totalDenda += denda;
+                totalJumlah += jumlah;
+
+                if (isMineral) {
+                    let pokokOpsen = parseFloat(String(row[currentCols['Pokok Opsen (Rp)']] || '0').replace(/[^0-9.-]/g, '')) || 0;
+                    let dendaOpsen = parseFloat(String(row[currentCols['Denda Opsen (Rp)']] || '0').replace(/[^0-9.-]/g, '')) || 0;
+                    totalPokokOpsen += pokokOpsen;
+                    totalDendaOpsen += dendaOpsen;
+                }
+            });
+
+            const elTotalPokok = document.getElementById('total-pokok');
+            const elTotalDenda = document.getElementById('total-denda');
+            const elTotalJumlah = document.getElementById('total-jumlah');
+
+            if (elTotalPokok) elTotalPokok.textContent = totalPokok.toLocaleString('id-ID');
+            if (elTotalDenda) elTotalDenda.textContent = totalDenda.toLocaleString('id-ID');
+            if (elTotalJumlah) elTotalJumlah.textContent = totalJumlah.toLocaleString('id-ID');
+
+            if (isMineral) {
+                const elPokokOpsen = document.getElementById('total-pokok-opsen');
+                const elDendaOpsen = document.getElementById('total-denda-opsen');
+                const elPokokDendaGab = document.getElementById('total-pokok-denda-gabungan-value');
+                const elOpsenGab = document.getElementById('total-opsen-gabungan');
+                const elTotalGab = document.getElementById('total-gabungan');
+
+                if (elPokokOpsen) elPokokOpsen.textContent = totalPokokOpsen.toLocaleString('id-ID');
+                if (elDendaOpsen) elDendaOpsen.textContent = totalDendaOpsen.toLocaleString('id-ID');
+                if (elPokokDendaGab) elPokokDendaGab.textContent = (totalPokok + totalDenda).toLocaleString('id-ID');
+                if (elOpsenGab) elOpsenGab.textContent = (totalPokokOpsen + totalDendaOpsen).toLocaleString('id-ID');
+                if (elTotalGab) elTotalGab.textContent = (totalPokok + totalDenda + totalPokokOpsen + totalDendaOpsen).toLocaleString('id-ID');
+            } else {
+                const elTotalGab = document.getElementById('total-gabungan');
+                if (elTotalGab) elTotalGab.textContent = totalJumlah.toLocaleString('id-ID');
+            }
+        }
+
+        function normalizeJenis(jenis) {
+            if (typeof jenis !== 'string') jenis = String(jenis || '').trim();
+            return jenis.replace(/\s*\(NonReg\)$/i, '').trim();
+        }
+
+        function sortByTanggalWaktu(data) {
+            const tanggalBayarIdx = currentCols['Tanggal Bayar'];
+            return data
+                .filter(row => row && row.some(cell => cell !== undefined && String(cell).trim() !== ''))
+                .sort((a, b) => {
+                    let tA = String(a[tanggalBayarIdx] || '').trim();
+                    let tB = String(b[tanggalBayarIdx] || '').trim();
+                    const toSortable = s => {
+                        const [datePart, timePart] = s.split(' ');
+                        let date = datePart;
+                        if (/^\d{2}-\d{2}-\d{4}$/.test(datePart)) {
+                            const [d, m, y] = datePart.split('-');
+                            date = `${y}-${m}-${d}`;
+                        } else if (/^\d{4}-\d{2}-\d{2}$/.test(datePart)) {
+                            date = datePart;
+                        }
+                        return `${date}${timePart ? ' ' + timePart : ''}`;
+                    };
+                    return toSortable(tA).localeCompare(toSortable(tB));
+                });
+        }
+
+        // Event bindings
+        document.getElementById('jenispajak-select').addEventListener('change', function () {
+            renderTanggalOptions();
+            renderUraianPajakOptions();
+            debouncedFilterAndRender();
+        });
+        document.getElementById('tanggal-select').addEventListener('change', function () {
+            renderUraianPajakOptions();
+            debouncedFilterAndRender();
+        });
+        // saat tempat bayar berubah, perbarui tanggal + uraian sesuai baris yang tampil
+        document.getElementById('tempatbayar-select').addEventListener('change', function () {
+            renderTanggalOptions();
+            renderUraianPajakOptions();
+            debouncedFilterAndRender();
+        });
+        document.getElementById('waktu-select').addEventListener('change', function () {
+            renderTanggalOptions();
+            renderUraianPajakOptions();
+            debouncedFilterAndRender();
+        });
+        // saat uraian berubah, tanggal sebaiknya tetap (user memilih uraian spesifik)
+        document.getElementById('uraianspajak-select').addEventListener('change', function () {
+            debouncedFilterAndRender();
+        });
+
+        document.getElementById('fiturRadioGroup').addEventListener('change', function () {
+            const checked = document.querySelector('input[name="fitur"]:checked');
+            const mode = checked ? checked.value : 'tambah';
+            const lbl = document.getElementById('labelTambahanCount');
+            if (lbl) lbl.textContent = mode === 'tambah' ? 'Ditambah' : 'Dikurangi';
+            const tambahInput = document.getElementById('tambahanCount');
+            if (tambahInput) tambahInput.value = 0;
+            debouncedFilterAndRender();
+        });
+
+        document.getElementById('tambahanCount').addEventListener('input', debouncedFilterAndRender);
+
+        function copyTotal(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                const val = el.textContent.replace(/\./g, '').replace(/,/g, '.');
+                const tempInput = document.createElement('input');
+                document.body.appendChild(tempInput);
+                tempInput.value = val;
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                showCopyNotification(`Nominal "${el.textContent}" berhasil disalin!`);
+            }
+        }
+
+        function showCopyNotification(msg) {
+            let notif = document.getElementById('copy-notif');
+            if (!notif) {
+                notif = document.createElement('div');
+                notif.id = 'copy-notif';
+                notif.className = 'fixed top-6 right-6 bg-green-500 text-white px-4 py-2 rounded-full shadow z-50 transition-opacity';
+                document.body.appendChild(notif);
+            }
+            notif.textContent = msg;
+            notif.style.opacity = '1';
+            setTimeout(() => {
+                notif.style.opacity = '0';
+            }, 2000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const pasteInput = document.getElementById('paste-input');
+            if (!pasteInput) {
+                console.warn('Element #paste-input tidak ditemukan di halaman.');
+                return;
+            }
+
+            pasteInput.addEventListener('input', debounce(function () {
+                const inputText = this.value.trim();
+
+                if (!inputText) {
+                    document.getElementById('tempatbayar-select').value = "";
+                    document.getElementById('tanggal-select').value = "";
+                    document.getElementById('jenispajak-select').value = "";
+                    document.getElementById('uraianspajak-select').value = "";
+                    document.getElementById('waktu-select').value = "";
+                    filterAndRender();
+                    return;
+                }
+
+                // ambil tipe pembayaran (PJDLU / PJDLQRIS / PJDLVA) jika ada
+                const paymentTypeMatch = inputText.match(/PJK\s+([A-Z]+)/i);
+                const paymentType = paymentTypeMatch ? paymentTypeMatch[1].toUpperCase() : '';
+
+                // ambil semua tanggal (yyyymmdd) yang ada di teks
+                const dateMatches = Array.from(inputText.matchAll(/(\d{8})/g)).map(m => m[1]);
+
+                // default: akhir pembayaran
+                let waktuValue = 'akhir';
+                let formattedDate = '';
+
+                // ambil jenis/label pajak mentah dari pola setelah slash tanggal (mis: 15072025/RESTORANPELIMPAHAN)
+                let taxRaw = '';
+                let origTaxRaw = '';
+                const taxSlashMatch = inputText.match(/(\d{8})\/([A-Z0-9]+)/i);
+                if (taxSlashMatch) {
+                    origTaxRaw = taxSlashMatch[2];
+                    taxRaw = origTaxRaw;
+                } else {
+                    const anySlash = inputText.match(/\/([A-Z]{3,})/i);
+                    origTaxRaw = anySlash ? anySlash[1] : '';
+                    taxRaw = origTaxRaw;
+                }
+
+                // Jika taxRaw berakhiran PELIMPAHAN -> itu indikator waktu pelimpahan
+                if (taxRaw && /PELIMPAHAN$/i.test(taxRaw)) {
+                    waktuValue = 'pelimpahan';
+                    // hapus suffix PELIMPAHAN dari nama pajak untuk pencocokan jenis
+                    const rawWithoutSuffix = taxRaw.replace(/PELIMPAHAN$/i, '').trim();
+                    taxRaw = rawWithoutSuffix;
+
+                    // prioritas tanggal untuk kasus ".../RESTORANPELIMPAHAN TGL 16072025"
+                    // 1) cari tanggal yang tepat sebelum slash yang mengantar jenis (mis: 15072025/RESTORANPELIMPAHAN) -> ini prioritas utama
+                    // 2) jika tidak ditemukan, cari tanggal setelah jenis (RESTORANPELIMPAHAN TGL ...)
+                    // 3) pola "PELIMPAHAN TGL #######"
+                    // 4) tanggal kedua, lalu tanggal pertama
+                    const escapeForRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    let found = null;
+
+                    if (origTaxRaw) {
+                        const reBeforeSlash = new RegExp('(\\d{8})\\s*\\/\\s*' + escapeForRegex(origTaxRaw), 'i');
+                        const mBefore = inputText.match(reBeforeSlash);
+                        if (mBefore) found = mBefore[1];
+                    }
+
+                    if (!found && rawWithoutSuffix) {
+                        const reAfterType = new RegExp(escapeForRegex(rawWithoutSuffix) + '\\s*(?:TGL\\s*)?(\\d{8})', 'i');
+                        const m = inputText.match(reAfterType);
+                        if (m) found = m[1];
+                    }
+
+                    if (!found) {
+                        const pelDateMatch = inputText.match(/PELIMPAHAN\s*TGL\s*(\d{8})/i);
+                        if (pelDateMatch) found = pelDateMatch[1];
+                    }
+
+                    if (!found && dateMatches.length > 1) found = dateMatches[1];
+                    if (!found && dateMatches.length === 1) found = dateMatches[0];
+
+                    formattedDate = found || '';
+                } else {
+                    // normal: pilih tanggal sebelum slash jika ada, else tanggal pertama yang ditemukan
+                    const beforeSlash = inputText.match(/(\d{8})\/[A-Z0-9]/i);
+                    if (beforeSlash) {
+                        formattedDate = beforeSlash[1];
+                    } else if (dateMatches.length > 0) {
+                        formattedDate = dateMatches[0];
+                    }
+                }
+
+                taxRaw = (taxRaw || '').replace(/[^A-Z0-9\s-]/ig, '').trim();
+
+                // set pilihan Tempat Bayar
+                const bayarSelect = document.getElementById('tempatbayar-select');
+                if (bayarSelect) {
+                    bayarSelect.value = paymentType ? (bayarSelect.querySelector(`option[value="${paymentType}"]`)?.value || "") : "";
+                }
+
+                // set pilihan Jenis Pajak dan Waktu terlebih dahulu, lalu rebuild opsi tanggal, baru set tanggal
+                const pajakSelect = document.getElementById('jenispajak-select');
+                if (pajakSelect) {
+                    let matchedTaxOptionValue = "";
+                    if (taxRaw) {
+                        for (let i = 0; i < pajakSelect.options.length; i++) {
+                            const optVal = String(pajakSelect.options[i].value || '');
+                            if (!optVal) continue;
+                            if (optVal.toLowerCase() === taxRaw.toLowerCase() || optVal.toLowerCase().includes(taxRaw.toLowerCase())) {
+                                matchedTaxOptionValue = pajakSelect.options[i].value;
+                                break;
+                            }
+                        }
+                    }
+                    pajakSelect.value = matchedTaxOptionValue;
+                }
+
+                // set waktu (transaksi)
+                const waktuSelect = document.getElementById('waktu-select');
+                if (waktuSelect) waktuSelect.value = waktuValue;
+
+                // rebuild opsi tanggal sesuai Jenis/Tempat/Waktu yang sudah diset
+                renderTanggalOptions();
+
+                // set pilihan Tanggal (format option value sama seperti di renderTanggalOptions)
+                const tglSelect = document.getElementById('tanggal-select');
+                if (tglSelect && formattedDate) {
+                    if (/^\d{8}$/.test(formattedDate)) {
+                        const d = formattedDate.slice(0, 2), m = formattedDate.slice(2, 4), y = formattedDate.slice(4);
+                        const asOption = `${d}-${m}-${y}`;
+                        tglSelect.value = tglSelect.querySelector(`option[value="${asOption}"]`)?.value || "";
+                    } else {
+                        tglSelect.value = tglSelect.querySelector(`option[value="${formattedDate}"]`)?.value || "";
+                    }
+                }
+
+                // sekarang render uraian dan tabel
+                renderUraianPajakOptions();
+                filterAndRender();
+
+                const uraianSelect = document.getElementById('uraianspajak-select');
+                if (uraianSelect.options.length === 2 && uraianSelect.options[1].value !== "") {
+                    uraianSelect.value = uraianSelect.options[1].value;
+                }
+            }, 300));
+        });
+        document.getElementById('btn-paste-text').addEventListener('click', async function () {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('paste-input').value = text;
+                const event = new Event('input', { bubbles: true });
+                document.getElementById('paste-input').dispatchEvent(event);
+            } catch (err) {
+                showCopyNotification("Gagal mengambil teks dari clipboard. Izinkan akses clipboard.");
+            }
+        });
+        // ...existing code...
+    </script>
+</body>
+
+</html>
