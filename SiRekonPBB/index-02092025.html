@@ -230,7 +230,118 @@
         </span>
     </button>
 
+    <!-- Tombol Catatan Melayang (Memanggil Modal) -->
+    <button onclick="fillNoteForm(); toggleModal();"
+        class="group fixed top-0 right-0 bg-white hover:bg-gray-100 text-purple-600 p-3 rounded-bl-lg shadow-lg z-50 transition duration-300 ease-in-out">
+        <svg xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 transform group-hover:-translate-y-1 transition-transform" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <path d="M14 2v6h6M14 18H8M16 14H8M16 10H8"></path>
+        </svg>
+        <span
+            class="absolute top-1/2 right-full mr-2 -translate-y-1/2 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto bg-gray-700 text-white text-xs px-2 py-1 rounded transition-opacity duration-300 whitespace-nowap">
+            Catatan
+        </span>
+    </button>
+
+    <!-- Catatan Modal -->
+    <div id="catatanModal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[100] hidden flex items-center justify-center">
+        <div class="bg-white p-6 rounded-2xl shadow-xl w-11/12 md:w-3/4 max-w-lg relative max-h-[90vh] overflow-y-auto">
+            <button onclick="toggleModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+                <i class="bi bi-x-circle text-xl"></i>
+            </button>
+            <h3 class="text-2xl font-semibold text-gray-800 mb-4">Tambahkan Catatan Baru</h3>
+            <!-- Form Catatan -->
+            <div class="mt-2 pt-2 border-t border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-700">Keterangan:</label>
+                        <input type="text" id="catatanKeterangan" placeholder="Keterangan..."
+                            class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" readonly />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-700">Tanggal Pembayaran:</label>
+                        <input type="text" id="catatanTgl" placeholder="Tanggal Pembayaran..."
+                            class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" readonly />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-700">Kategori Bank:</label>
+                        <input type="text" id="catatanBank" placeholder="Kategori Bank..."
+                            class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" readonly />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-700">Jenis Transaksi:</label>
+                        <input type="text" id="catatanWaktu" placeholder="Jenis Transaksi..."
+                            class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" readonly />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-700">Mode:</label>
+                        <input type="text" id="catatanMode" placeholder="Mode..."
+                            class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" readonly />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-700">Jumlah Baris:</label>
+                        <input type="text" id="catatanJumlahBaris" placeholder="Jumlah Baris..."
+                            class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" readonly />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-blue-700">Total PBBP2:</label>
+                        <input type="text" id="catatanTotalPbb" placeholder="Total PBBP2..."
+                            class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" readonly />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-yellow-700">Pendapatan Denda PBBP2:</label>
+                        <input type="text" id="catatanDenda" placeholder="Pendapatan Denda PBBP2..."
+                            class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" readonly />
+                    </div>
+                    <div class="flex flex-col gap-2 md:col-span-2">
+                        <label class="text-sm font-medium text-green-700">Total Mutasi Kredit:</label>
+                        <input type="text" id="catatanMutasi" placeholder="Total Mutasi Kredit..."
+                            class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" readonly />
+                    </div>
+                    <div class="flex flex-col gap-2 md:col-span-2">
+                        <label class="text-sm font-medium text-gray-700">Catatan Tambahan:</label>
+                        <textarea id="inputCatatanTambahan" rows="3" placeholder="Tulis catatan tambahan di sini..."
+                            class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition"></textarea>
+                    </div>
+                </div>
+                <div class="flex flex-row mt-4 justify-between gap-4">
+                    <button id="btnSimpanCatatan"
+                        class="bg-purple-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-purple-600 transition flex-1">
+                        <i class="bi bi-save"></i> Simpan Catatan
+                    </button>
+                    <a href="catatan.html" id="btnLihatCatatan" target="_blank"
+                        class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600 transition flex-1 text-center">
+                        <i class="bi bi-book"></i> Lihat Catatan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-database.js"></script>
+
     <script>
+        // Your provided Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBWiWtq8Ir-_KPlqSwYEGJkOmM9TTp1pDk",
+            authDomain: "rc-notedsbapenda.firebaseapp.com",
+            databaseURL: "https://rc-notedsbapenda-default-rtdb.firebaseio.com",
+            projectId: "rc-notedsbapenda",
+            storageBucket: "rc-notedsbapenda.firebasestorage.app",
+            messagingSenderId: "961787045460",
+            appId: "1:961787045460:web:1932764db5a4c02f28afc1",
+            measurementId: "G-DNC3WPJ7PQ"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
         let allData = [];
         const kategoriBankMap = {
             PBBU: [
@@ -249,6 +360,60 @@
                 "Bank Mandiri - POS"
             ]
         };
+
+        // Fungsi untuk mengaktifkan/menonaktifkan modal
+        window.toggleModal = function () {
+            const modal = document.getElementById("catatanModal");
+            modal.classList.toggle("hidden");
+        }
+
+        // Fungsi untuk mengisi form catatan di modal dengan data filter saat ini
+        window.fillNoteForm = function () {
+            const keteranganInput = document.getElementById('inputTeks');
+            const tglSelect = document.getElementById('tglSelect');
+            const bankSelect = document.getElementById('bankSelect');
+            const waktuSelect = document.getElementById('waktuSelect');
+            const modeRadio = document.querySelector('input[name="fitur"]:checked');
+            const jumlahBarisInput = document.getElementById('tambahanCount');
+            const totalPbbText = document.getElementById('totalPbbText');
+            const dendaText = document.getElementById('dendaText');
+            const mutasiText = document.getElementById('mutasiText');
+
+            const catatanKeterangan = document.getElementById('catatanKeterangan');
+            const catatanTgl = document.getElementById('catatanTgl');
+            const catatanBank = document.getElementById('catatanBank');
+            const catatanWaktu = document.getElementById('catatanWaktu');
+            const catatanMode = document.getElementById('catatanMode');
+            const catatanJumlahBaris = document.getElementById('catatanJumlahBaris');
+            const catatanTotalPbb = document.getElementById('catatanTotalPbb');
+            const catatanDenda = document.getElementById('catatanDenda');
+            const catatanMutasi = document.getElementById('catatanMutasi');
+            const inputCatatanTambahan = document.getElementById('inputCatatanTambahan');
+
+            if (catatanKeterangan && catatanTgl && catatanBank && catatanWaktu && catatanMode && catatanJumlahBaris && catatanTotalPbb && catatanDenda && catatanMutasi && inputCatatanTambahan) {
+                let modeText = 'N/A';
+                const checkedRadio = document.querySelector('input[name="fitur"]:checked');
+                if (checkedRadio) {
+                    const parentLabel = checkedRadio.closest('label');
+                    if (parentLabel) {
+                        modeText = parentLabel.textContent.trim();
+                    }
+                }
+
+                catatanKeterangan.value = keteranganInput?.value || 'Tidak ada keterangan';
+                catatanTgl.value = tglSelect?.value || 'N/A';
+                catatanBank.value = bankSelect?.value || 'N/A';
+                catatanWaktu.value = waktuSelect?.options[waktuSelect?.selectedIndex]?.text || 'N/A';
+                catatanMode.value = modeText;
+                catatanJumlahBaris.value = jumlahBarisInput?.value || '0';
+                catatanTotalPbb.value = totalPbbText?.textContent || '0';
+                catatanDenda.value = dendaText?.textContent || '0';
+                catatanMutasi.value = mutasiText?.textContent || '0';
+                inputCatatanTambahan.value = '';
+            } else {
+                console.error("Elemen form catatan tidak ditemukan di modal.");
+            }
+        }
 
         document.getElementById("fileExcel").addEventListener("change", function (e) {
             const file = e.target.files[0];
@@ -794,6 +959,114 @@
             }
         }
 
+        window.simpanCatatan = function () {
+            const keterangan = document.getElementById('catatanKeterangan').value;
+            const tanggal = document.getElementById('catatanTgl').value;
+            const bank = document.getElementById('catatanBank').value;
+            const waktu = document.getElementById('catatanWaktu').value;
+            const mode = document.getElementById('catatanMode').value;
+            const jumlahBaris = document.getElementById('catatanJumlahBaris').value;
+            const catatanTambahan = document.getElementById('inputCatatanTambahan').value;
+            const totalPbb = document.getElementById('catatanTotalPbb').value;
+            const totalDenda = document.getElementById('catatanDenda').value;
+            const totalMutasi = document.getElementById('catatanMutasi').value;
+
+            // Validasi input
+            if (keterangan.trim() === '' || keterangan === 'Tidak ada keterangan') {
+                showToast("Keterangan catatan tidak boleh kosong.", true);
+                return;
+            }
+            if (tanggal.trim() === '' || tanggal === 'N/A') {
+                showToast("Tanggal Pembayaran tidak boleh kosong.", true);
+                return;
+            }
+            if (bank.trim() === '' || bank === 'N/A') {
+                showToast("Kategori Bank tidak boleh kosong.", true);
+                return;
+            }
+            if (waktu.trim() === '' || waktu === 'N/A') {
+                showToast("Jenis Transaksi tidak boleh kosong.", true);
+                return;
+            }
+
+            const noteData = {
+                keterangan: keterangan,
+                tanggal: tanggal,
+                bank: bank,
+                waktu: waktu,
+                mode: mode,
+                jumlahBaris: jumlahBaris,
+                totalPbb: totalPbb,
+                totalDenda: totalDenda,
+                totalMutasi: totalMutasi,
+                catatanTambahan: catatanTambahan,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            const newNoteRef = database.ref('catatan').push();
+            newNoteRef.set(noteData)
+                .then(() => {
+                    showToast("Catatan berhasil disimpan!");
+                    toggleModal(); // Tutup modal setelah disimpan
+                })
+                .catch(error => {
+                    console.error("Gagal menyimpan catatan:", error);
+                    showToast("Gagal menyimpan catatan.", true);
+                });
+        }
+
+        window.ambilCatatan = function () {
+            const catatanList = document.getElementById("catatanList");
+            const catatanRef = database.ref('catatan').orderByChild('timestamp');
+
+            catatanRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                catatanList.innerHTML = '';
+
+                if (data) {
+                    const notes = Object.keys(data).map(key => ({
+                        id: key,
+                        ...data[key]
+                    }));
+
+                    notes.forEach(note => {
+                        const noteElement = document.createElement('div');
+                        noteElement.className = 'bg-gray-100 p-3 rounded-lg text-gray-800 text-sm flex flex-col gap-1 relative';
+                        noteElement.innerHTML = `
+                            <p class="font-semibold text-gray-900">Keterangan:</p>
+                            <p class="mb-2">${note.keterangan || 'Tidak ada keterangan'}</p>
+                            <p class="text-xs text-gray-600"><strong>Tanggal:</strong> ${note.tanggal || 'N/A'}</p>
+                            <p class="text-xs text-gray-600"><strong>Bank:</strong> ${note.bank || 'N/A'}</p>
+                            <p class="text-xs text-gray-600"><strong>Waktu:</strong> ${note.waktu || 'N/A'}</p>
+                            <p class="text-xs text-gray-600"><strong>Mode:</strong> ${note.mode || 'N/A'}</p>
+                            <p class="text-xs text-gray-600"><strong>Jumlah Baris:</strong> ${note.jumlahBaris || 'N/A'}</p>
+                            <p class="text-xs text-gray-600"><strong>Total PBBP2:</strong> ${note.totalPbb || 'N/A'}</p>
+                            <p class="text-xs text-gray-600"><strong>Pendapatan Denda PBBP2:</strong> ${note.totalDenda || 'N/A'}</p>
+                            <p class="text-xs text-gray-600"><strong>Total Mutasi Kredit:</strong> ${note.totalMutasi || 'N/A'}</p>
+                            <p class="text-xs text-gray-600"><strong>Catatan Tambahan:</strong> ${note.catatanTambahan || 'N/A'}</p>
+                            <button onclick="hapusCatatan('${note.id}')" class="absolute top-2 right-2 text-red-500 hover:text-red-700">
+                                <i class="bi bi-x-circle-fill"></i>
+                            </button>
+                        `;
+                        catatanList.appendChild(noteElement);
+                    });
+                } else {
+                    catatanList.innerHTML = `<p class="text-sm text-gray-500">Tidak ada catatan.</p>`;
+                }
+            });
+        }
+
+        window.hapusCatatan = function (catatanId) {
+            database.ref('catatan/' + catatanId).remove()
+                .then(() => {
+                    showToast("Catatan berhasil dihapus.");
+                })
+                .catch(error => {
+                    console.error("Gagal menghapus catatan:", error);
+                    showToast("Gagal menghapus catatan.", true);
+                });
+        }
+
         // untuk export: simpan data terakhir yang ditampilkan
         let lastFilteredDataPBB = [];
 
@@ -817,7 +1090,7 @@
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, 'PBB');
                 const now = new Date();
-                const fname = `SiRekonPBB_Export_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.xlsx`;
+                const fname = `SiRekonPBB_Export_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}.xlsx`;
                 XLSX.writeFile(wb, fname);
                 showToast(`Berhasil mengekspor ${rows.length} baris.`);
             } catch (err) {
@@ -830,8 +1103,10 @@
         document.getElementById('exportPbbBtn')?.addEventListener('click', exportPBBToExcel);
 
         window.addEventListener("DOMContentLoaded", () => {
-             document.getElementById("inputTeks").addEventListener("input", extractInfo);
-         });
+            document.getElementById("inputTeks").addEventListener("input", extractInfo);
+            document.getElementById("btnSimpanCatatan").addEventListener("click", simpanCatatan);
+            ambilCatatan();
+        });
     </script>
 </body>
 
