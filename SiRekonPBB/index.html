@@ -202,6 +202,13 @@
                     <div class="text-xs text-gray-600">
                         <span id="jumlahData">Jumlah Data : 0</span>
                     </div>
+                    <!-- Tombol Export Excel -->
+                    <button id="exportPbbBtn"
+                        class="ml-3 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm shadow-sm disabled:opacity-50"
+                        disabled>
+                        <i class="bi bi-file-earmark-spreadsheet"></i>
+                        <span class="ml-2">Export Excel</span>
+                    </button>
                 </div>
                 <div id="tabelData" class="overflow-x-auto mt-4"></div>
             </div>
@@ -808,6 +815,10 @@
                 const tglB = new Date(b.tglpembayaran);
                 return tglA - tglB;
             });
+            // simpan data untuk export & aktifkan tombol export
+            lastFilteredDataPBB = finalData.slice();
+            const exportBtn = document.getElementById('exportPbbBtn');
+            if (exportBtn) exportBtn.disabled = !(lastFilteredDataPBB && lastFilteredDataPBB.length > 0);
 
             if (finalData.length > 0) {
                 let totalPokok = 0,
@@ -889,6 +900,10 @@
                 document.getElementById("tabelData").innerHTML = `<p class="text-center text-gray-500 mt-4">Data tidak tersedia untuk filter tersebut.</p>`;
                 document.getElementById("jumlahData").textContent = "Jumlah Data : 0";
                 resetSummaryCards();
+                // jika kosong, kosongkan export cache & disable tombol
+                lastFilteredDataPBB = [];
+                const exportBtn2 = document.getElementById('exportPbbBtn');
+                if (exportBtn2) exportBtn2.disabled = true;
             }
 
             const scrollContainer = document.getElementById("scrollContainer");
@@ -1051,6 +1066,41 @@
                     showToast("Gagal menghapus catatan.", true);
                 });
         }
+
+        // untuk export: simpan data terakhir yang ditampilkan
+        let lastFilteredDataPBB = [];
+
+        // fungsi export untuk SiRekonPBB
+        function exportPBBToExcel() {
+            if (!lastFilteredDataPBB || lastFilteredDataPBB.length === 0) {
+                showToast('Tidak ada data untuk diekspor.', true);
+                return;
+            }
+
+            const rows = lastFilteredDataPBB.map(r => ({
+                'Pokok': Number(r.pokok || 0),
+                'Denda': Number(r.denda || 0),
+                'Total': Number(r.total || 0),
+                'Bank': r.pembayaran || '',
+                'Tanggal Pembayaran': r.tglpembayaran || ''
+            }));
+
+            try {
+                const ws = XLSX.utils.json_to_sheet(rows, { skipHeader: false });
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'PBB');
+                const now = new Date();
+                const fname = `SiRekonPBB_Export_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.xlsx`;
+                XLSX.writeFile(wb, fname);
+                showToast(`Berhasil mengekspor ${rows.length} baris.`);
+            } catch (err) {
+                console.error('Export PBB error', err);
+                showToast('Gagal mengekspor data.', true);
+            }
+        }
+
+        // hubungkan tombol export
+        document.getElementById('exportPbbBtn')?.addEventListener('click', exportPBBToExcel);
 
         window.addEventListener("DOMContentLoaded", () => {
              document.getElementById("inputTeks").addEventListener("input", extractInfo);

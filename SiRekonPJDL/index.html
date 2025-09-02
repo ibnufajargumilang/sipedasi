@@ -222,6 +222,13 @@
                         <div class="text-xs text-gray-600 ml-4">
                             <span id="jumlahData">Jumlah Data : 0</span>
                         </div>
+                        <!-- Tombol Export Excel -->
+                        <button id="exportPjdlBtn"
+                            class="ml-3 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm shadow-sm disabled:opacity-50"
+                            disabled>
+                            <i class="bi bi-file-earmark-spreadsheet"></i>
+                            <span class="ml-2">Export Excel</span>
+                        </button>
                     </div>
                 </div>
 
@@ -254,7 +261,51 @@
 
     <!-- Script: menggunakan skrip original (tetap dipertahankan) -->
     <script>
-        // ...existing code...
+        // untuk export PJDL: simpan baris terakhir yang ditampilkan (array rows)
+        let lastFilteredDataPJDL = [];
+
+        function exportPJDLToExcel() {
+            if (!lastFilteredDataPJDL || lastFilteredDataPJDL.length === 0) {
+                showCopyNotification('Tidak ada data untuk diekspor.');
+                return;
+            }
+
+            const rows = lastFilteredDataPJDL.map(row => {
+                const get = (colName) => {
+                    const idx = currentCols[colName];
+                    return (row[idx] !== undefined ? row[idx] : '');
+                };
+                const pokok = parseFloat(String(get('Pokok (Rp)') || '0').replace(/[^0-9.-]/g, '')) || 0;
+                const denda = parseFloat(String(get('Denda (Rp)') || '0').replace(/[^0-9.-]/g, '')) || 0;
+                const jumlah = parseFloat(String(get('Jumlah Bayar (Rp)') || '0').replace(/[^0-9.-]/g, '')) || 0;
+                return {
+                    'Jenis Pajak': get('Jenis Pajak'),
+                    'Uraian Pajak': get('Uraian Pajak'),
+                    'Pokok (Rp)': pokok,
+                    'Denda (Rp)': denda,
+                    'Jumlah Bayar (Rp)': jumlah,
+                    'Tanggal Bayar': get('Tanggal Bayar'),
+                    'Tempat Bayar': get('Tempat Bayar')
+                };
+            });
+
+            try {
+                const ws = XLSX.utils.json_to_sheet(rows, { skipHeader: false });
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'PJDL');
+                const now = new Date();
+                const fname = `SiRekonPJDL_Export_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.xlsx`;
+                XLSX.writeFile(wb, fname);
+                showCopyNotification(`Berhasil mengekspor ${rows.length} baris.`);
+            } catch (err) {
+                console.error('Export PJDL error', err);
+                showCopyNotification('Gagal mengekspor data.');
+            }
+        }
+
+        // hubungkan tombol export PJDL
+        document.getElementById('exportPjdlBtn')?.addEventListener('click', exportPJDLToExcel);
+
         let excelData = [];
         let headers = [];
         let isNewFormat = false;
@@ -430,6 +481,12 @@
             }
 
             finalData = sortByTanggalWaktu(finalData);
+            // simpan finalData untuk ekspor (baris array sesuai excel)
+            lastFilteredDataPJDL = finalData.slice();
+            // aktifkan / disable tombol export
+            const expBtn = document.getElementById('exportPjdlBtn');
+            if (expBtn) expBtn.disabled = !(lastFilteredDataPJDL && lastFilteredDataPJDL.length > 0);
+
             renderTable([headers].concat(finalData));
             updateSummaryCards(finalData);
             // Perbarui teks "Jumlah Data" seperti di index.html
@@ -644,10 +701,13 @@
                 if (uraian && uraian !== 'undefined' && uraian !== '') uraianSet.add(uraian);
             });
 
+            // tampilkan opsi dengan spasi di sekitar tanda '-' dihapus,
+            // tetapi simpan value asli agar filter tidak berubah
             Array.from(uraianSet).sort().forEach(uraian => {
                 const opt = document.createElement('option');
                 opt.value = uraian;
-                opt.textContent = uraian;
+                // tampilkan "PBJT-Penyedia Jasa" daripada "PBJT - Penyedia Jasa"
+                opt.textContent = String(uraian).replace(/\s*-\s*/g, '-');
                 select.appendChild(opt);
             });
         }
@@ -687,24 +747,55 @@
                 displayHeaders.forEach(h => {
                     const td = document.createElement('td');
                     let cellValue = row[currentCols[h]] !== undefined ? row[currentCols[h]] : '';
+                    const baseClass = "border-b px-3 py-1";
 
                     if (h.includes('(Rp)')) {
                         const numericValue = parseFloat(String(cellValue).replace(/[^0-9.-]/g, '')) || 0;
                         cellValue = numericValue.toLocaleString('id-ID');
+                    } else if (h === 'Uraian Pajak' && typeof cellValue === 'string') {
+                        // tampilkan uraian tanpa spasi di sekitar tanda '-'
+                        cellValue = cellValue.trim().replace(/\s*-\s*/g, '-');
+                        td.className = baseClass + " cursor-pointer select-none";
+                        td.title = "Klik untuk menyalin uraian";
+                        td.addEventListener('click', (ev) => {
+                            ev.stopPropagation();
+                            const textToCopy = String(cellValue);
+                            if (navigator.clipboard && navigator.clipboard.writeText) {
+                                navigator.clipboard.writeText(textToCopy).then(() => {
+                                    showCopyNotification('Uraian berhasil disalin!');
+                                }).catch(() => {
+                                    showCopyNotification('Gagal menyalin uraian.');
+                                });
+                            } else {
+                                // fallback
+                                const ta = document.createElement('textarea');
+                                ta.value = textToCopy;
+                                document.body.appendChild(ta);
+                                ta.select();
+                                try {
+                                    document.execCommand('copy');
+                                    showCopyNotification('Uraian berhasil disalin!');
+                                } catch (e) {
+                                    showCopyNotification('Gagal menyalin uraian.');
+                                }
+                                document.body.removeChild(ta);
+                            }
+                        });
                     } else if (h === 'Tanggal Bayar' && typeof cellValue === 'string') {
                         cellValue = cellValue.trim();
+                        td.className = baseClass;
                     } else if (h === 'Tempat Bayar') {
-                        if (typeof cellValue !== 'string') {
-                            cellValue = String(cellValue);
-                        }
+                        if (typeof cellValue !== 'string') cellValue = String(cellValue);
                         const keterangan = row[currentCols['Keterangan']];
                         if (keterangan && keterangan.includes('VA')) {
                             cellValue = 'Bank BJB - Virtual Account';
                         }
+                        td.className = baseClass;
+                    } else {
+                        td.className = baseClass;
                     }
 
                     td.textContent = cellValue;
-                    td.className = "border-b px-3 py-1";
                     tr.appendChild(td);
                 });
                 tbody.appendChild(tr);

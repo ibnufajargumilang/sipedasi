@@ -178,13 +178,6 @@
                         <div class="text-xs text-gray-600 ml-4">
                             <span id="jumlahData">Jumlah Data : 0</span>
                         </div>
-                        <!-- Tombol Export Excel: mengekspor data tabel hasil filter -->
-                        <button id="exportBtn"
-                            class="ml-3 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm shadow-sm disabled:opacity-50"
-                            disabled>
-                            <i class="bi bi-file-earmark-spreadsheet"></i>
-                            <span class="ml-2">Export Excel</span>
-                        </button>
                     </div>
                 </div>
 
@@ -211,17 +204,6 @@
     </button>
 
     <script>
-        // lastFilteredData disimpan agar bisa diekspor
-        let lastFilteredData = [];
-        // helper global parse angka (sama dengan yang digunakan di updateSummaryCards)
-        function parseNumber(v) {
-            if (v == null) return 0;
-            if (typeof v === 'number') return v;
-            const s = String(v).replace(/\./g, '').replace(/,/g, '.').replace(/[^\d\.\-]/g, '');
-            const n = parseFloat(s);
-            return Number.isFinite(n) ? n : 0;
-        }
-
         let dataMonitoringList = [];
         let dataKeduaList = [];
         let fullCombinedData = []; // Menyimpan data gabungan asli
@@ -382,9 +364,6 @@
             const tambahanInput = document.getElementById('tambahanCount');
             if (fiturGroup) fiturGroup.querySelectorAll('input').forEach(i => i.disabled = false);
             if (tambahanInput) tambahanInput.disabled = false;
-            // aktifkan tombol export
-            const exportBtn = document.getElementById('exportBtn');
-            if (exportBtn) exportBtn.disabled = false;
         }
 
         function applyFilters() {
@@ -395,11 +374,13 @@
             const fiturMode = document.querySelector('input[name="fitur"]:checked')?.value || 'tambah';
             const tambahanCount = parseInt(document.getElementById('tambahanCount')?.value || '0', 10) || 0;
 
-            let baseFiltered = (fullCombinedData || []).slice();
+            // mulai dari fullCombinedData lalu aplikasikan filter non-waktu (tanggal + keterangan)
+            let baseFiltered = fullCombinedData.slice();
             if (selectedDate) {
                 baseFiltered = baseFiltered.filter(row => (row.TanggalPembayaran || '').startsWith(selectedDate));
             }
 
+            // keterangan: dua mode
             if (ketMode === 'detail') {
                 if (selectedKeterangan) {
                     baseFiltered = baseFiltered.filter(row => {
@@ -415,11 +396,8 @@
                 }
             }
 
-            // helper comparator (newest first)
-            const cmpDesc = (a, b) => (b.TanggalPembayaran || '').localeCompare(a.TanggalPembayaran || '');
-
+            // sekarang proses waktu + mode tambah/kurangi
             let finalData = baseFiltered;
-
             if (selectedTime !== 'semua') {
                 const matchFn = (row) => {
                     const timePart = (row.TanggalPembayaran || '').split(' ')[1];
@@ -431,31 +409,31 @@
                 const dataWaktuLawan = baseFiltered.filter(r => !matchFn(r));
 
                 if (fiturMode === 'tambah' && tambahanCount > 0) {
-                    // pilih tambahan dari lawan berdasarkan waktu terbaru (newest-first),
-                    // lalu gabungkan dan urutkan seluruh hasil newest-first agar baris tambahan "melanjuti" urutan atas.
-                    const tambahanSortedDesc = dataWaktuLawan.slice().sort(cmpDesc).slice(0, tambahanCount);
-                    finalData = dataWaktuFilter.concat(tambahanSortedDesc).slice();
-                    finalData.sort(cmpDesc);
+                    // tambahkan sejumlah baris dari lawan (susun berdasarkan tanggal/waktu naik)
+                    const sortedLawan = dataWaktuLawan.slice().sort((a, b) => (a.TanggalPembayaran || '').localeCompare(b.TanggalPembayaran || ''));
+                    if (selectedTime === 'kurang') {
+                        finalData = [...dataWaktuFilter, ...sortedLawan.slice(0, tambahanCount)];
+                    } else {
+                        // untuk 'lebih', ambil dari akhir lawan, lalu pertahankan urutan
+                        const sliceRows = sortedLawan.slice(-tambahanCount);
+                        finalData = [...dataWaktuFilter, ...sliceRows];
+                    }
                 } else if (fiturMode === 'kurangi' && tambahanCount > 0) {
-                    // hapus baris dengan waktu terbaru dari dataWaktuFilter
-                    const sortedDesc = dataWaktuFilter.slice().sort(cmpDesc);
-                    const toRemove = new Set(sortedDesc.slice(0, tambahanCount));
-                    finalData = dataWaktuFilter.filter(r => !toRemove.has(r));
-                    // jaga urutan newest-first
-                    finalData.sort(cmpDesc);
+                    if (selectedTime === 'kurang') {
+                        finalData = dataWaktuFilter.slice(0, Math.max(0, dataWaktuFilter.length - tambahanCount));
+                    } else {
+                        finalData = dataWaktuFilter.slice(tambahanCount);
+                    }
                 } else {
-                    finalData = dataWaktuFilter.slice().sort(cmpDesc);
+                    finalData = dataWaktuFilter;
                 }
-            } else {
-                // jika semua waktu, tetap urut newest-first
-                finalData = finalData.slice().sort((a, b) => (b.TanggalPembayaran || '').localeCompare(a.TanggalPembayaran || ''));
             }
 
+            // assign hasil akhir (pastikan variabel dideklarasikan)
             const filteredData = finalData.slice();
-            // simpan untuk ekspor
-            lastFilteredData = filteredData.slice();
             updateSummaryCards(filteredData);
             renderHasilGabungan(filteredData);
+            // perbarui teks jumlah data
             const jumlahEl = document.getElementById('jumlahData');
             if (jumlahEl) jumlahEl.textContent = `Jumlah Data : ${filteredData.length}`;
         }
@@ -594,41 +572,6 @@
             if (prev) {
                 const exists = Array.from(sel.options).some(o => o.value === prev);
                 sel.value = exists ? prev : '';
-            }
-        }
-
-        // Event listener & fungsi ekspor
-        document.getElementById('exportBtn')?.addEventListener('click', function () {
-            exportToExcel();
-        });
-
-        function exportToExcel() {
-            if (!lastFilteredData || lastFilteredData.length === 0) {
-                showToast('Tidak ada data untuk diekspor.', true);
-                return;
-            }
-
-            // Siapkan baris untuk diekspor
-            const rows = lastFilteredData.map(r => ({
-                'No': r.No || '',
-                'Nama Wajib Pajak': r.Nama || '',
-                'Pembayaran': parseNumber(r.Pembayaran),
-                'Denda': parseNumber(r.Denda),
-                'Keterangan': r.Keterangan || '',
-                'Tanggal Pembayaran': r.TanggalPembayaran || ''
-            }));
-
-            try {
-                const ws = XLSX.utils.json_to_sheet(rows, { skipHeader: false });
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, 'DataGabungan');
-                const now = new Date();
-                const fname = `SiRekonBPHTB_Export_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.xlsx`;
-                XLSX.writeFile(wb, fname);
-                showToast(`Berhasil mengekspor ${rows.length} baris.`, false);
-            } catch (error) {
-                console.error("Gagal mengekspor ke Excel:", error);
-                showToast("Gagal mengekspor ke Excel.", true);
             }
         }
 
