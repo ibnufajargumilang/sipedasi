@@ -118,14 +118,39 @@
                         <option value="PBBVA">PBBVA</option>
                         <option value="PBBKOLEKTIF">PBBKOLEKTIF</option>
                         <option value="EPBB">EPBB</option>
+                        <option value="POS">POS</option>
                     </select>
                 </div>
                 <div class="flex items-center gap-2">
                     <i class="bi bi-calendar-date text-lg text-gray-800"></i>
-                    <select id="tglSelect"
-                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" disabled>
-                        <option value="">Pilih Tanggal Pembayaran</option>
-                    </select>
+                    <div class="flex flex-col w-full">
+                        <div class="flex items-center gap-3">
+                            <label class="inline-flex items-center gap-2 text-sm">
+                                <input type="radio" name="tanggalMode" value="single" checked>
+                                Satu Tanggal
+                            </label>
+                            <label class="inline-flex items-center gap-2 text-sm">
+                                <input type="radio" name="tanggalMode" value="range">
+                                Range
+                            </label>
+                        </div>
+                        <div id="tanggalSingle" class="mt-2">
+                            <select id="tglSelect"
+                                class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" disabled>
+                                <option value="">Pilih Tanggal Pembayaran</option>
+                            </select>
+                        </div>
+                        <div id="tanggalRange" class="hidden mt-2">
+                            <label class="text-xs text-gray-600">Dari</label>
+                            <input type="date" id="tglStart" class="p-2 rounded-lg border w-full mb-2" disabled />
+                            <label class="text-xs text-gray-600">Sampai</label>
+                            <div class="flex gap-2">
+                                <input type="date" id="tglEnd" class="p-2 rounded-lg border w-full" disabled />
+                                <button type="button" id="clearRange"
+                                    class="px-3 bg-gray-100 hover:bg-gray-200 rounded-md border border-gray-200" title="Bersihkan range">⟲</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="flex items-center gap-2">
                     <i class="bi bi-clock text-lg text-gray-800"></i>
@@ -239,7 +264,8 @@
                 "Bank BJB - Mobile Banking",
                 "Bank BJB - POS",
                 "Bank BJB - Teller",
-                "Bank BJB - Internet Banking"
+                "Bank BJB - Internet Banking",
+                "Bank BJB - ATM"
             ],
             PBBQRIS: ["Bank BJB - QRIS"],
             PBBVA: ["Bank BJB - Virtual Account"],
@@ -248,6 +274,9 @@
                 "Bank Mandiri - Internet Banking",
                 "Bank Mandiri - Teller",
                 "Bank Mandiri - POS"
+            ],
+            POS: [
+                "PT. POS"
             ]
         };
 
@@ -325,6 +354,8 @@
             const tglSelect = document.getElementById("tglSelect");
             const bankSelect = document.getElementById("bankSelect");
             const waktuSelect = document.getElementById("waktuSelect");
+            const tglStart = document.getElementById('tglStart');
+            const tglEnd = document.getElementById('tglEnd');
 
             // Reset dan aktifkan dropdown tanggal
             tglSelect.innerHTML = `<option value="">Pilih Tanggal Pembayaran</option>`;
@@ -347,6 +378,20 @@
                 tglSelect.appendChild(option);
             });
 
+            // setup range inputs (min/max) berdasarkan daftar tanggal jika tersedia
+            if (datesInKategori.length && tglStart && tglEnd) {
+                const all = datesInKategori.slice().sort();
+                tglStart.min = all[0];
+                tglStart.max = all[all.length - 1];
+                tglEnd.min = all[0];
+                tglEnd.max = all[all.length - 1];
+                tglStart.disabled = false;
+                tglEnd.disabled = false;
+            } else {
+                if (tglStart) { tglStart.value = ''; tglStart.disabled = true; }
+                if (tglEnd) { tglEnd.value = ''; tglEnd.disabled = true; }
+            }
+
             // Reset tampilan data
             document.getElementById("tabelData").innerHTML = "";
             document.getElementById("jumlahData").textContent = "Jumlah Data : 0";
@@ -355,7 +400,25 @@
         });
 
         // Event listener untuk tglSelect
-        document.getElementById("tglSelect").addEventListener("change", () => {
+        document.getElementById("tglSelect").addEventListener("change", tampilkanTabel);
+        document.querySelectorAll('input[name="tanggalMode"]').forEach(r => {
+            r.addEventListener('change', () => {
+                const mode = document.querySelector('input[name="tanggalMode"]:checked').value;
+                document.getElementById('tanggalSingle').classList.toggle('hidden', mode !== 'single');
+                document.getElementById('tanggalRange').classList.toggle('hidden', mode !== 'range');
+                tampilkanTabel();
+            });
+        });
+        document.getElementById('tglStart')?.addEventListener('change', tampilkanTabel);
+        document.getElementById('tglEnd')?.addEventListener('change', tampilkanTabel);
+        document.getElementById('clearRange')?.addEventListener('click', () => {
+            const s = document.getElementById('tglStart');
+            const e = document.getElementById('tglEnd');
+            if (s) s.value = '';
+            if (e) e.value = '';
+            // Kembalikan ke single tanggal secara default
+            const single = document.querySelector('input[name="tanggalMode"][value="single"]');
+            if (single) { single.checked = true; document.getElementById('tanggalSingle').classList.remove('hidden'); document.getElementById('tanggalRange').classList.add('hidden'); }
             tampilkanTabel();
         });
 
@@ -409,7 +472,7 @@
             document.getElementById("inputTeks").value = "";
             document.getElementById("tglSelect").value = "";
             document.getElementById("bankSelect").value = "";
-            document.getElementById("bankSelect").disabled = true;
+            document.getElementById("bankSelect").disabled = false;
             document.getElementById("waktuSelect").value = "semua";
             document.getElementById("waktuSelect").disabled = true;
             document.getElementById("tambahanCount").value = 0;
@@ -420,21 +483,41 @@
         });
 
         function tampilkanTabel() {
+            const tanggalMode = document.querySelector('input[name="tanggalMode"]:checked')?.value || 'single';
             const selectedDate = document.getElementById("tglSelect").value;
+            const startDate = document.getElementById('tglStart')?.value || '';
+            const endDate = document.getElementById('tglEnd')?.value || '';
             const selectedKategori = document.getElementById("bankSelect").value;
             const waktuFilter = document.getElementById("waktuSelect").value;
             const fitur = document.querySelector('input[name="fitur"]:checked')?.value;
 
-            if (!selectedDate || !selectedKategori) {
+            // kategori harus dipilih
+            if (!selectedKategori) {
                 document.getElementById("tabelData").innerHTML = "";
                 document.getElementById("jumlahData").textContent = "Jumlah Data : 0";
                 return;
             }
 
+            // kalau mode single, pastikan selectedDate dipilih
+            if (tanggalMode === 'single' && !selectedDate) {
+                document.getElementById("tabelData").innerHTML = "";
+                document.getElementById("jumlahData").textContent = "Jumlah Data : 0";
+                return;
+            }
+
+            // Jika mode range, pastikan ada minimal satu tanggal (start atau end)
+            if (tanggalMode === 'range') {
+                if (!startDate && !endDate) {
+                    document.getElementById("tabelData").innerHTML = "";
+                    document.getElementById("jumlahData").textContent = "Jumlah Data : 0";
+                    return;
+                }
+            }
+
             if (fitur === "kurangi") {
-                tampilkanTabelVersi1(selectedDate, selectedKategori, waktuFilter);
+                tampilkanTabelVersi1(selectedDate, selectedKategori, waktuFilter, startDate, endDate, tanggalMode);
             } else {
-                tampilkanTabelVersi2(selectedDate, selectedKategori, waktuFilter);
+                tampilkanTabelVersi2(selectedDate, selectedKategori, waktuFilter, startDate, endDate, tanggalMode);
             }
         }
 
@@ -551,16 +634,18 @@
             return `${year}-${month}-${day}`;
         }
 
-        function tampilkanTabelVersi1(selectedDate, selectedKategori, waktuFilter) {
+        function tampilkanTabelVersi1(selectedDate, selectedKategori, waktuFilter, startDate = '', endDate = '', tanggalMode = 'single') {
             const selectedBankList = kategoriBankMap[selectedKategori] || [];
 
             const tambahanCount = parseInt(document.getElementById("tambahanCount").value) || 0;
 
-            let filtered = allData.filter(item =>
-                item.tglpembayaran &&
-                item.tglpembayaran.startsWith(selectedDate) &&
-                selectedBankList.includes(item.pembayaran)
-            );
+            let filtered = allData.filter(item => {
+                if (!item.tglpembayaran) return false;
+                const d = item.tglpembayaran.substring(0, 10);
+                const inRange = tanggalMode === 'range' && ((startDate && endDate) ? (d >= startDate && d <= endDate) : (startDate ? d === startDate : (endDate ? d === endDate : false)));
+                const matchSingle = tanggalMode === 'single' ? item.tglpembayaran.startsWith(selectedDate) : false;
+                return (inRange || matchSingle) && selectedBankList.includes(item.pembayaran);
+            });
 
             if (waktuFilter !== "semua") {
                 filtered = filtered.filter(item => {
@@ -589,49 +674,51 @@
             renderTabel(finalData, waktuFilter);
         }
 
-        function tampilkanTabelVersi2(selectedDate, selectedKategori, waktuFilter) {
+        function tampilkanTabelVersi2(selectedDate, selectedKategori, waktuFilter, startDate = '', endDate = '', tanggalMode = 'single') {
             const selectedBankList = kategoriBankMap[selectedKategori] || [];
 
-            let filtered = allData.filter(item =>
-                item.tglpembayaran &&
-                item.tglpembayaran.startsWith(selectedDate) &&
-                selectedBankList.includes(item.pembayaran)
-            );
+            // basis: semua record yang sesuai tanggal (single atau range) dan kategori bank
+            const base = allData.filter(item => {
+                if (!item.tglpembayaran) return false;
+                const d = item.tglpembayaran.substring(0, 10);
+                const inRange = tanggalMode === 'range' && (
+                    (startDate && endDate) ? (d >= startDate && d <= endDate)
+                        : (startDate ? d === startDate : (endDate ? d === endDate : false))
+                );
+                const matchSingle = tanggalMode === 'single' ? item.tglpembayaran.startsWith(selectedDate) : false;
+                return (inRange || matchSingle) && selectedBankList.includes(item.pembayaran);
+            });
 
+            // filtered = base + tambahan/waktu filter untuk tampil utama
+            let filtered = base.slice();
             if (waktuFilter !== "semua") {
-                filtered = filtered.filter(item => {
-                    const timeStr = item.tglpembayaran.split(" ")[1];
+                filtered = base.filter(item => {
+                    const timeStr = (item.tglpembayaran || "").split(" ")[1];
                     if (!timeStr) return false;
                     const [jam, menit, detik] = timeStr.split(":").map(Number);
                     const waktuDalamDetik = jam * 3600 + menit * 60 + detik;
                     const batasDetik = 17 * 3600;
-
-                    return waktuFilter === "kurang" ?
-                        waktuDalamDetik < batasDetik :
-                        waktuDalamDetik >= batasDetik;
+                    return waktuFilter === "kurang" ? waktuDalamDetik < batasDetik : waktuDalamDetik >= batasDetik;
                 });
             }
 
-            let tambahanData = [];
+            // Siapkan data tambahan (dari base, tapi kebalikan waktu) sesuai jumlah
             const tambahanCount = parseInt(document.getElementById("tambahanCount").value) || 0;
+            let tambahanData = [];
 
             if (waktuFilter === "kurang") {
-                tambahanData = allData.filter(item =>
-                    item.tglpembayaran?.startsWith(selectedDate) &&
-                    selectedBankList.includes(item.pembayaran)
-                ).filter(item => {
-                    const timeStr = item.tglpembayaran.split(" ")[1];
+                // tambahkan baris yang waktu >= 17:00:00 (lawan) — pilih terurut naik (lebih lama dulu)
+                tambahanData = base.filter(item => {
+                    const timeStr = (item.tglpembayaran || "").split(" ")[1];
                     if (!timeStr) return false;
                     const [jam, menit, detik] = timeStr.split(":").map(Number);
                     const waktuDalamDetik = jam * 3600 + menit * 60 + detik;
                     return waktuDalamDetik >= 17 * 3600;
                 }).sort((a, b) => new Date(a.tglpembayaran) - new Date(b.tglpembayaran));
             } else if (waktuFilter === "lebih") {
-                tambahanData = allData.filter(item =>
-                    item.tglpembayaran?.startsWith(selectedDate) &&
-                    selectedBankList.includes(item.pembayaran)
-                ).filter(item => {
-                    const timeStr = item.tglpembayaran.split(" ")[1];
+                // tambahkan baris yang waktu < 17:00:00 (lawan) — pilih terurut turun (terbaru dulu)
+                tambahanData = base.filter(item => {
+                    const timeStr = (item.tglpembayaran || "").split(" ")[1];
                     if (!timeStr) return false;
                     const [jam, menit, detik] = timeStr.split(":").map(Number);
                     const waktuDalamDetik = jam * 3600 + menit * 60 + detik;

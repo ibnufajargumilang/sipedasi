@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Dinamis — Website Builder (Pro)</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { inter: ["Inter", "ui-sans-serif", "system-ui"] },
+                    colors: {
+                        main: {
+                            DEFAULT: "#0b0c10",
+                            50: "#f2f3f7",
+                            100: "#e6e8ef",
+                            700: "#1f2330",
+                            800: "#181b25",
+                            900: "#10131a",
+                        },
+                        panel: {
+                            DEFAULT: "#14151b",
+                            700: "#1a1c23",
+                            800: "#161821",
+                        },
+                        line: "#2a2e39",
+                        textpri: "#EAEAF2",
+                        textsec: "#A9A9B3",
+                        brand: {
+                            50: "#eef2ff",
+                            100: "#e0e7ff",
+                            500: "#6366f1",
+                            600: "#5457ee",
+                            700: "#4f46e5",
+                        },
+                    },
+                    boxShadow: {
+                        soft: "0 8px 20px rgba(0,0,0,.35)",
+                        inset: "inset 0 1px 0 0 rgba(255,255,255,.04)",
+                    },
+                    borderRadius: {
+                        xl2: "1.25rem",
+                    },
+                },
+            },
+        };
+    </script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Highlight.js (Code syntax) -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji';
+            background: #0b0c10;
+            color: #EAEAF2;
+        }
+
+        .chat-scroll {
+            scroll-behavior: smooth;
+        }
+
+        .chat-scroll::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: #2a2e39;
+            border-radius: 8px;
+        }
+
+        /* Typing dots */
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            margin: 0 3px;
+            background-color: #A9A9B3;
+            border-radius: 9999px;
+            display: inline-block;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1.0);
+            }
+        }
+
+        /* Tooltip via utility helper */
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity .2s;
+        }
+
+        .has-tooltip:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Toast base */
+        #toast {
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s .4s, opacity .4s ease;
+            z-index: 1000;
+        }
+
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            transition: opacity .4s ease;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-main-900 text-textpri">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside
+            class="w-18 md:w-20 shrink-0 bg-panel-800 border-r border-line flex flex-col items-center justify-between py-4 z-10">
+            <div class="flex flex-col items-center gap-3">
+                <button id="newChatBtn"
+                    class="has-tooltip p-2.5 rounded-xl bg-panel-700 hover:bg-panel-800 border border-line shadow-inset transition">
+                    <i data-lucide="plus-square" class="w-5 h-5"></i>
+                    <span
+                        class="tooltip absolute left-16 top-2 bg-main-800 border border-line text-xs rounded-md px-2 py-1 shadow-soft">Obrolan
+                        Baru</span>
+                </button>
+                <button id="openModelModalBtn"
+                    class="has-tooltip p-2.5 rounded-xl bg-panel-700 hover:bg-panel-800 border border-line shadow-inset transition">
+                    <i data-lucide="bot" class="w-5 h-5"></i>
+                    <span
+                        class="tooltip absolute left-16 top-[4.25rem] bg-main-800 border border-line text-xs rounded-md px-2 py-1 shadow-soft">Pilih Model AI</span>
+                </button>
+            </div>
+            <div class="flex flex-col items-center gap-3">
+                <button id="openApiModalBtn"
+                    class="has-tooltip p-2.5 rounded-xl bg-panel-700 hover:bg-panel-800 border border-line shadow-inset transition">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span
+                        class="tooltip absolute left-16 bottom-2 bg-main-800 border border-line text-xs rounded-md px-2 py-1 shadow-soft">Pengaturan
+                        API</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="flex-1 flex flex-col">
+            <!-- Header -->
+            <header
+                class="h-14 md:h-16 border-b border-line flex items-center px-4 md:px-6 bg-main-900/70 backdrop-blur supports-[backdrop-filter]:bg-main-900/40">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-panel-800 border border-line grid place-items-center">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-brand-500"></i>
+                    </div>
+                    <h1 class="text-base md:text-lg font-semibold tracking-tight">AI Dinamis — Website Builder</h1>
+                </div>
+                <div id="headerInfo" class="ml-auto flex items-center gap-2 text-textsec text-xs md:text-sm">
+                    <!-- Dynamic Info Here -->
+                </div>
+            </header>
+
+            <!-- Chat container -->
+            <div id="chat-container" class="chat-scroll flex-1 overflow-y-auto p-4 md:p-6">
+                <!-- Initial state -->
+                <section id="initial-state"
+                    class="h-full text-center flex flex-col items-center justify-center select-none">
+                    <div class="p-3 rounded-2xl bg-panel-800 border border-line shadow-soft mb-4">
+                        <i data-lucide="sparkles" class="w-10 h-10 text-brand-500"></i>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-bold">Mau bangun website apa hari ini?</h2>
+                    <p class="text-textsec mt-2 max-w-xl">Mulai dengan memilih jenis website yang ingin Anda buat.</p>
+                    <button id="startWizardBtn" class="mt-6 px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold flex items-center gap-2 transition-transform transform hover:scale-105">
+                        <i data-lucide="mouse-pointer-click" class="w-5 h-5"></i>
+                        Mulai Bangun Website
+                    </button>
+                </section>
+            </div>
+
+            <!-- Input (Now hidden, just for reference if needed later) -->
+            <div class="border-t border-line p-3 md:p-4 bg-main-900/60 hidden">
+                <div class="max-w-4xl mx-auto">
+                    <!-- ... -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Wizard Modal -->
+    <div id="wizardModal" class="fixed inset-0 bg-black/70 hidden z-50">
+        <div class="w-full h-full flex items-center justify-center p-4">
+            <div class="w-full max-w-3xl bg-panel-800 border border-line rounded-2xl shadow-soft flex flex-col">
+                <!-- Header -->
+                <div class="flex items-center justify-between p-4 border-b border-line">
+                    <h3 class="text-lg font-semibold">Wizard Pembuatan Website</h3>
+                    <button id="closeWizardModalBtn"
+                        class="p-2 rounded-lg bg-panel-700 hover:bg-panel-800 border border-line">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Wizard Steps Container -->
+                <div class="p-6 overflow-y-auto">
+                    <!-- Step 1: Category -->
+                    <div id="wizard-step-1">
+                        <h4 class="font-bold text-xl mb-2">Langkah 1: Pilih Kategori Website</h4>
+                        <p class="text-textsec text-sm mb-6">Pilih jenis website yang paling sesuai dengan kebutuhan Anda.</p>
+                        <div id="category-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <!-- Categories will be injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Features -->
+                    <div id="wizard-step-2" class="hidden">
+                        <h4 class="font-bold text-xl mb-2">Langkah 2: Pilih Fitur</h4>
+                        <p class="text-textsec text-sm mb-6">Pilih fitur-fitur yang ingin Anda sertakan di website <b id="selected-category-name" class="text-brand-500"></b> Anda.</p>
+                        <div id="features-list" class="space-y-3">
+                            <!-- Features will be injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Details -->
+                    <div id="wizard-step-3" class="hidden">
+                        <h4 class="font-bold text-xl mb-2">Langkah 3: Detail Proyek</h4>
+                        <p class="text-textsec text-sm mb-6">Berikan deskripsi singkat tentang proyek Anda. Contoh: "Toko kue kering untuk lebaran" atau "Portofolio desain grafis saya".</p>
+                        <textarea id="projectIdea" rows="3" placeholder="Jelaskan ide website Anda di sini..." class="w-full p-3 rounded-xl bg-main-900 border border-line placeholder:text-textsec/70 text-textpri focus:outline-none focus:ring-2 focus:ring-brand-600/60 resize-none"></textarea>
+                    </div>
+                </div>
+
+                <!-- Footer/Actions -->
+                <div class="p-4 border-t border-line flex justify-between items-center">
+                    <button id="wizard-back-btn" class="px-4 py-2 rounded-xl bg-panel-700 hover:bg-panel-800 border border-line text-sm font-medium hidden">Kembali</button>
+                    <button id="wizard-next-btn" class="ml-auto px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium disabled:opacity-50" disabled>Lanjutkan</button>
+                    <button id="wizard-finish-btn" class="ml-auto px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium hidden">Buat Spesifikasi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- AI Model Modal -->
+    <div id="modelModal" class="fixed inset-0 bg-black/70 hidden z-50">
+        <div class="w-full h-full flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-panel-800 border border-line rounded-2xl shadow-soft">
+                <div class="flex items-center justify-between p-4 border-b border-line">
+                    <h3 class="text-lg font-semibold">Pilih Provider & Model AI</h3>
+                    <button id="closeModelModalBtn"
+                        class="p-2 rounded-lg bg-panel-700 hover:bg-panel-800 border border-line">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <!-- Provider Tabs -->
+                    <div class="flex bg-main-900 p-1 rounded-lg border border-line">
+                        <button data-provider-tab="gemini" class="provider-tab flex-1 p-2 text-sm font-semibold rounded-md">Gemini</button>
+                        <button data-provider-tab="openai" class="provider-tab flex-1 p-2 text-sm font-semibold rounded-md">OpenAI</button>
+                    </div>
+
+                    <!-- Model Options -->
+                    <fieldset id="gemini-models" class="space-y-3">
+                        <label for="model-pro" class="flex items-start gap-3 p-3 rounded-xl border border-line has-[:checked]:border-brand-600 has-[:checked]:bg-main-900 cursor-pointer">
+                            <input type="radio" name="ai-model" value="gemini-2.5-pro" id="model-pro" class="mt-1">
+                            <div>
+                                <span class="font-semibold">Gemini 2.5 Pro</span>
+                                <p class="text-textsec text-sm">Model paling kuat untuk penalaran kompleks.</p>
+                            </div>
+                        </label>
+                        <label for="model-flash" class="flex items-start gap-3 p-3 rounded-xl border border-line has-[:checked]:border-brand-600 has-[:checked]:bg-main-900 cursor-pointer">
+                            <input type="radio" name="ai-model" value="gemini-2.5-flash" id="model-flash" class="mt-1">
+                            <div>
+                                <span class="font-semibold">Gemini 2.5 Flash</span>
+                                <p class="text-textsec text-sm">Generasi cepat dan kemampuan disempurnakan.</p>
+                            </div>
+                        </label>
+                        <label for="model-flash-lite" class="flex items-start gap-3 p-3 rounded-xl border border-line has-[:checked]:border-brand-600 has-[:checked]:bg-main-900 cursor-pointer">
+                            <input type="radio" name="ai-model" value="gemini-2.5-flash-lite" id="model-flash-lite" class="mt-1">
+                            <div>
+                                <span class="font-semibold">Gemini 2.5 Flash-Lite</span>
+                                <p class="text-textsec text-sm">Model hemat biaya untuk tugas bervolume tinggi.</p>
+                            </div>
+                        </label>
+                    </fieldset>
+
+                    <fieldset id="openai-models" class="space-y-3 hidden">
+                        <label for="model-gpt4o" class="flex items-start gap-3 p-3 rounded-xl border border-line has-[:checked]:border-brand-600 has-[:checked]:bg-main-900 cursor-pointer">
+                            <input type="radio" name="ai-model" value="gpt-4o" id="model-gpt4o" class="mt-1">
+                            <div>
+                                <span class="font-semibold">GPT-4o</span>
+                                <p class="text-textsec text-sm">Model andalan OpenAI, cerdas dan cepat.</p>
+                            </div>
+                        </label>
+                        <label for="model-gpt35" class="flex items-start gap-3 p-3 rounded-xl border border-line has-[:checked]:border-brand-600 has-[:checked]:bg-main-900 cursor-pointer">
+                            <input type="radio" name="ai-model" value="gpt-3.5-turbo" id="model-gpt35" class="mt-1">
+                            <div>
+                                <span class="font-semibold">GPT-3.5 Turbo</span>
+                                <p class="text-textsec text-sm">Model populer untuk kecepatan dan keandalan.</p>
+                            </div>
+                        </label>
+                    </fieldset>
+
+                    <button id="saveModelBtn"
+                        class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 border border-white/10 text-white font-semibold">Simpan Pilihan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- API Key Modal -->
+    <div id="apiKeyModal" class="fixed inset-0 bg-black/70 hidden z-50">
+        <div class="w-full h-full flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-panel-800 border border-line rounded-2xl shadow-soft">
+                <div class="flex items-center justify-between p-4 border-b border-line">
+                    <h3 class="text-lg font-semibold">Pengaturan API Keys</h3>
+                    <button id="closeApiModalBtn"
+                        class="p-2 rounded-lg bg-panel-700 hover:bg-panel-800 border border-line">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <!-- API Provider Tabs -->
+                    <div class="flex bg-main-900 p-1 rounded-lg border border-line">
+                        <button data-api-tab="gemini" class="api-tab flex-1 p-2 text-sm font-semibold rounded-md">Gemini</button>
+                        <button data-api-tab="openai" class="api-tab flex-1 p-2 text-sm font-semibold rounded-md">OpenAI</button>
+                    </div>
+
+                    <!-- Gemini API Key Input -->
+                    <div id="gemini-key-content">
+                        <p class="text-textsec text-sm">Masukkan <span class="font-medium">Gemini API Key</span> Anda.</p>
+                        <input id="geminiApiKey" type="password" placeholder="gza..."
+                            class="mt-2 w-full p-3 rounded-xl bg-panel-700 border border-line focus:outline-none focus:ring-2 focus:ring-brand-600/60" />
+                    </div>
+
+                    <!-- OpenAI API Key Input -->
+                    <div id="openai-key-content" class="hidden">
+                        <p class="text-textsec text-sm">Masukkan <span class="font-medium">OpenAI API Key</span> Anda.</p>
+                        <input id="openaiApiKey" type="password" placeholder="sk-..."
+                            class="mt-2 w-full p-3 rounded-xl bg-panel-700 border border-line focus:outline-none focus:ring-2 focus:ring-brand-600/60" />
+                    </div>
+
+                    <button id="saveApiBtn"
+                        class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 border border-white/10 text-white font-semibold">Simpan
+                        Kunci</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Source/Preview Modal -->
+    <div id="sourceModal" class="fixed inset-0 bg-black/80 hidden z-50">
+        <div class="w-full h-full flex items-center justify-center p-4">
+            <div
+                class="w-full max-w-6xl h-[90vh] bg-panel-800 border border-line rounded-2xl shadow-soft flex flex-col">
+                <div class="flex items-center justify-between p-4 border-b border-line">
+                    <h3 class="text-lg font-semibold">Pratinjau & Kode</h3>
+                    <div class="flex items-center gap-2">
+                        <button id="copyCodeBtn"
+                            class="px-3 py-2 rounded-xl bg-panel-700 hover:bg-panel-800 border border-line text-sm font-medium flex items-center gap-2">
+                            <i data-lucide="copy" class="w-4 h-4"></i><span>Salin Kode</span>
+                        </button>
+                        <button id="closeModalBtn"
+                            class="p-2 rounded-lg bg-panel-700 hover:bg-panel-800 border border-line">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 overflow-hidden">
+                    <div class="flex flex-col rounded-xl overflow-hidden border border-line">
+                        <iframe id="preview" class="w-full h-full bg-white"></iframe>
+                    </div>
+                    <div class="flex flex-col h-full overflow-hidden rounded-xl border border-line">
+                        <pre
+                            class="h-full overflow-auto bg-main-900 p-4"><code id="sourceCode" class="language-html text-sm"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"
+        class="fixed bottom-5 right-5 bg-brand-600 text-white text-sm px-4 py-2 rounded-xl shadow-soft border border-white/10">
+        <p id="toastMessage"></p>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.378.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <!-- App Script -->
+    <script>
+        // ===== DOM =====
+        const chatContainer = document.getElementById('chat-container');
+        const initialState = document.getElementById('initial-state');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        const newChatBtn = document.getElementById('newChatBtn');
+        const headerInfo = document.getElementById('headerInfo');
+
+        // Wizard
+        const startWizardBtn = document.getElementById('startWizardBtn');
+        const wizardModal = document.getElementById('wizardModal');
+        const closeWizardModalBtn = document.getElementById('closeWizardModalBtn');
+        const wizardSteps = {
+            1: document.getElementById('wizard-step-1'),
+            2: document.getElementById('wizard-step-2'),
+            3: document.getElementById('wizard-step-3'),
+        };
+        const wizardBackBtn = document.getElementById('wizard-back-btn');
+        const wizardNextBtn = document.getElementById('wizard-next-btn');
+        const wizardFinishBtn = document.getElementById('wizard-finish-btn');
+        const categoryGrid = document.getElementById('category-grid');
+        const featuresList = document.getElementById('features-list');
+        const selectedCategoryName = document.getElementById('selected-category-name');
+        const projectIdeaInput = document.getElementById('projectIdea');
+
+
+        // Model modal
+        const modelModal = document.getElementById('modelModal');
+        const openModelModalBtn = document.getElementById('openModelModalBtn');
+        const closeModelModalBtn = document.getElementById('closeModelModalBtn');
+        const saveModelBtn = document.getElementById('saveModelBtn');
+
+        // API modal
+        const apiKeyModal = document.getElementById('apiKeyModal');
+        const openApiModalBtn = document.getElementById('openApiModalBtn');
+        const closeApiModalBtn = document.getElementById('closeApiModalBtn');
+        const geminiApiKeyInput = document.getElementById('geminiApiKey');
+        const openaiApiKeyInput = document.getElementById('openaiApiKey');
+        const saveApiBtn = document.getElementById('saveApiBtn');
+
+        // Source modal
+        const sourceModal = document.getElementById('sourceModal');
+        const previewFrame = document.getElementById('preview');
+        const sourceCodeEl = document.getElementById('sourceCode');
+        const copyCodeBtn = document.getElementById('copyCodeBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        let generatedCode = '';
+        let currentSpec = '';
+        let selectedProvider = 'gemini';
+        let selectedModel = 'gemini-2.5-pro';
+
+        // Icons
+        lucide.createIcons();
+
+        // --- Wizard Data ---
+        const wizardData = {
+            categories: {
+                ecommerce: { name: 'Toko Online', icon: 'shopping-cart', features: ['Keranjang Belanja', 'Checkout & Pembayaran', 'Diskon & Kode Promo', 'Filter & Pencarian Produk', 'Rating & Ulasan Produk'] },
+                portfolio: { name: 'Portofolio', icon: 'briefcase', features: ['Galeri Proyek', 'Formulir Kontak', 'Halaman "Tentang Saya"', 'Daftar Layanan', 'Testimoni Klien'] },
+                landing: { name: 'Landing Page', icon: 'layout-template', features: ['Hero Section Menarik', 'Formulir Kontak/Email', 'Fitur & Keunggulan', 'Galeri Gambar/Video', 'FAQ (Tanya Jawab)'] },
+                blog: { name: 'Blog / Artikel', icon: 'pen-square', features: ['Daftar Artikel', 'Halaman Detail Artikel', 'Kategori & Tag', 'Kolom Komentar', 'Fitur Pencarian'] },
+                restaurant: { name: 'Restoran / Kafe', icon: 'utensils-crossed', features: ['Menu Digital', 'Galeri Foto Makanan', 'Formulir Reservasi', 'Peta & Lokasi', 'Ulasan Pelanggan'] },
+                event: { name: 'Website Acara', icon: 'calendar-check', features: ['Countdown Acara', 'Detail Jadwal', 'Profil Pembicara', 'Formulir Pendaftaran', 'Peta Lokasi Acara'] },
+            },
+            state: {
+                currentStep: 1,
+                selectedCategory: null,
+                selectedFeatures: [],
+                projectIdea: ''
+            }
+        };
+
+        // ===== Helpers =====
+        function showToast(message, type = 'success') {
+            toastMessage.textContent = message;
+            toast.className = `fixed bottom-5 right-5 text-white text-sm px-4 py-2 rounded-xl shadow-soft border ${type === 'success' ? 'bg-brand-600 border-white/10' : 'bg-red-600 border-white/10'}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3200);
+        }
+
+        function updateHeaderInfo() {
+            const providerName = selectedProvider === 'gemini' ? 'Gemini' : 'OpenAI';
+            let modelName = 'Unknown';
+            if (selectedModel.includes('2.5-pro')) modelName = '2.5 Pro';
+            else if (selectedModel.includes('2.5-flash-lite')) modelName = '2.5 Flash-Lite';
+            else if (selectedModel.includes('2.5-flash')) modelName = '2.5 Flash';
+            else if (selectedModel.includes('gpt-4o')) modelName = 'GPT-4o';
+            else if (selectedModel.includes('gpt-3.5-turbo')) modelName = 'GPT-3.5 Turbo';
+
+            headerInfo.innerHTML = `
+                <span class="hidden sm:inline font-medium text-textpri">${providerName} ${modelName}</span>
+                <span class="px-2 py-1 rounded-lg bg-panel-700 border border-line">Client-side</span>
+             `;
+        }
+
+        // ... (rest of the helper functions: saveModelSelection, loadModelSelection, saveApiKeys, loadApiKeys)
+
+        function saveModelSelection() {
+            const selected = document.querySelector('input[name="ai-model"]:checked');
+            if (!selected) {
+                showToast('Pilih salah satu model.', 'error');
+                return;
+            }
+            sessionStorage.setItem('selectedAiProvider', selectedProvider);
+            sessionStorage.setItem('selectedAiModel', selected.value);
+            selectedModel = selected.value;
+            updateHeaderInfo();
+            showToast('Pengaturan model berhasil diperbarui.');
+            modelModal.classList.add('hidden');
+        }
+
+        function loadModelSelection() {
+            const savedProvider = sessionStorage.getItem('selectedAiProvider');
+            const savedModel = sessionStorage.getItem('selectedAiModel');
+            if (savedProvider) selectedProvider = savedProvider;
+            if (savedModel) selectedModel = savedModel;
+
+            const radio = document.querySelector(`input[name="ai-model"][value="${selectedModel}"]`);
+            if (radio) radio.checked = true;
+
+            updateHeaderInfo();
+            switchProviderTab(selectedProvider, document.querySelector(`.provider-tab[data-provider-tab="${selectedProvider}"]`));
+        }
+
+        function saveApiKeys() {
+            const geminiKey = geminiApiKeyInput.value.trim();
+            const openaiKey = openaiApiKeyInput.value.trim();
+            if (geminiKey) sessionStorage.setItem('geminiApiKey', geminiKey);
+            if (openaiKey) sessionStorage.setItem('openaiApiKey', openaiKey);
+            showToast('API Key berhasil disimpan.');
+            apiKeyModal.classList.add('hidden');
+        }
+
+        function loadApiKeys() {
+            const geminiKey = sessionStorage.getItem('geminiApiKey');
+            const openaiKey = sessionStorage.getItem('openaiApiKey');
+            if (geminiKey) geminiApiKeyInput.value = geminiKey;
+            if (openaiKey) openaiApiKeyInput.value = openaiKey;
+        }
+
+        function startNewChat() {
+            chatContainer.innerHTML = '';
+            const clone = initialState.cloneNode(true);
+            clone.id = 'initial-state';
+            chatContainer.appendChild(clone);
+            currentSpec = '';
+            generatedCode = '';
+            showToast('Obrolan baru dimulai.');
+            lucide.createIcons();
+        }
+
+        function appendMessage(content, type) { // 'user' | 'bot' | 'bot-typing'
+            const init = document.getElementById('initial-state');
+            if (init && chatContainer.contains(init)) init.remove();
+
+            const wrap = document.createElement('div');
+            wrap.className = `w-full max-w-4xl mx-auto flex gap-3 md:gap-4 p-3 md:p-4 ${type === 'user' ? '' : 'bg-panel-800 border border-line rounded-2xl'}`;
+
+            const avatarUser = `<div class="w-9 h-9 rounded-xl bg-brand-600 text-white grid place-items-center font-bold shrink-0">U</div>`;
+            const avatarBot = `<div class="w-9 h-9 rounded-xl bg-panel-700 border border-line grid place-items-center shrink-0"><i data-lucide="sparkles" class="w-4 h-4 text-brand-500"></i></div>`;
+
+            const inner = type === 'user'
+                ? `${avatarUser}<div class="prose prose-invert max-w-none">${content}</div>`
+                : type === 'bot-typing'
+                    ? `${avatarBot}<div class="typing-indicator flex items-center h-9"><span></span><span></span><span></span></div>`
+                    : `${avatarBot}<div class="prose prose-invert max-w-none">${content}</div>`;
+
+            wrap.innerHTML = inner;
+            chatContainer.appendChild(wrap);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            lucide.createIcons();
+            return wrap;
+        }
+
+        // ===== Wizard Logic =====
+
+        function initializeWizard() {
+            // Populate categories
+            categoryGrid.innerHTML = '';
+            for (const key in wizardData.categories) {
+                const category = wizardData.categories[key];
+                const card = document.createElement('button');
+                card.className = 'p-4 rounded-xl border border-line bg-main-900 hover:border-brand-600 hover:bg-main-800 transition text-left flex flex-col items-start';
+                card.dataset.categoryKey = key;
+                card.innerHTML = `
+                    <i data-lucide="${category.icon}" class="w-8 h-8 mb-3 text-brand-500"></i>
+                    <span class="font-semibold">${category.name}</span>
+                `;
+                card.addEventListener('click', () => selectCategory(key));
+                categoryGrid.appendChild(card);
+            }
+            lucide.createIcons();
+            updateWizardView();
+        }
+
+        function selectCategory(key) {
+            wizardData.state.selectedCategory = key;
+            document.querySelectorAll('#category-grid button').forEach(btn => {
+                btn.classList.toggle('border-brand-600', btn.dataset.categoryKey === key);
+                btn.classList.toggle('bg-main-800', btn.dataset.categoryKey === key);
+            });
+            wizardNextBtn.disabled = false;
+        }
+
+        function updateWizardView() {
+            const { currentStep, selectedCategory } = wizardData.state;
+
+            Object.values(wizardSteps).forEach(stepEl => stepEl.classList.add('hidden'));
+            wizardSteps[currentStep].classList.remove('hidden');
+
+            wizardBackBtn.classList.toggle('hidden', currentStep === 1);
+            wizardNextBtn.classList.toggle('hidden', currentStep === 3);
+            wizardFinishBtn.classList.toggle('hidden', currentStep !== 3);
+
+            if (currentStep === 2) {
+                populateFeatures();
+                wizardNextBtn.disabled = wizardData.state.selectedFeatures.length === 0;
+            } else if (currentStep === 1) {
+                wizardNextBtn.disabled = !selectedCategory;
+            }
+        }
+
+        function populateFeatures() {
+            const category = wizardData.categories[wizardData.state.selectedCategory];
+            selectedCategoryName.textContent = category.name.toLowerCase();
+            featuresList.innerHTML = '';
+            category.features.forEach(feature => {
+                const isChecked = wizardData.state.selectedFeatures.includes(feature);
+                const label = document.createElement('label');
+                label.className = 'flex items-center gap-3 p-3 rounded-xl border border-line has-[:checked]:border-brand-600 has-[:checked]:bg-main-900 cursor-pointer';
+                label.innerHTML = `
+                    <input type="checkbox" value="${feature}" class="feature-checkbox" ${isChecked ? 'checked' : ''}>
+                    <span>${feature}</span>
+                `;
+                featuresList.appendChild(label);
+            });
+
+            document.querySelectorAll('.feature-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        wizardData.state.selectedFeatures.push(e.target.value);
+                    } else {
+                        wizardData.state.selectedFeatures = wizardData.state.selectedFeatures.filter(f => f !== e.target.value);
+                    }
+                    wizardNextBtn.disabled = wizardData.state.selectedFeatures.length === 0;
+                });
+            });
+        }
+
+        function resetWizard() {
+            wizardData.state.currentStep = 1;
+            wizardData.state.selectedCategory = null;
+            wizardData.state.selectedFeatures = [];
+            wizardData.state.projectIdea = '';
+            projectIdeaInput.value = '';
+            initializeWizard();
+        }
+
+        // ===== API Call Logic =====
+        async function callGenerativeAPI(prompt, systemInstruction) {
+            // ... (rest of API call logic is the same)
+            const provider = selectedProvider;
+            const apiKey = sessionStorage.getItem(provider === 'gemini' ? 'geminiApiKey' : 'openaiApiKey');
+
+            if (!apiKey) {
+                throw new Error(`API Key untuk ${provider.toUpperCase()} belum diatur.`);
+            }
+
+            if (provider === 'gemini') {
+                return callGeminiAPI(prompt, systemInstruction, apiKey);
+            } else { // openai
+                return callOpenAIAPI(prompt, systemInstruction, apiKey);
+            }
+        }
+
+        async function callGeminiAPI(prompt, systemInstruction, apiKey) {
+            const model = selectedModel;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] },
+            };
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) {
+                let errorMsg = `API Error: ${response.status}`;
+                try { const err = await response.json(); errorMsg = err?.error?.message || errorMsg; } catch (_) { }
+                throw new Error(errorMsg);
+            }
+            const result = await response.json();
+            const candidate = result.candidates?.[0];
+            const text = candidate?.content?.parts?.[0]?.text;
+            if (!text) throw new Error('Gagal mendapatkan konten dari respons API Gemini.');
+            return text.trim();
+        }
+
+        async function callOpenAIAPI(prompt, systemInstruction, apiKey) {
+            const model = selectedModel;
+            const apiUrl = 'https://api.openai.com/v1/chat/completions';
+            const payload = {
+                model: model,
+                messages: [
+                    { role: 'system', content: systemInstruction },
+                    { role: 'user', content: prompt }
+                ]
+            };
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) {
+                let errorMsg = `API Error: ${response.status}`;
+                try { const err = await response.json(); errorMsg = err?.error?.message || errorMsg; } catch (_) { }
+                throw new Error(errorMsg);
+            }
+            const result = await response.json();
+            const text = result.choices?.[0]?.message?.content;
+            if (!text) throw new Error('Gagal mendapatkan konten dari respons API OpenAI.');
+            return text.trim();
+        }
+
+        function generateSpecification(wizardResult) {
+            const { category, features, idea } = wizardResult;
+            const categoryName = wizardData.categories[category].name;
+            const featuresString = features.join(', ');
+            const fullIdea = `Buatkan website dengan kategori "${categoryName}" yang berfokus pada "${idea}". Fitur utama yang harus ada adalah: ${featuresString}.`;
+
+            const systemPrompt = `Anda adalah seorang Project Manager Web Development ahli. Ubah ide pengguna menjadi spesifikasi teknis (prompt) untuk membuat website dinamis dan profesional siap publish.
+ATURAN:
+1.  Fokus pada CTA (Click-to-Action) yang jelas dan desain modern.
+2.  SARANKAN STACK MODERN: Minta secara eksplisit penggunaan stack modern via CDN untuk tampilan profesional:
+    -   **CSS**: Sarankan **Tailwind CSS**.
+    -   **JS**: Sarankan **React** untuk interaktivitas.
+    -   **Ikon**: Sarankan **Bootstrap Icons**.
+3.  STRUKTUR DATA JS: Wajibkan semua konten (produk, teks, tanggal) disimpan dalam satu objek JavaScript bernama 'websiteData' untuk kemudahan editing.
+4.  FITUR E-COMMERCE (JIKA RELEVAN): Jika kategori adalah 'Toko Online' atau 'Restoran', otomatis sertakan permintaan untuk fitur lengkap:
+    - Keranjang belanja, checkout, formulir pengguna.
+    - Opsi pengiriman (delivery/ambil sendiri).
+    - Harga coret (diskon) dan sistem kode promo (potongan harga/ongkir).
+5.  Gunakan format yang bersih dan profesional dengan heading. JANGAN gunakan markdown aneh.
+6.  HASILKAN HANYA TEKS SPESIFIKASINYA SAJA. Jangan tambahkan kata pembuka atau penutup.`;
+            return callGenerativeAPI(fullIdea, systemPrompt);
+        }
+
+        async function generateWebsiteCode(spec) {
+            const systemPrompt = `Anda adalah seorang pengembang web Full Stack ahli dan desainer UI/UX. Buat halaman web berdasarkan spesifikasi teknis.
+ATURAN WAJIB:
+1.  SATU FILE HTML LENGKAP: Hasilkan SATU file HTML. Semua CSS dan JS HARUS inline atau dimuat dari CDN.
+2.  STACK MODERN VIA CDN: Untuk tampilan profesional, gunakan kombinasi library berikut dari CDN (jsDelivr, unpkg, atau cdnjs):
+    -   **CSS Framework**: Gunakan **Tailwind CSS**.
+    -   **JS Framework**: Gunakan **React** untuk semua interaktivitas.
+    -   **Ikon**: Gunakan **Bootstrap Icons**.
+3.  RESPONSIF & ESTETIS: Desain harus sangat modern, bersih, estetis, dan sepenuhnya responsif.
+4.  ATURAN DATA JAVASCRIPT: Letakkan semua data konten dinamis (teks, produk, dll.) di dalam objek JavaScript bernama \`websiteData\`. Gunakan JavaScript untuk mengisi konten HTML dari objek ini. Ini aturan krusial untuk memisahkan data dari tampilan.
+5.  ATURAN IMPLEMENTASI JS & IKON (PENTING!):
+    -   **React**: Muat React, ReactDOM, dan Babel dari CDN. Semua kode React HARUS berada di dalam tag \`<script type="text/babel">\`.
+    -   **Bootstrap Icons**: Muat file CSS Bootstrap Icons dari CDN di dalam tag \`<head>\`. Gunakan format \`<i class="bi bi-nama-ikon"></i>\` untuk menampilkan ikon.
+6.  KODE LENGKAP & BERSIH: Pastikan kode lengkap, dapat dijalankan, tanpa placeholder.
+7.  OUTPUT MENTAH: Jangan pernah menyertakan markdown ticks (\\\`\\\`\\\`) dalam output akhir. Hanya berikan kode HTML mentah.`;
+            const raw = await callGenerativeAPI(spec, systemPrompt);
+            return raw.replace(/^\`\`\`html\s*|\`\`\`$/g, '').trim();
+        }
+
+        // ===== Flow =====
+        async function handleFinishWizard() {
+            wizardData.state.projectIdea = projectIdeaInput.value.trim();
+            if (!wizardData.state.projectIdea) {
+                showToast('Mohon jelaskan ide proyek Anda.', 'error');
+                return;
+            }
+
+            wizardModal.classList.add('hidden');
+
+            const constructedIdea = {
+                category: wizardData.state.selectedCategory,
+                features: wizardData.state.selectedFeatures,
+                idea: wizardData.state.projectIdea
+            };
+
+            appendMessage(`Membangun website **${wizardData.categories[constructedIdea.category].name}** dengan fokus pada: "${constructedIdea.idea}" dan fitur: *${constructedIdea.features.join(', ')}*`, 'user');
+
+            const typing = appendMessage('', 'bot-typing');
+            try {
+                currentSpec = await generateSpecification(constructedIdea);
+                typing.remove();
+                const specHtml = `
+          <p class="font-semibold">Spesifikasi berhasil dibuat!</p>
+          <p class="text-textsec mt-1">Berikut spesifikasi teknis berdasarkan ide Anda. Lanjut generate kode website?</p>
+          <pre class="mt-3 p-3 bg-main-900 rounded-xl border border-line text-sm whitespace-pre-wrap">${currentSpec.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button class="px-3 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium" onclick="handleGenerateCode()">Ya, Lanjutkan & Buat Kode</button>
+            <button class="px-3 py-2 rounded-xl bg-panel-700 hover:bg-panel-800 border border-line text-sm" onclick="startNewChat()">Mulai dari Awal</button>
+          </div>`;
+                appendMessage(specHtml, 'bot');
+            } catch (err) {
+                typing.remove();
+                appendMessage(`<p class="text-red-400">Error: ${err.message}</p>`, 'bot');
+            }
+        }
+
+        window.handleGenerateCode = async () => {
+            const typing = appendMessage('', 'bot-typing');
+            try {
+                generatedCode = await generateWebsiteCode(currentSpec);
+                typing.remove();
+                const codeHtml = `
+          <p class="font-semibold">Website berhasil dibuat!</p>
+          <p class="text-textsec mt-1">Lihat pratinjau & kode sumbernya sekarang, atau mulai proyek baru.</p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button class="px-3 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium" onclick="showSourceModal()">Lihat Hasil</button>
+            <button class="px-3 py-2 rounded-xl bg-panel-700 hover:bg-panel-800 border border-line text-sm" onclick="startNewChat()">Buat Website Lain</button>
+          </div>`;
+                appendMessage(codeHtml, 'bot');
+            } catch (err) {
+                typing.remove();
+                appendMessage(`<p class="text-red-400">Error: ${err.message}</p>`, 'bot');
+            }
+        }
+
+        // ===== Modals =====
+        function setupModal(modal, openBtn, closeBtn) {
+            if (openBtn) openBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+            if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
+        }
+
+        setupModal(modelModal, openModelModalBtn, closeModelModalBtn);
+        setupModal(apiKeyModal, openApiModalBtn, closeApiModalBtn);
+        setupModal(sourceModal, null, closeModalBtn);
+        setupModal(wizardModal, startWizardBtn, closeWizardModalBtn);
+
+        window.showSourceModal = () => {
+            previewFrame.srcdoc = generatedCode;
+            sourceCodeEl.textContent = generatedCode;
+            hljs.highlightElement(sourceCodeEl);
+            sourceModal.classList.remove('hidden');
+        }
+
+        function copyCode() {
+            navigator.clipboard.writeText(generatedCode)
+                .then(() => showToast('Kode berhasil disalin!'))
+                .catch(() => showToast('Gagal menyalin kode.', 'error'));
+        }
+
+        // --- Tab Switchers ---
+        function switchProviderTab(provider, clickedTab) {
+            document.querySelectorAll('.provider-tab').forEach(t => t.classList.remove('bg-brand-600'));
+            clickedTab.classList.add('bg-brand-600');
+
+            selectedProvider = provider;
+            document.getElementById('gemini-models').classList.toggle('hidden', provider !== 'gemini');
+            document.getElementById('openai-models').classList.toggle('hidden', provider !== 'openai');
+
+            // Set default model if switching to a new provider without a saved model for it
+            const currentSelectedRadio = document.querySelector('input[name="ai-model"]:checked');
+            if (!currentSelectedRadio || !currentSelectedRadio.closest('fieldset').id.startsWith(provider)) {
+                document.querySelector(`#${provider}-models input[type="radio"]`).checked = true;
+            }
+        }
+
+        function switchApiTab(provider, clickedTab) {
+            document.querySelectorAll('.api-tab').forEach(t => t.classList.remove('bg-brand-600'));
+            clickedTab.classList.add('bg-brand-600');
+            document.getElementById('gemini-key-content').classList.toggle('hidden', provider !== 'gemini');
+            document.getElementById('openai-key-content').classList.toggle('hidden', provider !== 'openai');
+        }
+
+        // ===== Events =====
+        window.addEventListener('load', () => {
+            loadApiKeys();
+            loadModelSelection();
+            initializeWizard();
+            switchApiTab('gemini', document.querySelector('.api-tab[data-api-tab="gemini"]'));
+        });
+
+        document.querySelectorAll('.provider-tab').forEach(tab => {
+            tab.addEventListener('click', () => switchProviderTab(tab.dataset.providerTab, tab));
+        });
+
+        document.querySelectorAll('.api-tab').forEach(tab => {
+            tab.addEventListener('click', () => switchApiTab(tab.dataset.apiTab, tab));
+        });
+
+        saveModelBtn.addEventListener('click', saveModelSelection);
+        saveApiBtn.addEventListener('click', saveApiKeys);
+        copyCodeBtn.addEventListener('click', copyCode);
+        newChatBtn.addEventListener('click', startNewChat);
+
+        // Wizard events
+        wizardNextBtn.addEventListener('click', () => {
+            if (wizardData.state.currentStep < 3) {
+                wizardData.state.currentStep++;
+                updateWizardView();
+            }
+        });
+        wizardBackBtn.addEventListener('click', () => {
+            if (wizardData.state.currentStep > 1) {
+                wizardData.state.currentStep--;
+                updateWizardView();
+            }
+        });
+        wizardFinishBtn.addEventListener('click', handleFinishWizard);
+        closeWizardModalBtn.addEventListener('click', resetWizard);
+
+
+    </script>
+</body>
+
+</html>

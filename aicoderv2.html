@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Dinamis — Website Builder (Pro)</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { inter: ["Inter", "ui-sans-serif", "system-ui"] },
+                    colors: {
+                        main: {
+                            DEFAULT: "#0b0c10",
+                            50: "#f2f3f7",
+                            100: "#e6e8ef",
+                            700: "#1f2330",
+                            800: "#181b25",
+                            900: "#10131a",
+                        },
+                        panel: {
+                            DEFAULT: "#14151b",
+                            700: "#1a1c23",
+                            800: "#161821",
+                        },
+                        line: "#2a2e39",
+                        textpri: "#EAEAF2",
+                        textsec: "#A9A9B3",
+                        brand: {
+                            50: "#eef2ff",
+                            100: "#e0e7ff",
+                            500: "#6366f1",
+                            600: "#5457ee",
+                            700: "#4f46e5",
+                        },
+                    },
+                    boxShadow: {
+                        soft: "0 8px 20px rgba(0,0,0,.35)",
+                        inset: "inset 0 1px 0 0 rgba(255,255,255,.04)",
+                    },
+                    borderRadius: {
+                        xl2: "1.25rem",
+                    },
+                },
+            },
+        };
+    </script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Highlight.js (Code syntax) -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji';
+            background: #0b0c10;
+            color: #EAEAF2;
+        }
+
+        .chat-scroll {
+            scroll-behavior: smooth;
+        }
+
+        .chat-scroll::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: #2a2e39;
+            border-radius: 8px;
+        }
+
+        /* Typing dots */
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            margin: 0 3px;
+            background-color: #A9A9B3;
+            border-radius: 9999px;
+            display: inline-block;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-indicator span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1.0);
+            }
+        }
+
+        /* Tooltip via utility helper */
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity .2s;
+        }
+
+        .has-tooltip:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Toast base */
+        #toast {
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0s .4s, opacity .4s ease;
+            z-index: 1000;
+        }
+
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            transition: opacity .4s ease;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-main-900 text-textpri">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside
+            class="w-18 md:w-20 shrink-0 bg-panel-800 border-r border-line flex flex-col items-center justify-between py-4 z-10">
+            <div class="flex flex-col items-center gap-3">
+                <button id="newChatBtn"
+                    class="has-tooltip p-2.5 rounded-xl bg-panel-700 hover:bg-panel-800 border border-line shadow-inset transition">
+                    <i data-lucide="plus-square" class="w-5 h-5"></i>
+                    <span
+                        class="tooltip absolute left-16 top-2 bg-main-800 border border-line text-xs rounded-md px-2 py-1 shadow-soft">Obrolan
+                        Baru</span>
+                </button>
+                <button id="openModelModalBtn"
+                    class="has-tooltip p-2.5 rounded-xl bg-panel-700 hover:bg-panel-800 border border-line shadow-inset transition">
+                    <i data-lucide="bot" class="w-5 h-5"></i>
+                    <span
+                        class="tooltip absolute left-16 top-[4.25rem] bg-main-800 border border-line text-xs rounded-md px-2 py-1 shadow-soft">Pilih Model AI</span>
+                </button>
+            </div>
+            <div class="flex flex-col items-center gap-3">
+                <button id="openApiModalBtn"
+                    class="has-tooltip p-2.5 rounded-xl bg-panel-700 hover:bg-panel-800 border border-line shadow-inset transition">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span
+                        class="tooltip absolute left-16 bottom-2 bg-main-800 border border-line text-xs rounded-md px-2 py-1 shadow-soft">Pengaturan
+                        API</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="flex-1 flex flex-col">
+            <!-- Header -->
+            <header
+                class="h-14 md:h-16 border-b border-line flex items-center px-4 md:px-6 bg-main-900/70 backdrop-blur supports-[backdrop-filter]:bg-main-900/40">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-panel-800 border border-line grid place-items-center">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-brand-500"></i>
+                    </div>
+                    <h1 class="text-base md:text-lg font-semibold tracking-tight">AI Dinamis — Website Builder</h1>
+                </div>
+                <div class="ml-auto flex items-center gap-2 text-textsec text-xs md:text-sm">
+                    <span id="modelDisplay" class="hidden sm:inline font-medium text-textpri">Gemini 2.5 Pro</span>
+                    <span class="px-2 py-1 rounded-lg bg-panel-700 border border-line">Client-side</span>
+                </div>
+            </header>
+
+            <!-- Chat container -->
+            <div id="chat-container" class="chat-scroll flex-1 overflow-y-auto p-4 md:p-6">
+                <!-- Initial state -->
+                <section id="initial-state"
+                    class="h-full text-center flex flex-col items-center justify-center select-none">
+                    <div class="p-3 rounded-2xl bg-panel-800 border border-line shadow-soft mb-4">
+                        <i data-lucide="sparkles" class="w-10 h-10 text-brand-500"></i>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl font-bold">Mau bangun website apa hari ini?</h2>
+                    <p class="text-textsec mt-2 max-w-xl">Ketik idenya, aku susun spesifikasinya dan langsung hasilkan
+                        <span class="font-semibold">satu file HTML</span> siap publish — lengkap dengan preview & code
+                        viewer.
+                    </p>
+                </section>
+            </div>
+
+            <!-- Input -->
+            <div class="border-t border-line p-3 md:p-4 bg-main-900/60">
+                <div class="max-w-4xl mx-auto">
+                    <div class="relative">
+                        <textarea id="ideaInput" rows="1"
+                            placeholder="Contoh: Landing page untuk aplikasi kebugaran dengan countdown & form email..."
+                            class="w-full p-4 pr-14 rounded-2xl bg-panel-800 border border-line placeholder:text-textsec/70 text-textpri focus:outline-none focus:ring-2 focus:ring-brand-600/60 resize-none shadow-inset"></textarea>
+                        <button id="sendBtn"
+                            class="absolute right-2.5 top-1/2 -translate-y-1/2 p-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white border border-white/10 transition disabled:opacity-50">
+                            <i data-lucide="arrow-up" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-textsec mt-2">Tekan <kbd
+                            class="px-1.5 py-0.5 rounded bg-panel-700 border border-line">Enter</kbd> untuk kirim, <kbd
+                            class="px-1.5 py-0.5 rounded bg-panel-700 border border-line">Shift</kbd>+<kbd
+                            class="px-1.5 py-0.5 rounded bg-panel-700 border border-line">Enter</kbd> untuk baris baru.
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- AI Model Modal -->
+    <div id="modelModal" class="fixed inset-0 bg-black/70 hidden z-50">
+        <div class="w-full h-full flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-panel-800 border border-line rounded-2xl shadow-soft">
+                <div class="flex items-center justify-between p-4 border-b border-line">
+                    <h3 class="text-lg font-semibold">Pilih Model AI</h3>
+                    <button id="closeModelModalBtn"
+                        class="p-2 rounded-lg bg-panel-700 hover:bg-panel-800 border border-line">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <p class="text-textsec text-sm">Pilih model Gemini yang ingin Anda gunakan untuk generate kode.</p>
+                    <fieldset class="space-y-3">
+                        <label for="model-pro" class="flex items-start gap-3 p-3 rounded-xl border border-line has-[:checked]:border-brand-600 has-[:checked]:bg-main-900 cursor-pointer">
+                            <input type="radio" name="ai-model" value="gemini-2.5-pro" id="model-pro" class="mt-1" checked>
+                            <div>
+                                <span class="font-semibold">Gemini 2.5 Pro</span>
+                                <p class="text-textsec text-sm">Model paling kuat untuk penalaran kompleks dan tugas-tugas sulit.</p>
+                            </div>
+                        </label>
+                        <label for="model-flash" class="flex items-start gap-3 p-3 rounded-xl border border-line has-[:checked]:border-brand-600 has-[:checked]:bg-main-900 cursor-pointer">
+                            <input type="radio" name="ai-model" value="gemini-2.5-flash" id="model-flash" class="mt-1">
+                            <div>
+                                <span class="font-semibold">Gemini 2.5 Flash</span>
+                                <p class="text-textsec text-sm">Model multimodal terbaru dengan generasi cepat dan kemampuan yang disempurnakan.</p>
+                            </div>
+                        </label>
+                        <label for="model-flash-lite" class="flex items-start gap-3 p-3 rounded-xl border border-line has-[:checked]:border-brand-600 has-[:checked]:bg-main-900 cursor-pointer">
+                            <input type="radio" name="ai-model" value="gemini-2.5-flash-lite" id="model-flash-lite" class="mt-1">
+                            <div>
+                                <span class="font-semibold">Gemini 2.5 Flash-Lite</span>
+                                <p class="text-textsec text-sm">Model paling cepat dan hemat biaya, bagus untuk tugas bervolume tinggi.</p>
+                            </div>
+                        </label>
+                    </fieldset>
+                    <button id="saveModelBtn"
+                        class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 border border-white/10 text-white font-semibold">Simpan Pilihan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- API Key Modal -->
+    <div id="apiKeyModal" class="fixed inset-0 bg-black/70 hidden z-50">
+        <div class="w-full h-full flex items-center justify-center p-4">
+            <div class="w-full max-w-md bg-panel-800 border border-line rounded-2xl shadow-soft">
+                <div class="flex items-center justify-between p-4 border-b border-line">
+                    <h3 class="text-lg font-semibold">Pengaturan API Key</h3>
+                    <button id="closeApiModalBtn"
+                        class="p-2 rounded-lg bg-panel-700 hover:bg-panel-800 border border-line">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <p class="text-textsec text-sm">Masukkan <span class="font-medium">Gemini API Key</span> Anda. Kunci
+                        ini hanya disimpan sementara di browser (sessionStorage).</p>
+                    <label class="block text-sm font-medium">Gemini API Key</label>
+                    <input id="apiKey" type="password" placeholder="Masukkan API Key"
+                        class="w-full p-3 rounded-xl bg-panel-700 border border-line focus:outline-none focus:ring-2 focus:ring-brand-600/60" />
+                    <button id="saveApiBtn"
+                        class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 border border-white/10 text-white font-semibold">Simpan
+                        Kunci</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Source/Preview Modal -->
+    <div id="sourceModal" class="fixed inset-0 bg-black/80 hidden z-50">
+        <div class="w-full h-full flex items-center justify-center p-4">
+            <div
+                class="w-full max-w-6xl h-[90vh] bg-panel-800 border border-line rounded-2xl shadow-soft flex flex-col">
+                <div class="flex items-center justify-between p-4 border-b border-line">
+                    <h3 class="text-lg font-semibold">Pratinjau & Kode</h3>
+                    <div class="flex items-center gap-2">
+                        <button id="copyCodeBtn"
+                            class="px-3 py-2 rounded-xl bg-panel-700 hover:bg-panel-800 border border-line text-sm font-medium flex items-center gap-2">
+                            <i data-lucide="copy" class="w-4 h-4"></i><span>Salin Kode</span>
+                        </button>
+                        <button id="closeModalBtn"
+                            class="p-2 rounded-lg bg-panel-700 hover:bg-panel-800 border border-line">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-4 p-4 overflow-hidden">
+                    <div class="flex flex-col rounded-xl overflow-hidden border border-line">
+                        <iframe id="preview" class="w-full h-full bg-white"></iframe>
+                    </div>
+                    <div class="flex flex-col h-full overflow-hidden rounded-xl border border-line">
+                        <pre
+                            class="h-full overflow-auto bg-main-900 p-4"><code id="sourceCode" class="language-html text-sm"></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"
+        class="fixed bottom-5 right-5 bg-brand-600 text-white text-sm px-4 py-2 rounded-xl shadow-soft border border-white/10">
+        <p id="toastMessage"></p>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <!-- App Script -->
+    <script>
+        // ===== DOM =====
+        const ideaInput = document.getElementById('ideaInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const chatContainer = document.getElementById('chat-container');
+        const initialState = document.getElementById('initial-state');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        const newChatBtn = document.getElementById('newChatBtn');
+        const modelDisplay = document.getElementById('modelDisplay');
+
+        // Model modal
+        const modelModal = document.getElementById('modelModal');
+        const openModelModalBtn = document.getElementById('openModelModalBtn');
+        const closeModelModalBtn = document.getElementById('closeModelModalBtn');
+        const saveModelBtn = document.getElementById('saveModelBtn');
+
+        // API modal
+        const apiKeyModal = document.getElementById('apiKeyModal');
+        const openApiModalBtn = document.getElementById('openApiModalBtn');
+        const closeApiModalBtn = document.getElementById('closeApiModalBtn');
+        const apiKeyInput = document.getElementById('apiKey');
+        const saveApiBtn = document.getElementById('saveApiBtn');
+
+        // Source modal
+        const sourceModal = document.getElementById('sourceModal');
+        const previewFrame = document.getElementById('preview');
+        const sourceCodeEl = document.getElementById('sourceCode');
+        const copyCodeBtn = document.getElementById('copyCodeBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        let generatedCode = '';
+        let currentSpec = '';
+        let selectedModel = 'gemini-2.5-pro';
+
+        // Icons
+        lucide.createIcons();
+
+        // ===== Helpers =====
+        function showToast(message, type = 'success') {
+            toastMessage.textContent = message;
+            toast.className = `fixed bottom-5 right-5 text-white text-sm px-4 py-2 rounded-xl shadow-soft border ${type === 'success' ? 'bg-brand-600 border-white/10' : 'bg-red-600 border-white/10'}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3200);
+        }
+
+        function updateModelDisplay() {
+            let modelName = 'Unknown Model';
+            if (selectedModel.includes('2.5-pro')) {
+                modelName = 'Gemini 2.5 Pro';
+            } else if (selectedModel.includes('2.5-flash-lite')) {
+                modelName = 'Gemini 2.5 Flash-Lite';
+            } else if (selectedModel.includes('2.5-flash')) {
+                modelName = 'Gemini 2.5 Flash';
+            }
+            modelDisplay.textContent = modelName;
+        }
+
+        function saveModelSelection() {
+            const selected = document.querySelector('input[name="ai-model"]:checked').value;
+            sessionStorage.setItem('selectedAiModel', selected);
+            selectedModel = selected;
+            updateModelDisplay();
+            showToast('Model AI berhasil diperbarui.');
+            modelModal.classList.add('hidden');
+        }
+
+        function loadModelSelection() {
+            const savedModel = sessionStorage.getItem('selectedAiModel');
+            if (savedModel) {
+                selectedModel = savedModel;
+                const radio = document.querySelector(`input[name="ai-model"][value="${savedModel}"]`);
+                if (radio) radio.checked = true;
+            }
+            updateModelDisplay();
+        }
+
+        function saveApiKey() {
+            const apiKey = apiKeyInput.value.trim();
+            if (!apiKey) { showToast('API Key tidak boleh kosong.', 'error'); return; }
+            sessionStorage.setItem('geminiApiKey', apiKey);
+            showToast('API Key berhasil disimpan.');
+            apiKeyModal.classList.add('hidden');
+        }
+
+        function loadApiKey() {
+            const key = sessionStorage.getItem('geminiApiKey');
+            if (key) apiKeyInput.value = key;
+        }
+
+        // Auto-resize textarea
+        ideaInput.addEventListener('input', () => {
+            ideaInput.style.height = 'auto';
+            ideaInput.style.height = `${Math.min(ideaInput.scrollHeight, 220)}px`;
+        });
+
+        function startNewChat() {
+            chatContainer.innerHTML = '';
+            const clone = initialState.cloneNode(true);
+            clone.id = 'initial-state';
+            chatContainer.appendChild(clone);
+            currentSpec = '';
+            generatedCode = '';
+            showToast('Obrolan baru dimulai.');
+            lucide.createIcons();
+        }
+
+        function appendMessage(content, type) { // 'user' | 'bot' | 'bot-typing'
+            const init = document.getElementById('initial-state');
+            if (init && chatContainer.contains(init)) init.remove();
+
+            const wrap = document.createElement('div');
+            wrap.className = `w-full max-w-4xl mx-auto flex gap-3 md:gap-4 p-3 md:p-4 ${type === 'user' ? '' : 'bg-panel-800 border border-line rounded-2xl'}`;
+
+            const avatarUser = `<div class="w-9 h-9 rounded-xl bg-brand-600 text-white grid place-items-center font-bold shrink-0">U</div>`;
+            const avatarBot = `<div class="w-9 h-9 rounded-xl bg-panel-700 border border-line grid place-items-center shrink-0"><i data-lucide="sparkles" class="w-4 h-4 text-brand-500"></i></div>`;
+
+            const inner = type === 'user'
+                ? `${avatarUser}<div class="prose prose-invert max-w-none">${content}</div>`
+                : type === 'bot-typing'
+                    ? `${avatarBot}<div class="typing-indicator flex items-center h-9"><span></span><span></span><span></span></div>`
+                    : `${avatarBot}<div class="prose prose-invert max-w-none">${content}</div>`;
+
+            wrap.innerHTML = inner;
+            chatContainer.appendChild(wrap);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            lucide.createIcons();
+            return wrap;
+        }
+
+        // ===== Gemini API =====
+        async function callGeminiAPI(prompt, systemInstruction, apiKey) {
+            const model = selectedModel;
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] },
+            };
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) {
+                let errorMsg = `API Error: ${response.status}`;
+                try { const err = await response.json(); errorMsg = err?.error?.message || errorMsg; } catch (_) { }
+                throw new Error(errorMsg);
+            }
+            const result = await response.json();
+            const candidate = result.candidates?.[0];
+            const text = candidate?.content?.parts?.[0]?.text;
+            if (!text) throw new Error('Gagal mendapatkan konten dari respons API.');
+            return text.trim();
+        }
+
+        function generateSpecification(idea, apiKey) {
+            const systemPrompt = `Anda adalah seorang Project Manager Web Development ahli. Ubah ide pengguna menjadi spesifikasi teknis (prompt) untuk membuat website dinamis siap publish.
+ATURAN:
+1. Fokus pada CTA (Click-to-Action) yang jelas.
+2. Minta secara eksplisit agar semua konten (produk, teks, tanggal, daftar item) disimpan dalam satu objek JavaScript bernama 'websiteData' untuk kemudahan editing.
+3. Minta fungsionalitas JavaScript yang relevan (countdown, validasi form, dll.).
+4. FITUR E-COMMERCE: Jika ide pengguna adalah toko online, online food, atau layanan e-commerce, secara otomatis sertakan fungsionalitas berikut:
+   - Sistem Keranjang: Pengguna bisa menambah dan menghapus item dari keranjang belanja.
+   - Proses Checkout: Sebuah alur untuk menyelesaikan pesanan, biasanya dalam modal/pop-up.
+   - Formulir Data Pengguna: Input untuk nama, nomor telepon, dan alamat.
+   - Opsi Pengiriman: Pilihan antara 'Delivery' (dengan biaya tetap/flat rate) dan 'Ambil Sendiri' (gratis), yang akan mempengaruhi total biaya.
+5. Gunakan format yang bersih dan profesional dengan heading. JANGAN gunakan markdown aneh.
+6. HASILKAN HANYA TEKS SPESIFIKASINYA SAJA. Jangan tambahkan kata pembuka atau penutup.`;
+            return callGeminiAPI(idea, systemPrompt, apiKey);
+        }
+
+        async function generateWebsiteCode(spec, apiKey) {
+            const systemPrompt = `Anda adalah seorang pengembang web Full Stack ahli. Buat halaman web berdasarkan spesifikasi teknis.
+ATURAN WAJIB:
+1.  SATU FILE HTML LENGKAP: Hasilkan SATU file HTML. Semua CSS dan JS HARUS inline.
+2.  TAILWIND & FONT: Gunakan Tailwind CSS dari CDN dan Google Fonts 'Inter'.
+3.  RESPONSIF & MODERN: Desain harus modern, bersih, dan sepenuhnya responsif.
+4.  ATURAN KRUSIAL - DATA JAVASCRIPT: Letakkan semua data konten dinamis di dalam objek JavaScript bernama \`websiteData\` di atas tag \`<script>\`. Gunakan JavaScript untuk mengambil data dari objek ini dan mengisi konten HTML saat halaman dimuat ('DOMContentLoaded'). Ini adalah aturan terpenting. Jangan hardcode konten teks di dalam <body>.
+5.  KODE LENGKAP & BERSIH: Pastikan kode lengkap, dapat dijalankan, tanpa placeholder.
+6.  OUTPUT MENTAH: Jangan pernah menyertakan markdown ticks (\`\`\`) dalam output akhir. Hanya berikan kode HTML mentah.`;
+            const raw = await callGeminiAPI(spec, systemPrompt, apiKey);
+            return raw.replace(/^\`\`\`html\s*|\`\`\`$/g, '').trim();
+        }
+
+        // ===== Flow =====
+        async function handleSend() {
+            const idea = ideaInput.value.trim();
+            if (!idea) return;
+
+            const apiKey = sessionStorage.getItem('geminiApiKey');
+            if (!apiKey) {
+                showToast('Mohon atur API Key Anda di pengaturan.', 'error');
+                apiKeyModal.classList.remove('hidden');
+                return;
+            }
+
+            appendMessage(idea.replace(/</g, '&lt;').replace(/>/g, '&gt;'), 'user');
+            ideaInput.value = '';
+            ideaInput.style.height = 'auto';
+            sendBtn.disabled = true;
+
+            const typing = appendMessage('', 'bot-typing');
+            try {
+                currentSpec = await generateSpecification(idea, apiKey);
+                typing.remove();
+                const specHtml = `
+          <p class="font-semibold">Spesifikasi berhasil dibuat!</p>
+          <p class="text-textsec mt-1">Berikut spesifikasi teknis berdasarkan ide Anda. Lanjut generate kode website?</p>
+          <pre class="mt-3 p-3 bg-main-900 rounded-xl border border-line text-sm whitespace-pre-wrap">${currentSpec.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button class="px-3 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium" onclick="handleGenerateCode()">Ya, Lanjutkan & Buat Kode</button>
+            <button class="px-3 py-2 rounded-xl bg-panel-700 hover:bg-panel-800 border border-line text-sm" onclick="startNewChat()">Mulai dari Awal</button>
+          </div>`;
+                appendMessage(specHtml, 'bot');
+            } catch (err) {
+                typing.remove();
+                appendMessage(`<p class="text-red-400">Error: ${err.message}</p>`, 'bot');
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        window.handleGenerateCode = async () => {
+            const apiKey = sessionStorage.getItem('geminiApiKey');
+            const typing = appendMessage('', 'bot-typing');
+            try {
+                generatedCode = await generateWebsiteCode(currentSpec, apiKey);
+                typing.remove();
+                const codeHtml = `
+          <p class="font-semibold">Website berhasil dibuat!</p>
+          <p class="text-textsec mt-1">Lihat pratinjau & kode sumbernya sekarang, atau mulai proyek baru.</p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button class="px-3 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium" onclick="showSourceModal()">Lihat Hasil</button>
+            <button class="px-3 py-2 rounded-xl bg-panel-700 hover:bg-panel-800 border border-line text-sm" onclick="startNewChat()">Buat Website Lain</button>
+          </div>`;
+                appendMessage(codeHtml, 'bot');
+            } catch (err) {
+                typing.remove();
+                appendMessage(`<p class="text-red-400">Error: ${err.message}</p>`, 'bot');
+            }
+        }
+
+        // ===== Modals =====
+        function setupModal(modal, openBtn, closeBtn) {
+            if (openBtn) openBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+            if (closeBtn) closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
+        }
+
+        setupModal(modelModal, openModelModalBtn, closeModelModalBtn);
+        setupModal(apiKeyModal, openApiModalBtn, closeApiModalBtn);
+        setupModal(sourceModal, null, closeModalBtn);
+
+        window.showSourceModal = () => {
+            previewFrame.srcdoc = generatedCode;
+            sourceCodeEl.textContent = generatedCode;
+            hljs.highlightElement(sourceCodeEl);
+            sourceModal.classList.remove('hidden');
+        }
+
+        function copyCode() {
+            navigator.clipboard.writeText(generatedCode)
+                .then(() => showToast('Kode berhasil disalin!'))
+                .catch(() => showToast('Gagal menyalin kode.', 'error'));
+        }
+
+        // ===== Events =====
+        window.addEventListener('load', () => {
+            loadApiKey();
+            loadModelSelection();
+        });
+        saveModelBtn.addEventListener('click', saveModelSelection);
+        saveApiBtn.addEventListener('click', saveApiKey);
+        sendBtn.addEventListener('click', handleSend);
+        ideaInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+        });
+        copyCodeBtn.addEventListener('click', copyCode);
+        newChatBtn.addEventListener('click', startNewChat);
+
+    </script>
+</body>
+
+</html>

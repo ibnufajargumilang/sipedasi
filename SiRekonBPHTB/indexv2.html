@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -118,12 +118,39 @@
                     <input type="file" id="fileData2" accept=".xlsx, .xls, .csv" class="hidden" />
                 </div>
                 <!-- Filter Tanggal -->
-                <div class="flex items-center gap-2">
-                    <i class="bi bi-calendar-date text-lg text-gray-800"></i>
-                    <select id="tglSelect"
-                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" disabled>
-                        <option value="">Pilih Tanggal</option>
-                    </select>
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center gap-2">
+                        <i class="bi bi-calendar-date text-lg text-gray-800"></i>
+                        <div class="flex items-center gap-3 ml-2">
+                            <label class="inline-flex items-center gap-2 text-sm">
+                                <input type="radio" name="tanggalMode" value="single" checked>
+                                <span>Satu Tanggal</span>
+                            </label>
+                            <label class="inline-flex items-center gap-2 text-sm">
+                                <input type="radio" name="tanggalMode" value="range">
+                                <span>Range</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="tanggalSingle" class="flex items-center gap-2">
+                        <select id="tglSelect"
+                            class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" disabled>
+                            <option value="">Pilih Tanggal</option>
+                        </select>
+                    </div>
+                    <div id="tanggalRange" class="hidden items-center gap-2">
+                        <div class="flex flex-col w-full gap-2">
+                            <label for="tglStart" class="text-xs text-gray-600">Dari</label>
+                            <input type="date" id="tglStart" class="p-2 rounded-lg border w-full" disabled />
+                            <label for="tglEnd" class="text-xs text-gray-600">Sampai</label>
+                            <div class="flex gap-2">
+                                <input type="date" id="tglEnd" class="p-2 rounded-lg border w-full" disabled />
+                                <button type="button" id="clearRange"
+                                    class="flex items-center justify-center px-3 bg-gray-100 hover:bg-gray-200 rounded-md border border-gray-200"
+                                    title="Bersihkan range" aria-label="Bersihkan range">⟲</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <!-- Filter Tipe Transaksi -->
                 <div class="flex items-center gap-2">
@@ -274,6 +301,30 @@
         });
 
         document.getElementById("tglSelect").addEventListener("change", applyFilters);
+        // Tanggal mode radio + range inputs
+        document.querySelectorAll('input[name="tanggalMode"]').forEach(r => {
+            r.addEventListener('change', () => {
+                const mode = document.querySelector('input[name="tanggalMode"]:checked').value;
+                document.getElementById('tanggalSingle').classList.toggle('hidden', mode !== 'single');
+                document.getElementById('tanggalRange').classList.toggle('hidden', mode !== 'range');
+                applyFilters();
+            });
+        });
+        document.getElementById('tglStart')?.addEventListener('change', applyFilters);
+        document.getElementById('tglEnd')?.addEventListener('change', applyFilters);
+        // clear range button
+        document.getElementById('clearRange')?.addEventListener('click', () => {
+            const s = document.getElementById('tglStart');
+            const e = document.getElementById('tglEnd');
+            if (s) s.value = '';
+            if (e) e.value = '';
+            // switch back to single mode visually (optional)
+            const singleRadio = document.querySelector('input[name="tanggalMode"][value="single"]');
+            if (singleRadio) singleRadio.checked = true;
+            document.getElementById('tanggalSingle').classList.remove('hidden');
+            document.getElementById('tanggalRange').classList.add('hidden');
+            applyFilters();
+        });
         document.getElementById("waktuSelect").addEventListener("change", applyFilters);
         document.getElementById("keteranganSelect").addEventListener("change", applyFilters);
         // mode radio listeners untuk rebuild opsi & filter saat berubah
@@ -417,18 +468,38 @@
         }
 
         function applyFilters() {
+            const tanggalMode = document.querySelector('input[name="tanggalMode"]:checked')?.value || 'single';
             const selectedDate = document.getElementById("tglSelect").value;
+            const startDate = document.getElementById('tglStart')?.value || '';
+            const endDate = document.getElementById('tglEnd')?.value || '';
             const selectedTime = document.getElementById("waktuSelect").value;
             const selectedKeterangan = document.getElementById("keteranganSelect")?.value || "";
             const ketMode = document.querySelector('input[name="keteranganMode"]:checked')?.value || 'detail';
             const fiturMode = document.querySelector('input[name="fitur"]:checked')?.value || 'tambah';
-            const tambahanCount = parseInt(document.getElementById('tambahanCount')?.value || '0', 10) || 0;
+            let tambahanCount = parseInt(document.getElementById('tambahanCount')?.value || '0', 10);
+            if (!Number.isFinite(tambahanCount) || tambahanCount < 0) tambahanCount = 0;
 
-            let baseFiltered = (fullCombinedData || []).slice();
-            if (selectedDate) {
-                baseFiltered = baseFiltered.filter(row => (row.TanggalPembayaran || '').startsWith(selectedDate));
+            // mulai dari salinan sorted newest-first sebagai basis
+            const cmpDesc = (a, b) => (b.TanggalPembayaran || '').localeCompare(a.TanggalPembayaran || '');
+            let baseFiltered = (fullCombinedData || []).slice().sort(cmpDesc);
+
+            // Tanggal filter: single atau range
+            if (tanggalMode === 'single') {
+                if (selectedDate) {
+                    baseFiltered = baseFiltered.filter(row => (row.TanggalPembayaran || '').startsWith(selectedDate));
+                }
+            } else {
+                if (startDate && endDate) {
+                    baseFiltered = baseFiltered.filter(row => {
+                        const d = (row.TanggalPembayaran || '').split(' ')[0];
+                        return d && d >= startDate && d <= endDate;
+                    });
+                } else if (startDate) {
+                    baseFiltered = baseFiltered.filter(row => (row.TanggalPembayaran || '').startsWith(startDate));
+                }
             }
 
+            // Keterangan filter (detail / ringkas)
             if (ketMode === 'detail') {
                 if (selectedKeterangan) {
                     baseFiltered = baseFiltered.filter(row => {
@@ -444,44 +515,37 @@
                 }
             }
 
-            // helper comparator (newest first)
-            const cmpDesc = (a, b) => (b.TanggalPembayaran || '').localeCompare(a.TanggalPembayaran || '');
+            // jika tidak ada filter waktu, tampilkan seluruh baseFiltered (sudah sorted)
+            if (selectedTime === 'semua') {
+                const filteredData = baseFiltered.slice();
+                lastFilteredData = filteredData.slice();
+                updateSummaryCards(filteredData);
+                renderHasilGabungan(filteredData);
+                const jumlahEl = document.getElementById('jumlahData');
+                if (jumlahEl) jumlahEl.textContent = `Jumlah Data : ${filteredData.length}`;
+                return;
+            }
 
-            let finalData = baseFiltered;
+            // pisahkan sesuai waktu
+            const matchFn = (row) => {
+                const timePart = (row.TanggalPembayaran || '').split(' ')[1];
+                if (!timePart) return false;
+                return selectedTime === 'kurang' ? timePart < '17:00:00' : timePart >= '17:00:00';
+            };
+            const groupMatch = baseFiltered.filter(matchFn);     // baris yang sesuai waktu pilihan
+            const groupOther = baseFiltered.filter(r => !matchFn(r)); // sisanya
 
-            if (selectedTime !== 'semua') {
-                const matchFn = (row) => {
-                    const timePart = (row.TanggalPembayaran || '').split(' ')[1];
-                    if (!timePart) return false;
-                    return selectedTime === 'kurang' ? timePart < '17:00:00' : timePart >= '17:00:00';
-                };
-
-                const dataWaktuFilter = baseFiltered.filter(matchFn);
-                const dataWaktuLawan = baseFiltered.filter(r => !matchFn(r));
-
-                if (fiturMode === 'tambah' && tambahanCount > 0) {
-                    // pilih tambahan dari lawan berdasarkan waktu terbaru (newest-first),
-                    // lalu gabungkan dan urutkan seluruh hasil newest-first agar baris tambahan "melanjuti" urutan atas.
-                    const tambahanSortedDesc = dataWaktuLawan.slice().sort(cmpDesc).slice(0, tambahanCount);
-                    finalData = dataWaktuFilter.concat(tambahanSortedDesc).slice();
-                    finalData.sort(cmpDesc);
-                } else if (fiturMode === 'kurangi' && tambahanCount > 0) {
-                    // hapus baris dengan waktu terbaru dari dataWaktuFilter
-                    const sortedDesc = dataWaktuFilter.slice().sort(cmpDesc);
-                    const toRemove = new Set(sortedDesc.slice(0, tambahanCount));
-                    finalData = dataWaktuFilter.filter(r => !toRemove.has(r));
-                    // jaga urutan newest-first
-                    finalData.sort(cmpDesc);
-                } else {
-                    finalData = dataWaktuFilter.slice().sort(cmpDesc);
-                }
-            } else {
-                // jika semua waktu, tetap urut newest-first
-                finalData = finalData.slice().sort((a, b) => (b.TanggalPembayaran || '').localeCompare(a.TanggalPembayaran || ''));
+            let finalData = [];
+            if (fiturMode === 'tambah') {
+                // ambil top N dari groupOther lalu gabungkan dengan groupMatch
+                const extra = groupOther.slice(0, tambahanCount);
+                finalData = groupMatch.concat(extra).sort(cmpDesc);
+            } else { // kurangi
+                // hilangkan N baris teratas dari groupMatch
+                finalData = groupMatch.slice(tambahanCount).sort(cmpDesc);
             }
 
             const filteredData = finalData.slice();
-            // simpan untuk ekspor
             lastFilteredData = filteredData.slice();
             updateSummaryCards(filteredData);
             renderHasilGabungan(filteredData);
@@ -586,6 +650,30 @@
                 opt.textContent = `${date} (${counts[date]})`;
                 sel.appendChild(opt);
             });
+
+            // set min/max untuk input range dan aktifkan input jika data ada
+            const allDates = Object.keys(counts).sort();
+            const startInput = document.getElementById('tglStart');
+            const endInput = document.getElementById('tglEnd');
+            if (allDates.length) {
+                const minDate = allDates[0];
+                const maxDate = allDates[allDates.length - 1];
+                if (startInput && endInput) {
+                    startInput.min = minDate;
+                    startInput.max = maxDate;
+                    endInput.min = minDate;
+                    endInput.max = maxDate;
+                    startInput.disabled = false;
+                    endInput.disabled = false;
+                }
+                sel.disabled = false;
+            } else {
+                if (startInput && endInput) {
+                    startInput.disabled = true;
+                    endInput.disabled = true;
+                }
+                sel.disabled = true;
+            }
         }
 
         // isi dropdown keterangan (detail / ringkas)
