@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SiNkronLRA | Sistem Sinkronisasi LRA</title>
-    <link rel="stylesheet" href="../assets/icons/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/icons/bootstrap-icons.css">
     <script src="../assets/xlsx.full.min.js"></script>
     <script src="../assets/tailwind.js"></script>
     <style>
@@ -268,7 +268,8 @@
                 <div class="flex flex-col md:flex-row items-center justify-between gap-4">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-900">Hasil Perbandingan LRA (Rekening Detail)</h2>
-                        <p class="text-sm text-gray-500 mt-1">Unggah dua file lalu pilih bulan, sistem akan mencocokkan rekening detail.</p>
+                        <p class="text-sm text-gray-500 mt-1">Unggah dua file lalu pilih bulan, sistem akan mencocokkan
+                            rekening detail.</p>
                     </div>
                     <div class="text-sm code-chip">
                         Status: <span id="statusBadge" class="ml-2" style="color:var(--accent-2)">Menunggu file</span>
@@ -276,7 +277,8 @@
                 </div>
 
                 <div class="mt-6">
-                    <p class="text-gray-600 text-center">Silakan unggah File Utama (REKON) dan File Konsolidasi, pilih bulan, lalu klik "Proses".</p>
+                    <p class="text-gray-600 text-center">Silakan unggah File Utama (REKON) dan File Konsolidasi, pilih
+                        bulan, lalu klik "Proses".</p>
                 </div>
             </div>
         </div>
@@ -299,7 +301,8 @@
                 <h4 class="text-xs font-semibold text-gray-500 uppercase">Selisih</h4>
                 <p id="totalSelisih" class="text-xl font-bold text-amber-600">Rp 0</p>
             </div>
-            <button id="closeSummary" class="absolute -top-3 -right-3 text-gray-500 hover:text-gray-800 bg-white p-2 rounded-full border border-gray-100 shadow">
+            <button id="closeSummary"
+                class="absolute -top-3 -right-3 text-gray-500 hover:text-gray-800 bg-white p-2 rounded-full border border-gray-100 shadow">
                 <i class="bi bi-x-circle-fill text-2xl" aria-hidden="true"></i>
             </button>
         </div>
@@ -307,7 +310,8 @@
 
     <footer class="mt-8 py-6 w-full bleed-no-pad">
         <div class="full-bleed" style="padding:0 8px; text-align:center;">
-            <p class="text-sm text-gray-500">&copy; 2024 SiNkronLRA. Dibuat untuk memudahkan sinkronisasi data. • UI: Clean blockchain-inspired</p>
+            <p class="text-sm text-gray-500">&copy; 2024 SiNkronLRA. Dibuat untuk memudahkan sinkronisasi data. • UI:
+                Clean blockchain-inspired</p>
         </div>
     </footer>
 
@@ -374,7 +378,9 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: "array" });
+                const workbook = XLSX.read(data, {
+                    type: "array"
+                });
 
                 if (type === "utama") {
                     const sheetName = "LRA";
@@ -386,11 +392,15 @@
                         return;
                     }
                     const worksheet = workbook.Sheets[sheetName];
-                    utamaData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    utamaData = XLSX.utils.sheet_to_json(worksheet, {
+                        header: 1
+                    });
                 } else {
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
-                    konsolidasiData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    konsolidasiData = XLSX.utils.sheet_to_json(worksheet, {
+                        header: 1
+                    });
                 }
             };
             reader.readAsArrayBuffer(file);
@@ -432,13 +442,16 @@
             const mappedUtama = cleanAndMap(dataUtama, startRowUtama, 'utama');
             const mappedKonsolidasi = cleanAndMap(dataKonsolidasi, startRowKonsolidasi, 'konsolidasi');
 
-            const mergedData = mappedUtama.map(utamaItem => {
-                const konsolidasiItem = mappedKonsolidasi.find(konsItem => konsItem.kode === utamaItem.kode);
+            // --- PERUBAHAN LOGIKA ---
+            // Sekarang, kita beriterasi melalui file KONSOLIDASI sebagai sumber utama,
+            // lalu mencari data yang cocok di file UTAMA.
+            const mergedData = mappedKonsolidasi.map(konsolidasiItem => {
+                const utamaItem = mappedUtama.find(utamaItem => utamaItem.kode === konsolidasiItem.kode);
                 return {
-                    kode: utamaItem.kode,
-                    uraian: utamaItem.uraian,
-                    realisasiUtama: utamaItem.realisasi,
-                    realisasiKonsolidasi: konsolidasiItem ? konsolidasiItem.realisasi : 0,
+                    kode: konsolidasiItem.kode, // Diambil dari file Konsolidasi
+                    uraian: konsolidasiItem.uraian, // Diambil dari file Konsolidasi
+                    realisasiUtama: utamaItem ? utamaItem.realisasi : 0, // Cari padanannya di file Utama
+                    realisasiKonsolidasi: konsolidasiItem.realisasi,
                 };
             });
 
@@ -450,7 +463,11 @@
 
         const displayResult = (data) => {
             const formatRupiah = (val) => {
-                return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
+                return new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0
+                }).format(val);
             };
 
             if (data.length === 0) {
@@ -487,7 +504,10 @@
                 acc.realisasiUtama += Number(item.realisasiUtama) || 0;
                 acc.realisasiKonsolidasi += Number(item.realisasiKonsolidasi) || 0;
                 return acc;
-            }, { realisasiUtama: 0, realisasiKonsolidasi: 0 });
+            }, {
+                realisasiUtama: 0,
+                realisasiKonsolidasi: 0
+            });
             totals.selisih = totals.realisasiUtama - totals.realisasiKonsolidasi;
 
             slicedData.forEach((item, i) => {
