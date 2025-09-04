@@ -122,6 +122,27 @@
             gap: 0.5rem;
         }
 
+        /* Copy to clipboard styles */
+        .copyable {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .copyable .copy-icon {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            color: var(--muted);
+        }
+
+        .copyable:hover .copy-icon {
+            opacity: 1;
+            color: var(--process);
+        }
+
         @media (max-width: 900px) {
             .header-actions {
                 gap: 0.5rem;
@@ -322,6 +343,13 @@
         </div>
     </footer>
 
+    <!-- Copy Toast Notification -->
+    <div id="copyToast"
+        class="fixed bottom-8 right-8 bg-gray-900 text-white py-2 px-5 rounded-lg shadow-xl transition-transform transform translate-y-16 opacity-0 duration-300 ease-out z-50">
+        Teks disalin ke papan klip!
+    </div>
+
+
     <script>
         // DOM Elements
         const utamaFileInput = document.getElementById("utamaFile");
@@ -336,6 +364,7 @@
         const monthSelector = document.getElementById("monthSelector");
         const statusBadge = document.getElementById("statusBadge");
         const rowCountInput = document.getElementById("rowCount");
+        const copyToast = document.getElementById('copyToast');
 
         let utamaData = null;
         let konsolidasiData = null;
@@ -524,15 +553,37 @@
             const mappedUtama = cleanAndMap(dataUtama, startRowUtama, 'utama');
             const mappedKonsolidasi = cleanAndMap(dataKonsolidasi, startRowKonsolidasi, 'konsolidasi');
 
-            const mergedData = mappedKonsolidasi.map(konsolidasiItem => {
-                const utamaItem = mappedUtama.find(utamaItem => utamaItem.kode === konsolidasiItem.kode);
-                return {
-                    kode: konsolidasiItem.kode,
-                    uraian: konsolidasiItem.uraian,
-                    realisasiUtama: utamaItem ? utamaItem.realisasi : 0,
-                    realisasiKonsolidasi: konsolidasiItem.realisasi,
-                };
+            // --- PERUBAHAN LOGIKA PENGGABUNGAN (FULL OUTER JOIN) ---
+            const dataMap = new Map();
+
+            // 1. Proses data konsolidasi terlebih dahulu untuk menjadi basis
+            mappedKonsolidasi.forEach(item => {
+                dataMap.set(item.kode, {
+                    kode: item.kode,
+                    uraian: item.uraian,
+                    realisasiUtama: 0, // Nilai default jika tidak ada di file utama
+                    realisasiKonsolidasi: item.realisasi,
+                });
             });
+
+            // 2. Proses data utama, perbarui data yang ada atau tambahkan data baru
+            mappedUtama.forEach(item => {
+                if (dataMap.has(item.kode)) {
+                    // Jika kode sudah ada dari file konsolidasi, perbarui nilai realisasi utama
+                    dataMap.get(item.kode).realisasiUtama = item.realisasi;
+                } else {
+                    // Jika kode belum ada, berarti ini rekening eksklusif dari file utama, tambahkan
+                    dataMap.set(item.kode, {
+                        kode: item.kode,
+                        uraian: item.uraian,
+                        realisasiUtama: item.realisasi,
+                        realisasiKonsolidasi: 0, // Nilai default karena tidak ada di file konsolidasi
+                    });
+                }
+            });
+
+            // 3. Ubah Map menjadi array untuk diproses lebih lanjut
+            const mergedData = Array.from(dataMap.values());
 
             const detailAccountRegex = /^\d\.\d\.\d{2}\.\d{2}\.\d{2}\.\d{4}$/;
             const filteredData = mergedData.filter(item => detailAccountRegex.test(item.kode));
@@ -559,7 +610,11 @@
                 return;
             }
 
-            const hasMismatch = data.some(item => (Number(item.realisasiUtama) || 0) !== (Number(item.realisasiKonsolidasi) || 0));
+            const rowCount = parseInt(rowCountInput.value) || data.length;
+            const slicedData = data.slice(0, rowCount);
+
+            const mismatchCount = slicedData.filter(item => (Number(item.realisasiUtama) || 0) !== (Number(item.realisasiKonsolidasi) || 0)).length;
+            const hasMismatch = mismatchCount > 0;
 
             if (hasMismatch) {
                 exportButton.style.display = 'inline-flex';
@@ -568,9 +623,12 @@
             }
 
             let html = `
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex flex-wrap items-center justify-between mb-4 gap-2">
                     <h3 class="text-lg font-semibold text-gray-900">Hasil Perbandingan LRA (Rekening Detail)</h3>
-                    <div class="text-sm code-chip">Menampilkan ${data.length} rekening</div>
+                    <div class="flex items-center gap-2 text-sm">
+                        <div class="code-chip">Total: <span class="font-bold">${data.length}</span> rekening</div>
+                        <div class="code-chip" style="background-color: var(--mismatch-bg); color: #dc2626; border-color: rgba(220, 38, 38, 0.1);">Selisih (dari ${slicedData.length} baris): <span class="font-bold">${mismatchCount}</span> rekening</div>
+                    </div>
                 </div>
                 <div class="rounded-lg border border-gray-100 table-wrap table-responsive">
                 <table class="min-w-full text-sm">
@@ -586,9 +644,6 @@
                     </thead>
                     <tbody class="bg-white text-gray-800">
             `;
-
-            const rowCount = parseInt(rowCountInput.value) || data.length;
-            const slicedData = data.slice(0, rowCount);
 
             const totals = slicedData.reduce((acc, item) => {
                 acc.realisasiUtama += Number(item.realisasiUtama) || 0;
@@ -614,11 +669,11 @@
                 html += `
                     <tr class="${rowClass}">
                         <td class="px-4 py-3">${i + 1}</td>
-                        <td class="px-4 py-3 font-mono text-amber-600">${item.kode || ""}</td>
+                        <td class="px-4 py-3 font-mono text-amber-600 copyable" data-copy-value="${item.kode}">${item.kode || ""}<i class="bi bi-clipboard copy-icon"></i></td>
                         <td class="px-4 py-3 text-gray-700">${item.uraian || ""}</td>
                         <td class="px-4 py-3 text-right text-teal-600">${formatRupiah(realisasiUtamaNum)}</td>
-                        <td class="px-4 py-3 text-right text-indigo-600">${formatRupiah(realisasiKonsolidasiNum)}</td>
-                        <td class="px-4 py-3 text-right ${selisihClass}">${formatRupiah(selisih)}</td>
+                        <td class="px-4 py-3 text-right text-indigo-600 copyable" data-copy-value="${realisasiKonsolidasiNum}">${formatRupiah(realisasiKonsolidasiNum)}<i class="bi bi-clipboard copy-icon"></i></td>
+                        <td class="px-4 py-3 text-right ${selisihClass} copyable" data-copy-value="${selisih}">${formatRupiah(selisih)}<i class="bi bi-clipboard copy-icon"></i></td>
                     </tr>`;
             });
 
@@ -633,6 +688,36 @@
                 summaryBar.classList.remove("translate-y-8");
             }, 10);
         };
+
+        // Event listener for copy functionality
+        outputDiv.addEventListener('click', (e) => {
+            const targetCell = e.target.closest('.copyable');
+            if (!targetCell) return;
+
+            const valueToCopy = targetCell.dataset.copyValue;
+
+            navigator.clipboard.writeText(valueToCopy).then(() => {
+                // Success feedback via toast
+                copyToast.textContent = `"${valueToCopy}" disalin!`;
+                copyToast.classList.remove('translate-y-16', 'opacity-0');
+
+                setTimeout(() => {
+                    copyToast.classList.add('translate-y-16', 'opacity-0');
+                }, 2000);
+
+            }).catch(err => {
+                console.error('Gagal menyalin teks: ', err);
+                // Error feedback
+                copyToast.textContent = 'Gagal menyalin!';
+                copyToast.style.backgroundColor = '#dc2626'; // Merah
+                copyToast.classList.remove('translate-y-16', 'opacity-0');
+
+                setTimeout(() => {
+                    copyToast.classList.add('translate-y-16', 'opacity-0');
+                    copyToast.style.backgroundColor = '#1f2937'; // Kembalikan warna
+                }, 2000);
+            });
+        });
     </script>
 </body>
 
