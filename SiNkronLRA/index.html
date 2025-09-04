@@ -5,9 +5,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SiNkronLRA | Sistem Sinkronisasi LRA</title>
-    <link rel="stylesheet" href="../assets/icons/bootstrap-icons.css">
-    <script src="../assets/xlsx.full.min.js"></script>
-    <script src="../assets/tailwind.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
             --accent-1: #06b6d4;
@@ -257,6 +257,13 @@
                     <i class="bi bi-gear-fill" aria-hidden="true"></i>
                     <span>Proses</span>
                 </button>
+
+                <!-- Tombol Ekspor (awalnya tersembunyi) -->
+                <button id="exportButton" class="btn-process"
+                    style="display: none; background-color: #059669; box-shadow: 0 6px 18px rgba(5, 150, 105, 0.12);">
+                    <i class="bi bi-file-earmark-excel-fill" aria-hidden="true"></i>
+                    <span>Ekspor Selisih</span>
+                </button>
             </div>
         </div>
     </header>
@@ -320,6 +327,7 @@
         const utamaFileInput = document.getElementById("utamaFile");
         const konsolidasiFileInput = document.getElementById("konsolidasiFile");
         const processButton = document.getElementById("processButton");
+        const exportButton = document.getElementById("exportButton");
         const outputDiv = document.getElementById("output");
         const utamaFileNameSpan = document.getElementById("utamaFileName");
         const konsolidasiFileNameSpan = document.getElementById("konsolidasiFileName");
@@ -327,9 +335,11 @@
         const closeSummaryButton = document.getElementById("closeSummary");
         const monthSelector = document.getElementById("monthSelector");
         const statusBadge = document.getElementById("statusBadge");
+        const rowCountInput = document.getElementById("rowCount");
 
         let utamaData = null;
         let konsolidasiData = null;
+        let processedDataForExport = []; // Holds the full processed data for export
 
         const updateStatus = (text, color = "var(--accent-2)") => {
             statusBadge.textContent = text;
@@ -357,11 +367,17 @@
         processButton.addEventListener("click", () => {
             if (utamaData && konsolidasiData) {
                 updateStatus("Memproses...", "orange");
-                processData(utamaData, konsolidasiData);
-                updateStatus("Selesai", "var(--accent-2)");
+                setTimeout(() => { // Use timeout to allow UI update
+                    processData(utamaData, konsolidasiData);
+                    updateStatus("Selesai", "var(--accent-2)");
+                }, 50);
             } else {
                 alert("Mohon unggah kedua file terlebih dahulu.");
             }
+        });
+
+        exportButton.addEventListener("click", () => {
+            exportSelisihToExcel();
         });
 
         closeSummaryButton.addEventListener("click", () => {
@@ -370,6 +386,72 @@
                 summaryBar.classList.add("hidden");
             }, 300);
         });
+
+        const exportSelisihToExcel = () => {
+            if (processedDataForExport.length === 0) {
+                alert("Tidak ada data untuk diekspor.");
+                return;
+            }
+
+            // Ambil batas baris dari input
+            const rowCount = parseInt(rowCountInput.value) || processedDataForExport.length;
+
+            // 1. Potong data berdasarkan batas baris
+            const slicedData = processedDataForExport.slice(0, rowCount);
+
+            // 2. Dari data yang sudah dipotong, filter yang ada selisih
+            const dataToExport = slicedData.filter(item => {
+                const realisasiUtamaNum = Number(item.realisasiUtama) || 0;
+                const realisasiKonsolidasiNum = Number(item.realisasiKonsolidasi) || 0;
+                return realisasiUtamaNum !== realisasiKonsolidasiNum;
+            });
+
+            if (dataToExport.length === 0) {
+                alert(`Tidak ada data selisih untuk diekspor dalam ${rowCount} baris pertama.`);
+                return;
+            }
+
+            // 3. Siapkan header dan data untuk sheet
+            const headers = [
+                "Kode Rekening",
+                "Uraian",
+                "Realisasi Utama",
+                "Realisasi Konsolidasi",
+                "Selisih"
+            ];
+
+            const sheetData = dataToExport.map(item => {
+                const realisasiUtamaNum = Number(item.realisasiUtama) || 0;
+                const realisasiKonsolidasiNum = Number(item.realisasiKonsolidasi) || 0;
+                const selisih = realisasiUtamaNum - realisasiKonsolidasiNum;
+                return [
+                    item.kode,
+                    item.uraian,
+                    realisasiUtamaNum,
+                    realisasiKonsolidasiNum,
+                    selisih
+                ];
+            });
+
+            // 4. Gabungkan header dan data
+            const finalData = [headers, ...sheetData];
+
+            // 5. Buat workbook dan worksheet
+            const worksheet = XLSX.utils.aoa_to_sheet(finalData);
+            // Set column widths
+            worksheet['!cols'] = [
+                { wch: 25 }, // Kode Rekening
+                { wch: 60 }, // Uraian
+                { wch: 20 }, // Realisasi Utama
+                { wch: 20 }, // Realisasi Konsolidasi
+                { wch: 20 }  // Selisih
+            ];
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Data Selisih LRA");
+
+            // 6. Trigger download
+            XLSX.writeFile(workbook, `Laporan_Selisih_LRA_${rowCount}_Baris.xlsx`);
+        };
 
         const handleFileUpload = (event, type) => {
             const file = event.target.files[0];
@@ -442,21 +524,20 @@
             const mappedUtama = cleanAndMap(dataUtama, startRowUtama, 'utama');
             const mappedKonsolidasi = cleanAndMap(dataKonsolidasi, startRowKonsolidasi, 'konsolidasi');
 
-            // --- PERUBAHAN LOGIKA ---
-            // Sekarang, kita beriterasi melalui file KONSOLIDASI sebagai sumber utama,
-            // lalu mencari data yang cocok di file UTAMA.
             const mergedData = mappedKonsolidasi.map(konsolidasiItem => {
                 const utamaItem = mappedUtama.find(utamaItem => utamaItem.kode === konsolidasiItem.kode);
                 return {
-                    kode: konsolidasiItem.kode, // Diambil dari file Konsolidasi
-                    uraian: konsolidasiItem.uraian, // Diambil dari file Konsolidasi
-                    realisasiUtama: utamaItem ? utamaItem.realisasi : 0, // Cari padanannya di file Utama
+                    kode: konsolidasiItem.kode,
+                    uraian: konsolidasiItem.uraian,
+                    realisasiUtama: utamaItem ? utamaItem.realisasi : 0,
                     realisasiKonsolidasi: konsolidasiItem.realisasi,
                 };
             });
 
             const detailAccountRegex = /^\d\.\d\.\d{2}\.\d{2}\.\d{2}\.\d{4}$/;
             const filteredData = mergedData.filter(item => detailAccountRegex.test(item.kode));
+
+            processedDataForExport = filteredData; // Store full data for export function
 
             displayResult(filteredData);
         };
@@ -474,7 +555,16 @@
                 outputDiv.innerHTML = `<p class="text-gray-600 text-center">Tidak ada data rekening detail yang cocok ditemukan.</p>`;
                 summaryBar.classList.add("translate-y-8");
                 summaryBar.classList.add("hidden");
+                exportButton.style.display = 'none'; // Hide button if no data
                 return;
+            }
+
+            const hasMismatch = data.some(item => (Number(item.realisasiUtama) || 0) !== (Number(item.realisasiKonsolidasi) || 0));
+
+            if (hasMismatch) {
+                exportButton.style.display = 'inline-flex';
+            } else {
+                exportButton.style.display = 'none';
             }
 
             let html = `
@@ -497,7 +587,7 @@
                     <tbody class="bg-white text-gray-800">
             `;
 
-            const rowCount = parseInt(document.getElementById("rowCount").value) || data.length;
+            const rowCount = parseInt(rowCountInput.value) || data.length;
             const slicedData = data.slice(0, rowCount);
 
             const totals = slicedData.reduce((acc, item) => {
