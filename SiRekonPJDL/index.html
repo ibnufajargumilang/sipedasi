@@ -590,7 +590,7 @@
                     let v = row[currentCols[h]] !== undefined ? row[currentCols[h]] : '';
                     if (h.includes('(Rp)')) td.textContent = fmt(num(v));
                     else if (h === 'Uraian Pajak') { let txt = String(v || '').trim().replace(/\s*-\s*/g, '-'); td.textContent = txt; td.classList.add('cursor-pointer', 'select-none'); td.title = 'Klik untuk menyalin uraian'; td.addEventListener('click', () => { copyText(txt); }); }
-                    else if (h === 'Tempat Bayar') { let k = row[currentCols['Keterangan']]; if (k && String(k).includes('VA')) v = 'Bank BJB - Virtual Account'; td.textContent = String(v || ''); }
+                    else if (h === 'Tempat Bayar') { let k = row[currentCols['Keterangan']]; td.textContent = String(v || ''); }
                     else td.textContent = String(v || '');
                     tr.appendChild(td);
                 });
