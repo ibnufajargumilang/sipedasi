@@ -139,8 +139,7 @@
                         <!-- container input tanggal tunggal -->
                         <div id="tanggalSingle">
                             <select id="tglSelect"
-                                class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition"
-                                disabled>
+                                class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" disabled>
                                 <option value="">Pilih Tanggal</option>
                             </select>
                         </div>
@@ -150,14 +149,12 @@
                             <div class="flex items-center gap-2">
                                 <label for="tglStart" class="text-sm w-12 flex-shrink-0">Dari</label>
                                 <input id="tglStart" type="date"
-                                    class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition"
-                                    disabled />
+                                    class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" disabled />
                             </div>
                             <div class="flex items-center gap-2">
                                 <label for="tglEnd" class="text-sm w-12 flex-shrink-0">Sampai</label>
                                 <input id="tglEnd" type="date"
-                                    class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition"
-                                    disabled />
+                                    class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" disabled />
                             </div>
                         </div>
                     </div>
@@ -275,10 +272,8 @@
                 </div>
 
                 <!-- Placeholder + Tabel -->
-                <div id="table-placeholder" class="text-center text-gray-500 py-10">Silakan unggah kedua file untuk
-                    melihat hasil gabungannya.</div>
-                <div id="table-scroll-container"
-                    class="hidden overflow-auto max-h-[70vh] border border-gray-200 rounded-lg">
+                <div id="table-placeholder" class="text-center text-gray-500 py-10">Silakan unggah kedua file untuk melihat hasil gabungannya.</div>
+                <div id="table-scroll-container" class="hidden overflow-auto max-h-[70vh] border border-gray-200 rounded-lg">
                     <table id="excel-table" class="w-full text-sm text-left">
                         <!-- isi tabel di-render oleh JS -->
                     </table>
@@ -395,12 +390,6 @@
             document.getElementById('tanggalRange').classList.add('hidden');
             document.getElementById('tglStart').value = '';
             document.getElementById('tglEnd').value = '';
-
-            // Reset keterangan mode to detail
-            const ketRadio = document.querySelector('input[name="keteranganMode"][value="detail"]');
-            if (ketRadio) ketRadio.checked = true;
-            populateKeteranganFilter([]);
-
 
             // Disable filters that depend on data
             document.getElementById('tglSelect').disabled = true;
@@ -618,14 +607,11 @@
             if (jumlahEl) jumlahEl.textContent = `Jumlah Data : ${filteredData.length}`;
         }
 
-        // <<< PERUBAHAN LOGIKA DI SINI >>>
-        // Helper function untuk mendeteksi kategori "Pemberian Hak Baru"
+        // helper: deteksi 'pemberian hak baru diluar pelepasan hak' (exact match, case-insensitive)
         function isPemberianHakBaru(keterangan) {
             if (!keterangan) return false;
             const s = String(keterangan).trim().toLowerCase();
-            // Kategori ini sekarang mencakup dua jenis keterangan
-            return s === 'pemberian hak baru sebagai kelanjutan pelepasan hak' ||
-                s === 'pemberian hak baru diluar pelepasan hak';
+            return s === 'pemberian hak baru diluar pelepasan hak';
         }
 
         function updateSummaryCards(data) {
@@ -658,7 +644,6 @@
                 table.innerHTML = '';
                 tableWrapper.classList.add('hidden');
                 placeholder.classList.remove('hidden');
-                updateSummaryCards([]); // Kosongkan summary card jika tidak ada data
                 return;
             }
 
@@ -686,7 +671,7 @@
                                 <td class="p-3 text-right font-mono">${pembayaran}</td>
                                 <td class="p-3 text-right font-mono">${denda}</td>
                                 <td class="p-3">${row.Keterangan || ''}</td>
-                                <td class="p-3 font-mono">${row.TanggalPembayaran || ''}</td>
+                                <td class="p-3 font-mono">${row.TanggalPembayaran}</td>
                               </tr>`;
             });
             tbody += `</tbody>`;
