@@ -5,9 +5,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SiRekon BPHTB | Sistem Rekonsiliasi</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="../assets/icons/bootstrap-icons.css">
+    <script src="../assets/tailwind.js"></script>
+    <script src="../assets/xlsx.full.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -203,37 +203,18 @@
 
         <!-- Main Content -->
         <main class="w-full md:w-3/4 px-4 md:px-8 py-6">
-            <!-- KARTU RINGKASAN DENGAN GAYA TOMBOL PBB -->
             <div id="summaryCards" class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-blue-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                <div class="bg-blue-50 p-6 rounded-2xl shadow-md">
                     <p class="text-sm font-medium text-blue-700 mb-2">Total Pembayaran</p>
-                    <div class="flex items-center justify-between">
-                        <p id="totalPembayaran" class="text-2xl font-bold text-blue-900">0</p>
-                        <button title="Salin Nominal" class="ml-3 text-blue-500 hover:text-blue-700 text-xl"
-                            onclick="copyNominal('totalPembayaran')">
-                            <i class="bi bi-clipboard"></i>
-                        </button>
-                    </div>
+                    <p id="totalPembayaran" class="text-2xl font-bold text-blue-900">0</p>
                 </div>
-                <div class="bg-yellow-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                <div class="bg-yellow-50 p-6 rounded-2xl shadow-md">
                     <p class="text-sm font-medium text-yellow-700 mb-2">Total Denda</p>
-                    <div class="flex items-center justify-between">
-                        <p id="totalDenda" class="text-2xl font-bold text-yellow-900">0</p>
-                        <button title="Salin Nominal" class="ml-3 text-yellow-500 hover:text-yellow-700 text-xl"
-                            onclick="copyNominal('totalDenda')">
-                            <i class="bi bi-clipboard"></i>
-                        </button>
-                    </div>
+                    <p id="totalDenda" class="text-2xl font-bold text-yellow-900">0</p>
                 </div>
-                <div class="bg-green-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                <div class="bg-green-50 p-6 rounded-2xl shadow-md">
                     <p class="text-sm font-medium text-green-700 mb-2">Total Mutasi Kredit</p>
-                    <div class="flex items-center justify-between">
-                        <p id="totalMutasi" class="text-2xl font-bold text-green-900">0</p>
-                        <button title="Salin Nominal" class="ml-3 text-green-500 hover:text-green-700 text-xl"
-                            onclick="copyNominal('totalMutasi')">
-                            <i class="bi bi-clipboard"></i>
-                        </button>
-                    </div>
+                    <p id="totalMutasi" class="text-2xl font-bold text-green-900">0</p>
                 </div>
             </div>
 
@@ -767,41 +748,6 @@
                 const exists = Array.from(sel.options).some(o => o.value === prev);
                 sel.value = exists ? prev : '';
             }
-        }
-
-        // --- [BARU] FUNGSI UNTUK MENYALIN NOMINAL ---
-        function copyNominal(elementId) {
-            const element = document.getElementById(elementId);
-            if (!element) return;
-
-            // Ambil teks yang diformat (misal: "1.234.567") dan ubah menjadi angka mentah (misal: "1234567")
-            const formattedText = element.textContent;
-            const rawValue = parseNumber(formattedText).toString();
-
-            // Buat elemen textarea sementara untuk proses penyalinan
-            const tempTextarea = document.createElement("textarea");
-            tempTextarea.style.position = "absolute";
-            tempTextarea.style.left = "-9999px"; // Sembunyikan di luar layar
-            tempTextarea.value = rawValue;
-            document.body.appendChild(tempTextarea);
-            tempTextarea.select(); // Pilih teks di dalamnya
-
-            try {
-                // Lakukan perintah 'copy'
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    // Gunakan teks yang diformat untuk notifikasi agar lebih mudah dibaca
-                    showToast(`Nominal ${formattedText} berhasil disalin.`, false);
-                } else {
-                    showToast('Gagal menyalin nominal.', true);
-                }
-            } catch (err) {
-                console.error('Gagal menyalin:', err);
-                showToast('Gagal menyalin nominal.', true);
-            }
-
-            // Hapus elemen textarea sementara
-            document.body.removeChild(tempTextarea);
         }
 
         // Event listener & fungsi ekspor
