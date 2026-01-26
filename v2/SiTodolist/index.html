@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TodoList Pro | Manajemen Tugas</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#6366f1',
+                        dark: '#0f172a',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                        'slide-up': 'slideUp 0.3s ease-out forwards',
+                        'pop': 'pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        pop: {
+                            '0%': { transform: 'scale(0.9)' },
+                            '100%': { transform: 'scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+
+        .glass {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .dark .glass {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .bg-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background: radial-gradient(circle at 0% 0%, rgba(244, 63, 94, 0.15), transparent 40%),
+                radial-gradient(circle at 100% 0%, rgba(168, 85, 247, 0.15), transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.15), transparent 40%);
+        }
+
+        .dark .bg-mesh {
+            background: radial-gradient(circle at 0% 0%, rgba(244, 63, 94, 0.1), transparent 50%),
+                radial-gradient(circle at 100% 0%, rgba(168, 85, 247, 0.1), transparent 50%);
+        }
+
+        /* Checkbox Custom */
+        .custom-checkbox input:checked+div {
+            background-color: #10b981;
+            border-color: #10b981;
+        }
+
+        .custom-checkbox input:checked+div svg {
+            display: block;
+        }
+
+        /* Strikethrough animation */
+        .task-text {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .task-text::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 0;
+            height: 2px;
+            background: #94a3b8;
+            transition: width 0.3s ease;
+        }
+
+        .task-completed .task-text {
+            color: #94a3b8;
+        }
+
+        .task-completed .task-text::after {
+            width: 100%;
+        }
+
+        /* Priority Star */
+        .star-active {
+            color: #fbbf24;
+            /* Amber 400 */
+            fill: #fbbf24;
+        }
+
+        .star-inactive {
+            color: #cbd5e1;
+            /* Slate 300 */
+        }
+
+        .dark .star-inactive {
+            color: #475569;
+            /* Slate 600 */
+        }
+    </style>
+</head>
+
+<body
+    class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300 min-h-screen font-sans">
+
+    <div class="bg-mesh pointer-events-none"></div>
+
+    <!-- Toast Notification -->
+    <div id="toast"
+        class="fixed bottom-5 right-5 px-6 py-4 rounded-xl shadow-xl opacity-0 transition-all duration-300 z-[60] transform translate-y-10 flex items-center gap-3 font-medium text-sm glass text-white bg-slate-800/90 pointer-events-none">
+        <span id="toastIcon"></span>
+        <span id="toastMsg"></span>
+    </div>
+
+    <!-- Header -->
+    <header
+        class="fixed top-0 w-full z-40 glass shadow-sm transition-all duration-300 dark:border-b dark:border-slate-800">
+        <div class="px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="index.html"
+                    class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors shadow-sm border border-slate-200 dark:border-slate-700"
+                    title="Kembali ke Dashboard">
+                    <i class="bi bi-arrow-left text-lg"></i>
+                </a>
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="font-heading font-bold text-lg leading-tight text-slate-800 dark:text-white">TodoList</span>
+                        <span
+                            class="px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300 text-[10px] font-bold border border-rose-200 dark:border-rose-800">Pro</span>
+                    </div>
+                    <span
+                        class="text-[11px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Deadline
+                        & Kategori</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button id="themeToggle"
+                    class="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-yellow-400 overflow-hidden relative border border-slate-200 dark:border-slate-700"
+                    title="Ganti Tema">
+                    <i id="themeIcon" class="bi bi-moon-stars-fill text-lg transition-all duration-300 transform"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex flex-col lg:flex-row min-h-screen pt-24 px-4 pb-6 gap-6 max-w-[1600px] mx-auto">
+
+        <!-- Sidebar Controls (Sticky) -->
+        <aside
+            class="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6 lg:sticky lg:top-24 lg:h-fit animate-fade-in z-30">
+            <!-- Stats Card -->
+            <div
+                class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-4">
+                <h3 class="font-heading font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
+                    <i class="bi bi-bar-chart-line text-rose-500"></i> Ringkasan
+                </h3>
+
+                <div class="grid grid-cols-3 gap-2">
+                    <div
+                        class="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl text-center border border-slate-100 dark:border-slate-700">
+                        <div id="totalCount" class="text-xl font-bold text-slate-700 dark:text-white">0</div>
+                        <div class="text-[10px] uppercase font-semibold text-slate-400">Total</div>
+                    </div>
+                    <div
+                        class="bg-emerald-50 dark:bg-emerald-900/20 p-3 rounded-xl text-center border border-emerald-100 dark:border-emerald-800">
+                        <div id="doneCount" class="text-xl font-bold text-emerald-600 dark:text-emerald-400">0</div>
+                        <div class="text-[10px] uppercase font-semibold text-emerald-600/70 dark:text-emerald-400/70">
+                            Selesai</div>
+                    </div>
+                    <div
+                        class="bg-rose-50 dark:bg-rose-900/20 p-3 rounded-xl text-center border border-rose-100 dark:border-rose-800">
+                        <div id="priorityCount" class="text-xl font-bold text-rose-600 dark:text-rose-400">0</div>
+                        <div class="text-[10px] uppercase font-semibold text-rose-600/70 dark:text-rose-400/70">Penting
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Card -->
+            <div
+                class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-4">
+                <h3 class="font-heading font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
+                    <i class="bi bi-funnel text-violet-500"></i> Filter
+                </h3>
+
+                <!-- Status Filter -->
+                <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+                    <label class="flex-1 text-center cursor-pointer">
+                        <input type="radio" name="statusFilter" value="all" checked class="hidden peer">
+                        <span
+                            class="block py-1.5 text-xs font-medium text-slate-500 rounded-md peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-blue-600 dark:peer-checked:text-blue-400 peer-checked:shadow-sm transition-all">Semua</span>
+                    </label>
+                    <label class="flex-1 text-center cursor-pointer">
+                        <input type="radio" name="statusFilter" value="active" class="hidden peer">
+                        <span
+                            class="block py-1.5 text-xs font-medium text-slate-500 rounded-md peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-blue-600 dark:peer-checked:text-blue-400 peer-checked:shadow-sm transition-all">Aktif</span>
+                    </label>
+                    <label class="flex-1 text-center cursor-pointer">
+                        <input type="radio" name="statusFilter" value="completed" class="hidden peer">
+                        <span
+                            class="block py-1.5 text-xs font-medium text-slate-500 rounded-md peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-blue-600 dark:peer-checked:text-blue-400 peer-checked:shadow-sm transition-all">Selesai</span>
+                    </label>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="space-y-1">
+                    <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Kategori</label>
+                    <select id="categoryFilter"
+                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all dark:text-slate-200">
+                        <option value="all">Semua Kategori</option>
+                        <option value="Rumah">🏠 Rumah</option>
+                        <option value="Kantor">🏢 Kantor</option>
+                        <option value="Sekolah">🎓 Sekolah</option>
+                        <option value="Keuangan">💰 Keuangan</option>
+                        <option value="Lainnya">📝 Lainnya</option>
+                    </select>
+                </div>
+
+                <hr class="border-slate-100 dark:border-slate-800 my-1">
+
+                <button id="clearCompletedBtn"
+                    class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                    <i class="bi bi-trash"></i> Bersihkan Selesai
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 flex flex-col gap-6 animate-slide-up" style="animation-delay: 0.1s;">
+
+            <!-- Input Card -->
+            <div
+                class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-3">
+
+                <!-- Main Text Input -->
+                <input type="text" id="todoInput" placeholder="Apa tugas Anda hari ini?"
+                    class="w-full bg-transparent border-none text-slate-700 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 text-lg px-2 py-1 focus:ring-0 outline-none font-medium"
+                    autocomplete="off">
+
+                <hr class="border-slate-100 dark:border-slate-700">
+
+                <!-- Controls Row -->
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <!-- Category Select -->
+                        <div class="relative">
+                            <select id="todoCategory"
+                                class="appearance-none pl-8 pr-8 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                <option value="Rumah">🏠 Rumah</option>
+                                <option value="Kantor">🏢 Kantor</option>
+                                <option value="Sekolah">🎓 Sekolah</option>
+                                <option value="Keuangan">💰 Keuangan</option>
+                                <option value="Lainnya">📝 Lainnya</option>
+                            </select>
+                            <i class="bi bi-tag-fill absolute left-2.5 top-1.5 text-xs text-slate-400"></i>
+                            <i class="bi bi-chevron-down absolute right-2.5 top-1.5 text-[10px] text-slate-400"></i>
+                        </div>
+
+                        <!-- Date Input -->
+                        <div class="relative">
+                            <input type="date" id="todoDate"
+                                class="pl-8 pr-3 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer dark:[color-scheme:dark]">
+                            <i class="bi bi-calendar-event absolute left-2.5 top-1.5 text-xs text-slate-400"></i>
+                        </div>
+
+                        <!-- Priority Toggle -->
+                        <button id="priorityBtn"
+                            class="w-8 h-8 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-700 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
+                            title="Tandai Penting">
+                            <i id="priorityIcon"
+                                class="bi bi-star-fill text-slate-300 dark:text-slate-600 transition-colors"></i>
+                        </button>
+                    </div>
+
+                    <button id="addBtn"
+                        class="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-1.5 text-sm font-medium shadow-lg shadow-blue-500/20 transition-transform active:scale-95 flex items-center gap-2">
+                        <i class="bi bi-plus-lg"></i> Tambah
+                    </button>
+                </div>
+            </div>
+
+            <!-- List Section -->
+            <div
+                class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col flex-grow overflow-hidden min-h-[400px]">
+
+                <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <h3 class="font-heading font-bold text-slate-800 dark:text-white text-sm" id="listTitle">Daftar
+                        Tugas</h3>
+                    <div class="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg"
+                        id="currentDate">
+                        --/--/----
+                    </div>
+                </div>
+
+                <div class="flex-grow overflow-auto relative p-2" id="todoList">
+                    <!-- Items will be injected here -->
+
+                    <!-- Empty State -->
+                    <div id="emptyState"
+                        class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 pointer-events-none">
+                        <i class="bi bi-calendar2-check text-6xl mb-4 opacity-50"></i>
+                        <p class="text-sm font-medium">Semua tugas beres!</p>
+                        <p class="text-xs mt-1">Atau belum ada yang ditambahkan?</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Theme Logic ---
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const html = document.documentElement;
+
+        function setTheme(isDark) {
+            if (isDark) {
+                html.classList.add('dark');
+                themeIcon.classList.remove('bi-moon-stars-fill');
+                themeIcon.classList.add('bi-sun-fill');
+                localStorage.setItem('sipedasi:theme', 'dark');
+            } else {
+                html.classList.remove('dark');
+                themeIcon.classList.remove('bi-sun-fill');
+                themeIcon.classList.add('bi-moon-stars-fill');
+                localStorage.setItem('sipedasi:theme', 'light');
+            }
+        }
+        const savedTheme = localStorage.getItem('sipedasi:theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setTheme(savedTheme === 'dark' || (!savedTheme && systemDark));
+        themeToggle.addEventListener('click', () => setTheme(!html.classList.contains('dark')));
+
+        // --- Date Display ---
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('id-ID', options);
+
+        // --- Todo App Logic ---
+        const todoInput = document.getElementById('todoInput');
+        const categoryInput = document.getElementById('todoCategory');
+        const dateInput = document.getElementById('todoDate');
+        const priorityBtn = document.getElementById('priorityBtn');
+        const priorityIcon = document.getElementById('priorityIcon');
+        const addBtn = document.getElementById('addBtn');
+        const todoList = document.getElementById('todoList');
+        const emptyState = document.getElementById('emptyState');
+        const totalCountEl = document.getElementById('totalCount');
+        const doneCountEl = document.getElementById('doneCount');
+        const priorityCountEl = document.getElementById('priorityCount');
+        const clearCompletedBtn = document.getElementById('clearCompletedBtn');
+
+        // Filters
+        const statusRadios = document.getElementsByName('statusFilter');
+        const categoryFilter = document.getElementById('categoryFilter');
+
+        let isPriorityInput = false;
+        let todos = JSON.parse(localStorage.getItem('todos')) || [];
+
+        // Priority Button Logic
+        priorityBtn.addEventListener('click', () => {
+            isPriorityInput = !isPriorityInput;
+            if (isPriorityInput) {
+                priorityIcon.classList.replace('text-slate-300', 'text-amber-400');
+                priorityIcon.classList.replace('dark:text-slate-600', 'text-amber-400');
+            } else {
+                priorityIcon.classList.replace('text-amber-400', 'text-slate-300');
+                priorityIcon.classList.add('dark:text-slate-600');
+            }
+        });
+
+        function saveTodos() {
+            localStorage.setItem('todos', JSON.stringify(todos));
+            updateStats();
+            renderTodos();
+        }
+
+        function updateStats() {
+            const total = todos.length;
+            const done = todos.filter(t => t.completed).length;
+            const priority = todos.filter(t => t.isPriority && !t.completed).length;
+
+            totalCountEl.textContent = total;
+            doneCountEl.textContent = done;
+            priorityCountEl.textContent = priority;
+        }
+
+        function addTodo() {
+            const text = todoInput.value.trim();
+            if (!text) {
+                showToast('Silahkan isi nama tugas.', 'error');
+                return;
+            }
+
+            const newTodo = {
+                id: Date.now(),
+                text: text,
+                completed: false,
+                category: categoryInput.value,
+                deadline: dateInput.value, // YYYY-MM-DD
+                isPriority: isPriorityInput,
+                createdAt: new Date().toISOString()
+            };
+
+            todos.push(newTodo);
+            saveTodos();
+
+            // Reset Inputs
+            todoInput.value = '';
+            dateInput.value = '';
+            isPriorityInput = false;
+            priorityIcon.classList.replace('text-amber-400', 'text-slate-300');
+            priorityIcon.classList.add('dark:text-slate-600');
+
+            showToast('Tugas berhasil ditambahkan!');
+        }
+
+        function deleteTodo(id) {
+            todos = todos.filter(t => t.id !== id);
+            saveTodos();
+            showToast('Tugas dihapus.', 'error');
+        }
+
+        function toggleTodo(id) {
+            todos = todos.map(t => {
+                if (t.id === id) return { ...t, completed: !t.completed };
+                return t;
+            });
+            saveTodos();
+        }
+
+        function togglePriority(id) {
+            todos = todos.map(t => {
+                if (t.id === id) return { ...t, isPriority: !t.isPriority };
+                return t;
+            });
+            saveTodos();
+        }
+
+        function editTodo(id) {
+            const todo = todos.find(t => t.id === id);
+            if (!todo) return;
+            const newText = prompt("Edit Nama Tugas:", todo.text);
+            if (newText !== null && newText.trim() !== "") {
+                todos = todos.map(t => {
+                    if (t.id === id) return { ...t, text: newText.trim() };
+                    return t;
+                });
+                saveTodos();
+            }
+        }
+
+        function clearCompleted() {
+            const initialLength = todos.length;
+            todos = todos.filter(t => !t.completed);
+            if (todos.length < initialLength) {
+                saveTodos();
+                showToast('Tugas selesai dibersihkan.');
+            } else {
+                showToast('Tidak ada tugas selesai.', 'error');
+            }
+        }
+
+        function getCategoryColor(cat) {
+            switch (cat) {
+                case 'Rumah': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
+                case 'Kantor': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800';
+                case 'Sekolah': return 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400 border-violet-200 dark:border-violet-800';
+                case 'Keuangan': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800';
+                default: return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700';
+            }
+        }
+
+        function renderTodos() {
+            const statusFilter = document.querySelector('input[name="statusFilter"]:checked').value;
+            const catFilter = categoryFilter.value;
+
+            // Sorting: Priority first, then Deadline (nearest first), then CreatedAt
+            let sortedTodos = [...todos].sort((a, b) => {
+                if (a.completed !== b.completed) return a.completed ? 1 : -1; // Active first
+                if (a.isPriority !== b.isPriority) return b.isPriority ? 1 : -1; // Priority first
+                if (a.deadline && b.deadline) return new Date(a.deadline) - new Date(b.deadline); // Nearest deadline
+                if (a.deadline && !b.deadline) return -1;
+                if (!a.deadline && b.deadline) return 1;
+                return new Date(b.createdAt) - new Date(a.createdAt); // Newest created
+            });
+
+            // Filtering
+            let filteredTodos = sortedTodos.filter(t => {
+                const matchStatus = statusFilter === 'all' ? true : (statusFilter === 'active' ? !t.completed : t.completed);
+                const matchCat = catFilter === 'all' ? true : t.category === catFilter;
+                return matchStatus && matchCat;
+            });
+
+            todoList.innerHTML = '';
+
+            if (filteredTodos.length === 0) {
+                emptyState.classList.remove('hidden');
+                todoList.appendChild(emptyState);
+            } else {
+                emptyState.classList.add('hidden');
+
+                filteredTodos.forEach(todo => {
+                    const badgeClass = getCategoryColor(todo.category);
+
+                    // Deadline Logic
+                    let deadlineHtml = '';
+                    if (todo.deadline) {
+                        const today = new Date().toISOString().split('T')[0];
+                        const isOverdue = todo.deadline < today && !todo.completed;
+                        const dateColor = isOverdue ? 'text-rose-500 font-bold' : 'text-slate-400 dark:text-slate-500';
+                        const icon = isOverdue ? 'bi-exclamation-circle-fill' : 'bi-calendar';
+
+                        // Format date to ID
+                        const dateObj = new Date(todo.deadline);
+                        const formattedDate = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+
+                        deadlineHtml = `<span class="text-[10px] flex items-center gap-1 ${dateColor}"><i class="bi ${icon}"></i> ${formattedDate}</span>`;
+                    }
+
+                    const el = document.createElement('div');
+                    // Style Priority border
+                    const borderClass = todo.isPriority && !todo.completed ? 'border-l-[6px] border-l-amber-400 border-t border-r border-b border-slate-100 dark:border-slate-700/50' : 'border border-slate-100 dark:border-slate-700/50';
+
+                    el.className = `group flex items-center gap-3 p-3 mb-2 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all animate-pop relative overflow-hidden ${borderClass} ${todo.completed ? 'opacity-75' : ''}`;
+
+                    el.innerHTML = `
+                        <label class="custom-checkbox cursor-pointer relative flex items-center flex-shrink-0">
+                            <input type="checkbox" class="sr-only" ${todo.completed ? 'checked' : ''} onchange="toggleTodo(${todo.id})">
+                            <div class="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded-md flex items-center justify-center transition-colors">
+                                <svg class="w-3.5 h-3.5 text-white hidden pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                        </label>
+                        
+                        <div class="flex-1 min-w-0 cursor-pointer" onclick="toggleTodo(${todo.id})">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="text-xs px-1.5 py-0.5 rounded border ${badgeClass}">${todo.category}</span>
+                                ${deadlineHtml}
+                            </div>
+                            <p class="text-sm font-medium text-slate-700 dark:text-slate-200 task-text truncate leading-tight">${todo.text}</p>
+                        </div>
+
+                        <div class="flex items-center gap-1">
+                            <button onclick="togglePriority(${todo.id})" class="p-1.5 rounded-lg transition-colors ${todo.isPriority ? 'text-amber-400 hover:text-slate-400' : 'text-slate-300 dark:text-slate-600 hover:text-amber-400'}" title="${todo.isPriority ? 'Hapus Penting' : 'Tandai Penting'}">
+                                <i class="bi ${todo.isPriority ? 'bi-star-fill' : 'bi-star'}"></i>
+                            </button>
+                            <button onclick="editTodo(${todo.id})" class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors opacity-0 group-hover:opacity-100" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button onclick="deleteTodo(${todo.id})" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors opacity-0 group-hover:opacity-100" title="Hapus">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    todoList.appendChild(el);
+                });
+            }
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById("toast");
+            const icon = document.getElementById("toastIcon");
+            const txt = document.getElementById("toastMsg");
+
+            txt.textContent = msg;
+
+            toast.className = "fixed bottom-5 right-5 px-6 py-4 rounded-xl shadow-xl transition-all duration-300 z-[60] transform flex items-center gap-3 font-medium text-sm glass text-white backdrop-blur-md";
+
+            if (type === 'success') {
+                toast.classList.add('bg-emerald-600/90');
+                icon.innerHTML = '<i class="bi bi-check-circle-fill text-lg"></i>';
+            } else {
+                toast.classList.add('bg-rose-600/90');
+                icon.innerHTML = '<i class="bi bi-info-circle-fill text-lg"></i>';
+            }
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+            }, 3000);
+        }
+
+        // --- Event Listeners ---
+        addBtn.addEventListener('click', addTodo);
+
+        todoInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTodo();
+        });
+
+        clearCompletedBtn.addEventListener('click', () => {
+            if (confirm('Hapus semua tugas yang sudah selesai?')) {
+                clearCompleted();
+            }
+        });
+
+        statusRadios.forEach(radio => {
+            radio.addEventListener('change', renderTodos);
+        });
+
+        categoryFilter.addEventListener('change', renderTodos);
+
+        // Initialize
+        updateStats();
+        renderTodos();
+
+    </script>
+</body>
+
+</html>

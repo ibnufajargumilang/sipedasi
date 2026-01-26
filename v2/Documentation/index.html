@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dokumentasi Sistem SiRekon</title>
+
+    <!-- Fonts -->
+    <link href="../assets/css/fonts.css" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="../assets/css/bootstrap-icons.css">
+    <!-- Tailwind CSS -->
+    <script src="../assets/js/tailwindcss.js"></script>
+    <!-- Custom Style -->
+    <link href="style.css" rel="stylesheet">
+</head>
+
+<body
+    class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans antialiased transition-colors duration-300">
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside
+            class="w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-30 hidden md:flex shrink-0 transition-colors duration-300">
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                            <i class="bi bi-book-half text-lg"></i>
+                        </div>
+                        <div>
+                            <h1
+                                class="font-heading font-bold text-lg leading-tight tracking-tight text-slate-800 dark:text-slate-100">
+                                Dokumentasi</h1>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SiRekon v2.0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto p-4 space-y-1 custom-scrollbar">
+                <div class="px-3 py-3 mt-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pengantar
+                </div>
+                <a href="#intro"
+                    class="sidebar-link group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all">
+                    <i class="bi bi-house-door text-lg opacity-75 group-hover:opacity-100"></i> Pendahuluan
+                </a>
+                <a href="#general-features"
+                    class="sidebar-link group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all">
+                    <i class="bi bi-stars text-lg opacity-75 group-hover:opacity-100"></i> Fitur Umum
+                </a>
+
+                <div class="px-3 py-3 mt-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Modul
+                    Aplikasi
+                </div>
+                <a href="#sirekon-pbb"
+                    class="sidebar-link group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all">
+                    <i class="bi bi-building text-lg opacity-75 group-hover:opacity-100"></i> SiRekon PBB
+                </a>
+                <a href="#sirekon-bphtb"
+                    class="sidebar-link group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all">
+                    <i class="bi bi-map text-lg opacity-75 group-hover:opacity-100"></i> SiRekon BPHTB
+                </a>
+                <a href="#sirekon-pjdl"
+                    class="sidebar-link group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all">
+                    <i class="bi bi-shop text-lg opacity-75 group-hover:opacity-100"></i> SiRekon PJDL
+                </a>
+
+                <div class="px-3 py-3 mt-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Bantuan</div>
+                <a href="#upload-guide"
+                    class="sidebar-link group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all">
+                    <i class="bi bi-file-earmark-spreadsheet text-lg opacity-75 group-hover:opacity-100"></i> Format
+                    File Excel
+                </a>
+                <a href="#faq"
+                    class="sidebar-link group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all">
+                    <i class="bi bi-question-circle text-lg opacity-75 group-hover:opacity-100"></i> FAQ &
+                    Troubleshooting
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                <!-- Dark Mode Desktop -->
+                <button id="themeToggleDesktop"
+                    class="flex items-center justify-between w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl text-sm font-medium hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    <span class="flex items-center gap-2"><i class="bi bi-moon-stars"></i> Mode Gelap</span>
+                    <div class="w-9 h-5 bg-slate-300 dark:bg-indigo-600 rounded-full relative transition-colors">
+                        <div
+                            class="absolute w-3 h-3 bg-white rounded-full top-1 left-1 dark:left-5 transition-all shadow-sm">
+                        </div>
+                    </div>
+                </button>
+
+                <a href="../index.html"
+                    class="flex items-center justify-center gap-2 w-full py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                    <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
+                </a>
+            </div>
+        </aside>
+
+        <!-- Mobile Header -->
+        <div
+            class="md:hidden fixed top-0 w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 z-50 px-4 py-3 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-3">
+                <button id="mobileMenuBtn"
+                    class="p-2 -ml-2 text-slate-600 dark:text-slate-300 rounded-lg active:bg-slate-100 dark:active:bg-slate-800">
+                    <i class="bi bi-list text-2xl"></i>
+                </button>
+                <div class="flex items-center gap-2">
+                    <div
+                        class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm shadow-md">
+                        <i class="bi bi-book-half"></i>
+                    </div>
+                    <span class="font-heading font-bold text-slate-800 dark:text-white">Dokumentasi</span>
+                </div>
+            </div>
+
+            <!-- Dark Mode Mobile -->
+            <button id="themeToggleMobile"
+                class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-600 dark:text-yellow-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <i class="bi bi-moon-stars-fill text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Main Content -->
+        <main
+            class="flex-1 overflow-y-auto scroll-smooth pt-20 md:pt-0 bg-slate-50/50 dark:bg-slate-950 transition-colors duration-300 relative"
+            id="mainContent">
+
+            <!-- Floating Decoration -->
+            <div
+                class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none">
+            </div>
+
+            <div class="max-w-5xl mx-auto px-6 py-12 space-y-20 relative z-10">
+
+                <!-- Introduction -->
+                <section id="intro" class="scroll-mt-32">
+                    <div class="space-y-6 text-center md:text-left">
+                        <div
+                            class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm text-slate-600 dark:text-slate-300">
+                            <span class="relative flex h-2 w-2">
+                                <span
+                                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            </span>
+                            Updated Januari 2026
+                        </div>
+
+                        <div class="space-y-4">
+                            <h1
+                                class="text-4xl md:text-6xl font-heading font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
+                                Dokumentasi <br>
+                                Sistem <span
+                                    class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 to-purple-600">SiRekon</span>
+                            </h1>
+                            <p
+                                class="text-lg md:text-xl text-slate-600 dark:text-slate-400 leading-relaxed max-w-3xl mx-auto md:mx-0">
+                                Panduan lengkap pengelolaan Rekonsiliasi Pajak Daerah (PBB, BPHTB, PJDL).
+                                Pelajari cara import data, menggunakan filter canggih, hingga manajemen pelaporan.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <hr class="border-slate-200 dark:border-slate-800/50">
+
+                <!-- General Features -->
+                <section id="general-features" class="scroll-mt-32">
+                    <h2 class="text-2xl font-bold mb-8 flex items-center gap-3 text-slate-900 dark:text-white">
+                        <span
+                            class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                            <i class="bi bi-stars"></i>
+                        </span>
+                        Fitur Unggulan
+                    </h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div
+                            class="group bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:border-indigo-500/50 dark:hover:border-indigo-500/50 transition-all">
+                            <div
+                                class="w-14 h-14 bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                                <i class="bi bi-file-earmark-spreadsheet"></i>
+                            </div>
+                            <h3 class="font-bold text-xl mb-3 text-slate-800 dark:text-slate-100">Import Excel Instan
+                            </h3>
+                            <p class="text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Sistem membaca file Excel secara cerdas. Tidak perlu pusing dengan format kolom, sistem
+                                akan mencari header seperti <code
+                                    class="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs font-mono text-slate-700 dark:text-slate-300">Pokok</code>,
+                                <code
+                                    class="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs font-mono text-slate-700 dark:text-slate-300">Denda</code>,
+                                dan <code
+                                    class="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-xs font-mono text-slate-700 dark:text-slate-300">Total</code>
+                                secara otomatis.
+                            </p>
+                        </div>
+
+                        <div
+                            class="group bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:border-indigo-500/50 dark:hover:border-indigo-500/50 transition-all">
+                            <div
+                                class="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                                <i class="bi bi-filter-square"></i>
+                            </div>
+                            <h3 class="font-bold text-xl mb-3 text-slate-800 dark:text-slate-100">Smart Filtering</h3>
+                            <p class="text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Analisa data lebih dalam dengan filter multi-layer: Rentang Tanggal, Jenis Bank /
+                                Channel Pembayaran, hingga Jam Transaksi.
+                            </p>
+                        </div>
+
+                        <div
+                            class="group bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:border-indigo-500/50 dark:hover:border-indigo-500/50 transition-all">
+                            <div
+                                class="w-14 h-14 bg-rose-100 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                                <i class="bi bi-shield-check"></i>
+                            </div>
+                            <h3 class="font-bold text-xl mb-3 text-slate-800 dark:text-slate-100">Data Safety & Reset
+                            </h3>
+                            <p class="text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Salah filter atau tidak sengaja menghapus data? Tenang. Fitur <strong>Reset</strong>
+                                akan mengembalikan kondisi data persis seperti saat pertama kali diupload.
+                            </p>
+                        </div>
+
+                        <div
+                            class="group bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none hover:border-indigo-500/50 dark:hover:border-indigo-500/50 transition-all">
+                            <div
+                                class="w-14 h-14 bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                                <i class="bi bi-phone"></i>
+                            </div>
+                            <h3 class="font-bold text-xl mb-3 text-slate-800 dark:text-slate-100">Fully Responsive</h3>
+                            <p class="text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Akses dashboard dari Laptop, Tablet, maupun Smartphone dengan tampilan yang menyesuaikan
+                                secara otomatis.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SiRekon PBB -->
+                <section id="sirekon-pbb" class="scroll-mt-32 space-y-8">
+                    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+                        <h2 class="text-2xl font-bold flex items-center gap-3 text-slate-900 dark:text-white">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-orange-500 text-white flex items-center justify-center text-xl shadow-lg shadow-orange-500/30">
+                                <i class="bi bi-building"></i>
+                            </div>
+                            SiRekon PBB
+                        </h2>
+                        <a href="../SiRekonPBB/" target="_blank"
+                            class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center gap-2">
+                            Launch App <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                    </div>
+
+                    <div
+                        class="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-100 dark:border-slate-800 shadow-sm">
+
+                        <div class="grid md:grid-cols-2 gap-12">
+                            <div>
+                                <h3
+                                    class="font-bold text-lg mb-4 text-slate-800 dark:text-white flex items-center gap-2">
+                                    <i class="bi bi-check-circle-fill text-indigo-500"></i> Fitur Kunci
+                                </h3>
+                                <ul class="space-y-4">
+                                    <li
+                                        class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <div
+                                            class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0 text-sm font-bold">
+                                            1</div>
+                                        <div>
+                                            <span
+                                                class="font-bold block text-sm text-slate-800 dark:text-slate-200">Kategori
+                                                Bank Otomatis</span>
+                                            <span class="text-sm text-slate-500 dark:text-slate-400 mt-1 block">
+                                                Pilih "PBBU" atau "PBBQRIS", sistem otomatis memfilter bank yang relevan
+                                                (misal: Bank BJB - Teller, ATM, dll).
+                                            </span>
+                                        </div>
+                                    </li>
+                                    <li
+                                        class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <div
+                                            class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center flex-shrink-0 text-sm font-bold">
+                                            2</div>
+                                        <div>
+                                            <span
+                                                class="font-bold block text-sm text-slate-800 dark:text-slate-200">Auto-Fix
+                                                Nama Bank</span>
+                                            <span class="text-sm text-slate-500 dark:text-slate-400 mt-1 block">
+                                                Spasi berantakan? <code
+                                                    class="bg-slate-100 dark:bg-slate-800 px-1 rounded text-xs">Bank BJB  -   Teller</code>
+                                                akan otomatis diperbaiki menjadi standar agar data tidak terpecah.
+                                            </span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div
+                                class="bg-slate-50 dark:bg-slate-950 rounded-2xl p-6 border border-slate-200 dark:border-slate-800">
+                                <h4 class="font-bold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
+                                    <i class="bi bi-exclamation-triangle-fill text-amber-500"></i> Catatan Teknis
+                                </h4>
+                                <div class="space-y-4 text-sm text-slate-600 dark:text-slate-400">
+                                    <p>
+                                        <strong>Format Tanggal:</strong> Pastikan kolom tanggal di Excel berformat <em
+                                            class="text-indigo-500">Date</em>, bukan Text. Sistem menggunakan mode <code
+                                            class="bg-white dark:bg-slate-900 px-1.5 border border-slate-200 dark:border-slate-700 rounded text-xs font-mono">CellDates: True</code>
+                                        untuk akurasi tinggi.
+                                    </p>
+                                    <p>
+                                        <strong>Format Angka:</strong> Angka dibaca sebagai <em
+                                            class="text-indigo-500">Raw Number</em>. Jangan gunakan pemisah ribuan
+                                        berupa teks manual. Biarkan Excel memformatnya, sistem akan membaca value
+                                        aslinya.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- SiRekon BPHTB -->
+                <section id="sirekon-bphtb" class="scroll-mt-24">
+                    <h2 class="text-2xl font-bold flex items-center gap-3">
+                        <div
+                            class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center text-lg">
+                            <i class="bi bi-map"></i>
+                        </div>
+                        SiRekon BPHTB
+                    </h2>
+                    <p class="text-slate-600 dark:text-slate-400 mt-4">
+                        Dokumentasi untuk SiRekon BPHTB akan segera hadir.
+                    </p>
+                </section>
+
+                <!-- SiRekon PJDL -->
+                <section id="sirekon-pjdl" class="scroll-mt-32 space-y-8">
+                    <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+                        <h2 class="text-2xl font-bold flex items-center gap-3 text-slate-900 dark:text-white">
+                            <div
+                                class="w-10 h-10 rounded-xl bg-pink-500 text-white flex items-center justify-center text-xl shadow-lg shadow-pink-500/30">
+                                <i class="bi bi-shop"></i>
+                            </div>
+                            SiRekon PJDL
+                        </h2>
+                        <a href="../SiRekonPJDL/" target="_blank"
+                            class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center gap-2">
+                            Launch App <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <!-- Card 1 -->
+                        <div
+                            class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 hover:shadow-lg transition-all">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div
+                                    class="p-2 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-lg">
+                                    <i class="bi bi-layout-wtf"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-800 dark:text-white">Mapping Dinamis</h3>
+                            </div>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Mendeteksi format Excel lama vs baru secara otomatis. Jika ada kolom <code
+                                    class="text-pink-500 font-mono text-xs">Pokok Opsen</code>, sistem akan langsung
+                                menampilkannya.
+                            </p>
+                        </div>
+
+                        <!-- Card 2 -->
+                        <div
+                            class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 hover:shadow-lg transition-all">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div
+                                    class="p-2 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-lg">
+                                    <i class="bi bi-search"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-800 dark:text-white">Filter Uraian</h3>
+                            </div>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Cari wajib pajak spesifik (misal: "Hotel A") menggunakan filter Uraian Pajak. Sangat
+                                membantu untuk rekonsiliasi per objek pajak.
+                            </p>
+                        </div>
+
+                        <!-- Card 3 -->
+                        <div
+                            class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 hover:shadow-lg transition-all">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div
+                                    class="p-2 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-lg">
+                                    <i class="bi bi-clipboard-check"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-800 dark:text-white">Quick Copy</h3>
+                            </div>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                Hover pada nama wajib pajak yang panjang, dan klik ikon copy yang muncul untuk
+                                menyalinnya ke clipboard instan.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <hr class="border-slate-200 dark:border-slate-800/50">
+
+                <!-- FAQ -->
+                <section id="faq" class="scroll-mt-32">
+                    <h2 class="text-2xl font-bold mb-8 flex items-center gap-3 text-slate-900 dark:text-white">
+                        <span
+                            class="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-900/50 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+                            <i class="bi bi-question-lg"></i>
+                        </span>
+                        FAQ & Troubleshooting
+                    </h2>
+
+                    <div class="space-y-4">
+                        <div
+                            class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+                            <details class="group">
+                                <summary
+                                    class="flex items-center justify-between p-5 cursor-pointer font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <span>Filter "Jenis Bank" cuma muncul 1 data?</span>
+                                    <span
+                                        class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-open:bg-indigo-100 dark:group-open:bg-indigo-900 group-open:text-indigo-600 transition-all">
+                                        <i
+                                            class="bi bi-chevron-down transform transition-transform group-open:rotate-180"></i>
+                                    </span>
+                                </summary>
+                                <div
+                                    class="p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 text-slate-600 dark:text-slate-400 leading-relaxed">
+                                    Kemungkinan nama bank di Excel tidak konsisten (spasi ganda). <br>
+                                    <strong>Solusi:</strong> Upload ulang file Anda. Sistem v2.0 memiliki fitur
+                                    <em>Auto-Fix</em> yang akan membersihkan spasi tersebut secara otomatis.
+                                </div>
+                            </details>
+                        </div>
+
+                        <div
+                            class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+                            <details class="group">
+                                <summary
+                                    class="flex items-center justify-between p-5 cursor-pointer font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <span>Tanggal terbaca angka 45xxx?</span>
+                                    <span
+                                        class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-open:bg-indigo-100 dark:group-open:bg-indigo-900 group-open:text-indigo-600 transition-all">
+                                        <i
+                                            class="bi bi-chevron-down transform transition-transform group-open:rotate-180"></i>
+                                    </span>
+                                </summary>
+                                <div
+                                    class="p-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 text-slate-600 dark:text-slate-400 leading-relaxed">
+                                    Itu adalah "Serial Number" Excel. Pastikan kolom format cell di Excel adalah
+                                    <strong>Date</strong>, bukan General/Text. Sistem akan berusaha membacanya, namun
+                                    format Date asli lebih disarankan.
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </section>
+
+                <footer class="pt-10 border-t border-slate-200 dark:border-slate-800 text-center">
+                    <p class="text-slate-500 dark:text-slate-500 text-sm font-medium">&copy; 2026 Badan Pendapatan
+                        Daerah. SiRekon System v2.0</p>
+                </footer>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Main Logic -->
+    <script src="script.js"></script>
+</body>
+
+</html>

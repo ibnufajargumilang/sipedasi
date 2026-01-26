@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIPEDASI — Dashboard Modern</title>
+
+  <link href="assets/css/fonts.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="assets/css/bootstrap-icons.css">
+
+  <script src="assets/js/tailwindcss.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            primary: '#3b82f6',
+            secondary: '#6366f1',
+            dark: '#0f172a',
+            cardLight: 'rgba(255, 255, 255, 0.7)',
+            cardDark: 'rgba(30, 41, 59, 0.7)',
+          },
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+            'fade-in': 'fadeIn 0.5s ease-out forwards',
+            'slide-up': 'slideUp 0.5s ease-out forwards',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': {
+                transform: 'translateY(0)'
+              },
+              '50%': {
+                transform: 'translateY(-10px)'
+              },
+            },
+            fadeIn: {
+              '0%': {
+                opacity: '0'
+              },
+              '100%': {
+                opacity: '1'
+              },
+            },
+            slideUp: {
+              '0%': {
+                transform: 'translateY(20px)',
+                opacity: '0'
+              },
+              '100%': {
+                transform: 'translateY(0)',
+                opacity: '1'
+              },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+
+    .dark ::-webkit-scrollbar-thumb {
+      background: #334155;
+    }
+
+    .glass {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .dark .glass {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .text-gradient {
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-image: linear-gradient(to right, #3b82f6, #8b5cf6);
+    }
+
+    .bg-mesh {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      background: radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.15), transparent 40%),
+        radial-gradient(circle at 100% 0%, rgba(139, 92, 246, 0.15), transparent 40%),
+        radial-gradient(circle at 100% 100%, rgba(14, 165, 233, 0.15), transparent 40%);
+      transition: opacity 0.3s;
+    }
+
+    .dark .bg-mesh {
+      background: radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.1), transparent 50%),
+        radial-gradient(circle at 100% 0%, rgba(139, 92, 246, 0.1), transparent 50%);
+    }
+
+    /* Compact Mode Styles */
+    .is-compact {
+      gap: 12px;
+    }
+
+    .is-compact .menu-item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      padding: 12px 16px;
+      min-height: auto;
+      gap: 12px;
+    }
+
+    .is-compact .menu-item .card-icon {
+      margin-bottom: 0 !important;
+      width: 36px;
+      height: 36px;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .is-compact .menu-item h3 {
+      margin-bottom: 0;
+      font-size: 0.95rem;
+      line-height: 1.2;
+    }
+
+    .is-compact .menu-item p,
+    .is-compact .menu-item .card-badge,
+    .is-compact .menu-item .card-arrow {
+      display: none;
+    }
+  </style>
+</head>
+
+<body
+  class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300 min-h-screen flex flex-col">
+
+  <div class="bg-mesh pointer-events-none"></div>
+
+  <header class="fixed top-0 w-full z-50 transition-all duration-300 glass shadow-sm" id="navbar">
+    <div class="w-full px-6 py-3 flex items-center justify-between">
+
+      <a href="#" class="flex items-center gap-3 group">
+        <div
+          class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-500/30 group-hover:scale-105 transition-transform duration-300">
+          S
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2">
+            <span class="font-heading font-bold text-lg leading-tight tracking-tight">SIPEDASI</span>
+            <span
+              class="px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 text-[10px] font-bold border border-blue-200 dark:border-blue-800/50">v2.0</span>
+          </div>
+          <span class="text-[10px] text-slate-500 dark:text-slate-400 font-medium tracking-wide uppercase">Data &
+            Information System</span>
+        </div>
+      </a>
+
+      <div class="flex items-center gap-3">
+        <div class="hidden md:flex items-center relative group">
+          <div class="absolute left-3 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+            <i class="bi bi-search"></i>
+          </div>
+          <input type="text" id="desktopSearch"
+            class="pl-10 pr-4 py-2 w-64 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-blue-500/50 transition-all outline-none placeholder:text-slate-400"
+            placeholder="Cari modul..." autocomplete="off">
+        </div>
+
+        <button id="viewToggle"
+          class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300"
+          title="Ubah Tampilan">
+          <i id="viewIcon" class="bi bi-grid-fill text-lg"></i>
+        </button>
+
+        <button id="themeToggle"
+          class="w-10 h-10 rounded-xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-yellow-400 overflow-hidden relative"
+          title="Ganti Tema">
+          <i id="themeIcon" class="bi bi-moon-stars-fill text-lg transition-all duration-300 transform"></i>
+        </button>
+
+        <button id="mobileSearchToggle"
+          class="md:hidden w-10 h-10 rounded-xl flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 dark:text-slate-300">
+          <i class="bi bi-search text-lg"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobileSearchPanel"
+      class="hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 animate-fade-in">
+      <div class="relative">
+        <i class="bi bi-search absolute left-3 top-3 text-slate-400"></i>
+        <input type="text" id="mobileSearch"
+          class="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          placeholder="Apa yang ingin anda cari?">
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow pt-28 pb-12 px-6 w-full mx-auto">
+
+    <section class="mb-8 relative animate-fade-in">
+      <div class="flex flex-col md:flex-row items-center md:items-end justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-heading font-bold mb-1">
+            <span id="greeting" class="border-r-2 border-slate-800 dark:border-slate-100 pr-1 animate-pulse">Selamat
+              Datang</span>, User!
+          </h1>
+          <p class="text-slate-500 dark:text-slate-400 text-sm">
+            Silahkan pilih modul layanan dibawah ini.
+          </p>
+        </div>
+
+        <!-- Glass Date Badge -->
+        <div
+          class="hidden md:flex px-4 py-2 rounded-xl glass border border-slate-200 dark:border-slate-700 items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300 shadow-sm hover:shadow-md transition-all">
+          <i class="bi bi-calendar-week text-blue-500"></i>
+          <span id="glassDateDisplay" class="min-w-[120px] text-center">...</span>
+        </div>
+
+
+      </div>
+    </section>
+
+
+
+    <!-- System & Services Section -->
+    <div class="mb-5 animate-fade-in" style="animation-delay: 0.05s;">
+      <h2
+        class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+        <i class="bi bi-grid-fill text-blue-500"></i> Sistem Aplikasi
+      </h2>
+      <div id="menuGridSystems" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+
+        <a href="SiRekonPBB"
+          class="menu-item group relative p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 overflow-hidden">
+          <div class="card-arrow absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+            <i class="bi bi-arrow-up-right text-blue-500"></i>
+          </div>
+          <div
+            class="card-icon w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
+            <i class="bi bi-bank2"></i>
+          </div>
+          <h3
+            class="font-heading font-bold text-lg mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            SiRekon PBB</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Rekonsiliasi Pajak Bumi & Bangunan</p>
+          <div class="card-badge mt-4 flex items-center gap-2">
+            <span
+              class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">TAX</span>
+          </div>
+        </a>
+
+        <a href="SiRekonPJDL"
+          class="menu-item group relative p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 overflow-hidden">
+          <div class="card-arrow absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+            <i class="bi bi-arrow-up-right text-indigo-500"></i>
+          </div>
+          <div
+            class="card-icon w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
+            <i class="bi bi-cash-coin"></i>
+          </div>
+          <h3
+            class="font-heading font-bold text-lg mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+            SiRekon PJDL</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Rekonsiliasi Pajak Daerah Lainnya</p>
+          <div class="card-badge mt-4 flex items-center gap-2">
+            <span
+              class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">TAX</span>
+          </div>
+        </a>
+
+        <a href="SiRekonBPHTB"
+          class="menu-item group relative p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-pink-500 dark:hover:border-pink-500 transition-all duration-300 hover:shadow-xl hover:shadow-pink-500/10 hover:-translate-y-1 overflow-hidden">
+          <div class="card-arrow absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+            <i class="bi bi-arrow-up-right text-pink-500"></i>
+          </div>
+          <div
+            class="card-icon w-12 h-12 rounded-xl bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
+            <i class="bi bi-receipt"></i>
+          </div>
+          <h3
+            class="font-heading font-bold text-lg mb-1 group-hover:text-pink-600 dark:group-hover:text-pink-400 transition-colors">
+            SiRekon BPHTB</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Rekonsiliasi Bea Perolehan Hak atas Tanah dan Bangunan
+          </p>
+          <div class="card-badge mt-4 flex items-center gap-2">
+            <span
+              class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">TAX</span>
+          </div>
+        </a>
+
+        <a href="SiNkronLRA"
+          class="menu-item group relative p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-1 overflow-hidden">
+          <div class="card-arrow absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+            <i class="bi bi-arrow-up-right text-emerald-500"></i>
+          </div>
+          <div
+            class="card-icon w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
+            <i class="bi bi-arrow-repeat"></i>
+          </div>
+          <h3
+            class="font-heading font-bold text-lg mb-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+            SiNkron LRA</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Sistem Sinkronisasi Laporan Realisasi</p>
+          <div class="card-badge mt-4 flex items-center gap-2">
+            <span
+              class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">SYNC</span>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- Documentation & Information Section -->
+    <div class="animate-fade-in" style="animation-delay: 0.1s;">
+      <h2
+        class="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2 mt-8 border-t border-slate-100 dark:border-slate-800 pt-8">
+        <i class="bi bi-collection-fill text-indigo-500"></i> Pusat Informasi
+      </h2>
+      <div id="menuGridDocs" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+
+        <a href="https://forms.gle/bNz3gDBrHUubdjTv8" target="_blank"
+          class="menu-item group relative p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-amber-500 dark:hover:border-amber-500 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/10 hover:-translate-y-1 overflow-hidden">
+          <div class="card-arrow absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+            <i class="bi bi-box-arrow-up-right text-amber-500"></i>
+          </div>
+          <div
+            class="card-icon w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
+            <i class="bi bi-star-half"></i>
+          </div>
+          <h3
+            class="font-heading font-bold text-lg mb-1 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+            Umpan Balik</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Kirim masukan & saran pengembangan</p>
+          <div class="card-badge mt-4 flex items-center gap-2">
+            <span
+              class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">FORM</span>
+          </div>
+        </a>
+
+        <a href="Documentation/"
+          class="menu-item group relative p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-teal-500 dark:hover:border-teal-500 transition-all duration-300 hover:shadow-xl hover:shadow-teal-500/10 hover:-translate-y-1 overflow-hidden">
+          <div class="card-arrow absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+            <i class="bi bi-arrow-up-right text-teal-500"></i>
+          </div>
+          <div
+            class="card-icon w-12 h-12 rounded-xl bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
+            <i class="bi bi-book-half"></i>
+          </div>
+          <h3
+            class="font-heading font-bold text-lg mb-1 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+            Dokumentasi</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Panduan lengkap sistem SiRekon</p>
+          <div class="card-badge mt-4 flex items-center gap-2">
+            <span
+              class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">WEB</span>
+          </div>
+        </a>
+
+        <a href="files/BUKU_PANDUAN.pdf"
+          class="menu-item group relative p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-cyan-500 dark:hover:border-cyan-500 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/10 hover:-translate-y-1 overflow-hidden">
+          <div class="card-arrow absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+            <i class="bi bi-download text-cyan-500"></i>
+          </div>
+          <div
+            class="card-icon w-12 h-12 rounded-xl bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
+            <i class="bi bi-journal-bookmark-fill"></i>
+          </div>
+          <h3
+            class="font-heading font-bold text-lg mb-1 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors">
+            Manual Book</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Unduh panduan penggunaan sistem</p>
+          <div class="card-badge mt-4 flex items-center gap-2">
+            <span
+              class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">PDF</span>
+          </div>
+        </a>
+
+        <a href="files/MATERI_SOSIALISASI.pdf"
+          class="menu-item group relative p-6 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-purple-500 dark:hover:border-purple-500 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10 hover:-translate-y-1 overflow-hidden">
+          <div class="card-arrow absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+            <i class="bi bi-download text-purple-500"></i>
+          </div>
+          <div
+            class="card-icon w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
+            <i class="bi bi-patch-question"></i>
+          </div>
+          <h3
+            class="font-heading font-bold text-lg mb-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+            Materi Sosialisasi</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Unduh bahan presentasi sosialisasi</p>
+          <div class="card-badge mt-4 flex items-center gap-2">
+            <span
+              class="text-[10px] font-bold px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">PDF</span>
+          </div>
+        </a>
+      </div>
+    </div>
+
+
+
+    </div>
+
+    <div id="noResults" class="hidden text-center py-20 animate-fade-in">
+      <div
+        class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 mb-4">
+        <i class="bi bi-search text-3xl"></i>
+      </div>
+      <h3 class="text-xl font-bold text-slate-700 dark:text-slate-200">Tidak ditemukan</h3>
+      <p class="text-slate-500 mt-2">Coba kata kunci lain, seperti "PBB" atau "LRA"</p>
+    </div>
+
+  </main>
+
+  <footer class="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 glass">
+    <div class="w-full px-6 py-3">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+        <div
+          class="flex flex-col md:flex-row items-center gap-1 md:gap-3 text-slate-500 dark:text-slate-400 font-medium">
+          <span>
+            &copy; <span id="copyrightYear">2025</span> SIAP Renbang.
+          </span>
+          <span class="hidden md:inline text-slate-300 dark:text-slate-700">|</span>
+          <span>
+            Powered by <span class="font-bold text-blue-600 dark:text-blue-400">Digitalisasi & AI</span>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-4 md:gap-6">
+          <div class="flex items-center gap-3 opacity-80 hidden sm:flex">
+            <span class="font-bold text-slate-400 tracking-widest uppercase text-[10px]">BerAKHLAK</span>
+            <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+            <span class="font-bold text-slate-400 tracking-widest uppercase text-[10px]">Smart ASN</span>
+          </div>
+
+          <div id="realtimeClock"
+            class="font-mono font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm transition-colors text-xs">
+            00:00:00 WIB
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const html = document.documentElement;
+      const themeToggle = document.getElementById('themeToggle');
+      const themeIcon = document.getElementById('themeIcon');
+      const viewToggle = document.getElementById('viewToggle');
+      const viewIcon = document.getElementById('viewIcon');
+      const desktopSearch = document.getElementById('desktopSearch');
+      const mobileSearch = document.getElementById('mobileSearch');
+      const mobileSearchToggle = document.getElementById('mobileSearchToggle');
+      const mobileSearchPanel = document.getElementById('mobileSearchPanel');
+
+      // Update: Targets both grids
+      const menuGridSystems = document.getElementById('menuGridSystems');
+      const menuGridDocs = document.getElementById('menuGridDocs');
+
+      const menuItems = document.querySelectorAll('.menu-item');
+      const noResults = document.getElementById('noResults');
+      const copyrightYearEl = document.getElementById('copyrightYear');
+      const realtimeClockEl = document.getElementById('realtimeClock');
+
+      function updateCopyrightYear() {
+        const startYear = 2025;
+        const currentYear = new Date().getFullYear();
+        if (copyrightYearEl) {
+          copyrightYearEl.textContent = currentYear > startYear ?
+            `${startYear} - ${currentYear}` :
+            `${startYear}`;
+        }
+      }
+      updateCopyrightYear();
+
+      function updateRealtimeClock() {
+        if (realtimeClockEl) {
+          const now = new Date();
+          const timeString = now.toLocaleTimeString('id-ID', {
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+          realtimeClockEl.textContent = timeString + " WIB";
+        }
+      }
+      setInterval(updateRealtimeClock, 1000);
+      updateRealtimeClock();
+
+      const savedTheme = localStorage.getItem('sipedasi:theme');
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      function setTheme(isDark) {
+        if (isDark) {
+          html.classList.add('dark');
+          themeIcon.classList.remove('bi-moon-stars-fill');
+          themeIcon.classList.add('bi-sun-fill');
+          localStorage.setItem('sipedasi:theme', 'dark');
+        } else {
+          html.classList.remove('dark');
+          themeIcon.classList.remove('bi-sun-fill');
+          themeIcon.classList.add('bi-moon-stars-fill');
+          localStorage.setItem('sipedasi:theme', 'light');
+        }
+      }
+
+      setTheme(savedTheme === 'dark' || (!savedTheme && systemDark));
+
+      themeToggle.addEventListener('click', () => {
+        setTheme(!html.classList.contains('dark'));
+      });
+
+      // View Toggle Logic
+      const savedView = localStorage.getItem('sipedasi:view');
+
+      function setView(isCompact) {
+        if (isCompact) {
+          menuGridSystems.classList.add('is-compact');
+          menuGridDocs.classList.add('is-compact');
+          viewIcon.classList.remove('bi-grid-fill');
+          viewIcon.classList.add('bi-list-ul');
+          localStorage.setItem('sipedasi:view', 'compact');
+        } else {
+          menuGridSystems.classList.remove('is-compact');
+          menuGridDocs.classList.remove('is-compact');
+          viewIcon.classList.remove('bi-list-ul');
+          viewIcon.classList.add('bi-grid-fill');
+          localStorage.setItem('sipedasi:view', 'grid');
+        }
+      }
+
+      setView(savedView === 'compact');
+
+      if (viewToggle) {
+        viewToggle.addEventListener('click', () => {
+          // Check simple class presence on one grid
+          setView(!menuGridSystems.classList.contains('is-compact'));
+        });
+      }
+
+      window.addEventListener('keydown', e => {
+        if (e.key.toLowerCase() === 't' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+          themeToggle.click();
+        }
+      });
+
+
+      const greetingEl = document.getElementById('greeting');
+
+      const typingPhrases = [
+        "Selamat Datang",
+        "Selamat Bekerja",
+        "Semoga Harimu Menyenangkan",
+        "Siap Melayani",
+        "Tetap Semangat"
+      ];
+
+      let phraseIndex = 0;
+      let charIndex = 0;
+      let isDeleting = false;
+      let typeSpeed = 100;
+
+      function typeWriter() {
+        if (!greetingEl) return;
+
+        const currentPhrase = typingPhrases[phraseIndex];
+
+        if (isDeleting) {
+          greetingEl.textContent = currentPhrase.substring(0, charIndex - 1);
+          charIndex--;
+          typeSpeed = 50;
+        } else {
+          greetingEl.textContent = currentPhrase.substring(0, charIndex + 1);
+          charIndex++;
+          typeSpeed = 100;
+        }
+
+        if (!isDeleting && charIndex === currentPhrase.length) {
+          isDeleting = true;
+          typeSpeed = 2000; // Pause at end
+        } else if (isDeleting && charIndex === 0) {
+          isDeleting = false;
+          phraseIndex = (phraseIndex + 1) % typingPhrases.length;
+          typeSpeed = 500; // Pause before new word
+        }
+
+        setTimeout(typeWriter, typeSpeed);
+      }
+
+      // Start Typing Effect
+      typeWriter();
+
+      // Update Glass Date
+      const glassDateEl = document.getElementById('glassDateDisplay');
+      if (glassDateEl) {
+        const dateOptions = {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        };
+        glassDateEl.textContent = new Date().toLocaleDateString('id-ID', dateOptions);
+      }
+
+
+      function filterMenu(query) {
+        const q = query.toLowerCase();
+        let hasResults = false;
+
+        menuItems.forEach(item => {
+          const title = item.querySelector('h3').textContent.toLowerCase();
+          const desc = item.querySelector('p').textContent.toLowerCase();
+
+          if (title.includes(q) || desc.includes(q)) {
+            item.style.display = 'block';
+            if (menuGridSystems.classList.contains('is-compact')) {
+              item.style.display = 'flex'; // Ensure flex display in compact mode
+            }
+            item.classList.add('animate-fade-in');
+            hasResults = true;
+          } else {
+            item.style.display = 'none';
+            item.classList.remove('animate-fade-in');
+          }
+        });
+
+        if (hasResults) {
+          menuGridSystems.classList.remove('hidden');
+          menuGridDocs.classList.remove('hidden'); // Simplified visibility
+          noResults.classList.add('hidden');
+        } else {
+          menuGridSystems.classList.add('hidden');
+          menuGridDocs.classList.add('hidden');
+          noResults.classList.remove('hidden');
+        }
+      }
+
+      if (desktopSearch) {
+        desktopSearch.addEventListener('input', (e) => filterMenu(e.target.value));
+      }
+      if (mobileSearch) {
+        mobileSearch.addEventListener('input', (e) => filterMenu(e.target.value));
+      }
+
+      if (mobileSearchToggle) {
+        mobileSearchToggle.addEventListener('click', () => {
+          mobileSearchPanel.classList.toggle('hidden');
+          if (!mobileSearchPanel.classList.contains('hidden')) {
+            mobileSearch.focus();
+          }
+        });
+      }
+
+
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SiRekon PJDL | Sistem Rekonsiliasi PJDL</title>
+
+    <!-- Icons & Tailwind & XLSX (menyamakan dengan layout SiRekonPBB) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #e5e7eb;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 1rem;
+            height: 1rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-4">
+    <!-- Toast untuk notifikasi salin / upload -->
+    <div id="toast"
+        class="fixed bottom-5 right-5 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg opacity-0 transition-opacity duration-300 z-50">
+    </div>
+
+    <!-- Layout mengikuti struktur index.html (SiRekonPBB) -->
+    <div class="flex flex-col md:flex-row w-full min-h-screen bg-white rounded-2xl shadow-xl">
+        <!-- Sidebar -->
+        <aside
+            class="w-full md:w-1/4 max-w-full md:max-w-xs bg-white shadow-lg p-6 flex flex-col gap-4 border-b md:border-b-0 md:border-r border-gray-200 rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none mx-auto md:mx-0">
+
+            <div class="flex items-center gap-3 mb-2 justify-center">
+                <i class="bi bi-cash-coin text-blue-700 text-2xl"></i>
+                <h2 class="text-xl font-bold text-gray-700">Sistem Rekonsiliasi PJDL</h2>
+            </div>
+
+            <div>
+                <label for="input-excel" class="block w-full cursor-pointer">
+                    <span id="upload-text"
+                        class="w-full flex justify-center items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg shadow-md transition overflow-hidden whitespace-nowrap">
+                        <i class="bi bi-upload"></i>
+                        <span class="truncate max-w-full">Upload File Excel PJDL</span>
+                    </span>
+                </label>
+                <input type="file" id="input-excel" accept=".xlsx,.xls,.csv" class="hidden" />
+            </div>
+
+            <div class="mb-2">
+                <div class="flex space-x-2 items-center">
+                    <input id="paste-input" type="text" placeholder="Tempelkan Keterangan Disini"
+                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition"
+                        spellcheck="false" />
+                    <button id="btn-paste-text"
+                        class="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg shadow-md transition"
+                        title="Paste"><i class="bi bi-clipboard"></i></button>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-4">
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-tags text-lg text-gray-800"></i>
+                    <select id="jenispajak-select"
+                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition">
+                        <option value="">-- Semua Jenis Pajak --</option>
+                    </select>
+                </div>
+
+                <!-- pindah: Tempat Bayar menjadi setelah Jenis Pajak -->
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-bank text-lg text-gray-800"></i>
+                    <select id="tempatbayar-select"
+                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition">
+                        <option value="">-- Semua Tempat Bayar --</option>
+                        <option value="PJDLU">PJDLU</option>
+                        <option value="PJDLQRIS">PJDLQRIS</option>
+                        <option value="PJDLVA">PJDLVA</option>
+                        <option value="POS">POS (PT. POS)</option>
+                    </select>
+                </div>
+
+                <!-- urutan baru: Waktu/Transaksi dulu -->
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-clock text-lg text-gray-800"></i>
+                    <select id="waktu-select"
+                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition">
+                        <option value="">-- Semua Transaksi --</option>
+                        <option value="akhir">Akhir Pembayaran</option>
+                        <option value="pelimpahan">Tgl Pelimpahan</option>
+                    </select>
+                </div>
+
+                <!-- ubah bagian tanggal: radio Satu Tanggal / Range + single date input + range inputs -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center gap-2">
+                        <i class="bi bi-calendar-date text-lg text-gray-800"></i>
+                        <div class="flex items-center gap-3 w-full">
+                            <div class="flex items-center gap-2 text-sm">
+                                <label class="flex items-center gap-2">
+                                    <input type="radio" name="tanggalMode" value="single" checked />
+                                    Satu Tanggal
+                                </label>
+                                <label class="flex items-center gap-2">
+                                    <input type="radio" name="tanggalMode" value="range" />
+                                    Range
+                                </label>
+                            </div>
+                            <!-- tetap simpan select tanggal (diisi oleh renderTanggalOptions) untuk kompatibilitas internal,
+                                 tapi sembunyikan saat kita pakai single input agar tampilan lebih mirip gambar -->
+                            <select id="tanggal-select"
+                                class="p-2 rounded-lg border w-0 flex-1 opacity-0 absolute pointer-events-none" aria-hidden="true">
+                                <option value="">-- Semua Tanggal --</option>
+                            </select>
+
+                            <!-- single date input (tampil saat mode single) -->
+                            <input id="tanggal-single" type="date"
+                                class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition" />
+                        </div>
+                    </div>
+
+                    <!-- range inputs (tampil saat mode range) -->
+                    <div id="tanggal-range-inputs" class="mt-2 hidden flex items-center gap-2">
+                        <input id="tanggal-from" type="date"
+                            class="p-2 rounded-lg border mr-2 focus:ring-2 focus:ring-blue-500 transition" />
+                        <input id="tanggal-to" type="date"
+                            class="p-2 rounded-lg border focus:ring-2 focus:ring-blue-500 transition" />
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <i class="bi bi-file-earmark-text text-lg text-gray-800"></i>
+                    <select id="uraianspajak-select"
+                        class="p-2 rounded-lg border w-full focus:ring-2 focus:ring-blue-500 transition">
+                        <option value="">-- Semua Uraian Pajak --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <button id="btnResetPJDL"
+                    class="mt-2 bg-red-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600 transition w-full flex items-center justify-center gap-2"
+                    title="Reset Filter">
+                    <i class="bi bi-arrow-repeat"></i>
+                    Reset Filter
+                </button>
+            </div>
+
+        </aside>
+
+        <!-- Main Content -->
+        <main class="w-full md:w-3/4 px-4 md:px-8 py-6">
+            <div id="summaryCards" class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Total Pokok -->
+                <div class="bg-blue-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                    <p class="text-sm font-medium text-blue-700 mb-2">Total Pokok</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-pokok" class="text-2xl font-bold text-blue-900">0</p>
+                        <button onclick="copyTotal('total-pokok')" class="ml-3 text-blue-500 hover:text-blue-700">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Total Denda -->
+                <div class="bg-yellow-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                    <p class="text-sm font-medium text-yellow-700 mb-2">Total Denda</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-denda" class="text-2xl font-bold text-yellow-900">0</p>
+                        <button onclick="copyTotal('total-denda')" class="ml-3 text-yellow-500 hover:text-yellow-700">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Total Jumlah Bayar -->
+                <div class="bg-green-50 p-6 rounded-2xl shadow-md flex flex-col justify-between">
+                    <p class="text-sm font-medium text-green-700 mb-2">Total Jumlah Bayar</p>
+                    <div class="flex items-center justify-between">
+                        <p id="total-jumlah" class="text-2xl font-bold text-green-900">0</p>
+                        <button onclick="copyTotal('total-jumlah')" class="ml-3 text-green-500 hover:text-green-700">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- fiturGroup dipindahkan ke dalam card tabel supaya kontrol berada di satu card dengan tabel -->
+            <div class="border rounded-2xl px-4 py-4 bg-white shadow-lg">
+                <!-- Kontrol (Mode / Jumlah Baris / Jumlah Data) berada di dalam card tabel -->
+                <div class="mb-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-gray-600 font-semibold">Mode:</span>
+                        <div id="fiturRadioGroup" class="flex gap-4 ml-2">
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="radio" name="fitur" value="tambah" checked />
+                                Tambah
+                            </label>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="radio" name="fitur" value="kurangi" />
+                                Kurangi
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <label for="tambahanCount" class="text-xs text-gray-600">Jumlah Baris:</label>
+                        <input type="number" id="tambahanCount" value="0" min="0"
+                            class="w-16 px-2 py-1 border rounded-lg text-xs text-center focus:ring-2 focus:ring-blue-500 transition" />
+                        <div class="text-xs text-gray-600 ml-4">
+                            <span id="jumlahData">Jumlah Data : 0</span>
+                        </div>
+                        <!-- Tombol Export Excel -->
+                        <button id="exportPjdlBtn"
+                            class="ml-3 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded-md text-sm shadow-sm disabled:opacity-50"
+                            disabled>
+                            <i class="bi bi-file-earmark-spreadsheet"></i>
+                            <span class="ml-2">Export Excel</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="table-scroll-container"
+                    class="overflow-x-auto overflow-y-auto max-h-[60vh] bg-white rounded-b-lg shadow border border-gray-200 border-t-0">
+                    <table id="excel-table" class="min-w-full table-auto border-collapse text-sm">
+                        <!-- Table content di-generate oleh JS -->
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Tombol Kembali -->
+    <button onclick="window.history.back()"
+        class="group fixed top-0 left-0 bg-white hover:bg-gray-100 text-blue-600 p-3 rounded-br-lg shadow-lg z-50 transition duration-300 ease-in-out">
+        <svg xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 transform group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+        </svg>
+    </button>
+
+    <div id="copy-notif"
+        class="fixed top-6 right-6 bg-green-500 text-white px-4 py-2 rounded-full shadow z-50 transition-opacity duration-300 opacity-0">
+        Berhasil disalin!
+    </div>
+
+    <!-- Script: menggunakan skrip original (tetap dipertahankan) -->
+    <script>
+        // untuk export PJDL: simpan baris terakhir yang ditampilkan (array rows)
+        let lastFilteredDataPJDL = [];
+        let excelData = [], headers = [], isNewFormat = false, currentCols = {}, unfilteredData = [];
+
+        const oldFormatCols = { 'Jenis Pajak': 1, 'Uraian Pajak': 3, 'Pokok (Rp)': 13, 'Denda (Rp)': 14, 'Pokok Opsen (Rp)': 15, 'Denda Opsen (Rp)': 16, 'Jumlah Bayar (Rp)': 17, 'Tanggal Bayar': 20, 'Tempat Bayar': 22, 'Keterangan': 23 };
+        const newFormatCols = { 'Jenis Pajak': 1, 'Uraian Pajak': 3, 'Pokok (Rp)': 15, 'Denda (Rp)': 16, 'Pokok Opsen (Rp)': 17, 'Denda Opsen (Rp)': 18, 'Jumlah Bayar (Rp)': 19, 'Tanggal Bayar': 22, 'Tempat Bayar': 24, 'Keterangan': 25 };
+
+        // Helper kecil
+        const num = (v) => parseFloat(String(v || '0').replace(/[^0-9.-]/g, '')) || 0;
+        const fmt = (v) => (v || 0).toLocaleString('id-ID');
+        function normalizeJenis(j) { if (typeof j !== 'string') j = String(j || '').trim(); return j.replace(/\s*\(NonReg\)$/i, '').trim(); }
+
+        // baca file
+        document.getElementById('input-excel').addEventListener('change', function (e) {
+            const f = e.target.files[0]; if (!f) return;
+            document.getElementById('upload-text').textContent = f.name;
+            const r = new FileReader();
+            r.onload = function (ev) {
+                const data = new Uint8Array(ev.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                excelData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                headers = excelData[0] || [];
+                isNewFormat = headers.includes('Kecamatan OP') && headers.includes('Kelurahan OP');
+                currentCols = isNewFormat ? newFormatCols : oldFormatCols;
+                // clean leading/trailing non-data rows
+                while (excelData.length > 1 && (!excelData[1][0] || String(excelData[1][0]).trim() === '' || isNaN(parseInt(String(excelData[1][0]).trim())))) excelData.splice(1, 1);
+                while (excelData.length > 1 && (!excelData[excelData.length - 1][0] || String(excelData[excelData.length - 1][0]).trim() === '' || isNaN(parseInt(String(excelData[excelData.length - 1][0]).trim())))) excelData.pop();
+                const sorted = [headers].concat(sortByTanggalWaktu(excelData.slice(1)));
+                excelData = sorted; unfilteredData = excelData.slice(1);
+                renderJenisPajakOptions(); renderTanggalOptions(); renderUraianPajakOptions(); filterAndRender();
+            };
+            r.readAsArrayBuffer(f);
+        });
+
+        // compact filter logic + support range tanggal
+        function getFilteredData() {
+            const jenis = document.getElementById('jenispajak-select').value;
+            const tempat = document.getElementById('tempatbayar-select').value;
+            const uraian = document.getElementById('uraianspajak-select').value;
+            const waktu = document.getElementById('waktu-select').value;
+            const tanggalSel = document.getElementById('tanggal-select').value;
+            // gunakan radio tanggalMode (single / range)
+            const isRange = document.querySelector('input[name="tanggalMode"]:checked')?.value === 'range';
+            const fromDate = document.getElementById('tanggal-from').value;
+            const toDate = document.getElementById('tanggal-to').value;
+
+            const inTempat = (val, key) => {
+                if (!key) return true;
+                const v = String(val || '').trim();
+                if (key === 'PJDLU') return ['Bank BJB - Internet Banking', 'Bank BJB - Mobile Banking', 'Bank BJB - TELER', 'Bank BJB - Lainnya', 'Bank BJB - POS'].includes(v);
+                if (key === 'PJDLQRIS') return v === 'Bank BJB - QRIS';
+                if (key === 'PJDLVA') return v === 'Bank BJB - Virtual Account';
+                if (key === 'POS') return v === 'PT. POS';
+                return true;
+            };
+
+            return unfilteredData.filter(row => {
+                if (jenis && normalizeJenis(row[currentCols['Jenis Pajak']]) !== jenis) return false;
+                if (tempat && !inTempat(row[currentCols['Tempat Bayar']], tempat)) return false;
+                if (uraian) {
+                    const u = (typeof row[currentCols['Uraian Pajak']] === 'string') ? row[currentCols['Uraian Pajak']].trim() : String(row[currentCols['Uraian Pajak']] || '').trim();
+                    if (u !== uraian) return false;
+                }
+                // tanggal handling: single select value is like yyyy-mm-dd or dd-mm-yyyy from render; we store original as dd-mm-yyyy often.
+                const raw = String(row[currentCols['Tanggal Bayar']] || '').trim();
+                const tdate = raw.substr(0, 10);
+                if (isRange && fromDate && toDate) {
+                    // convert tdate to yyyy-mm-dd for comparison
+                    const conv = (s) => {
+                        if (/^\d{2}-\d{2}-\d{4}$/.test(s)) { const [d, m, y] = s.split('-'); return `${y}-${m}-${d}`; }
+                        if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+                        if (/^\d{2}\d{2}\d{4}$/.test(s)) { const d = s.slice(0, 2), m = s.slice(2, 4), y = s.slice(4); return `${y}-${m}-${d}`; }
+                        return '';
+                    };
+                    const td = conv(tdate);
+                    if (!td) return false;
+                    return td >= fromDate && td <= toDate;
+                }
+                if (tanggalSel) {
+                    // tanggalSelect may be shown with text "(count)"; the option value is tgl as stored earlier (dd-mm-yyyy or yyyy-mm-dd)
+                    return tdate.substr(0, 10) === tanggalSel;
+                }
+                // waktu filter (akhir <17:00 ; pelimpahan >=17:00)
+                if (waktu) {
+                    const m = raw.match(/(\d{1,2}):(\d{2})(?::\d{2})?/);
+                    if (!m) return false;
+                    const hh = String(m[1]).padStart(2, '0') + ':' + m[2];
+                    return waktu === 'akhir' ? hh < '17:00' : hh >= '17:00';
+                }
+                return true;
+            });
+        }
+
+        function filterAndRender() {
+            let filtered = getFilteredData();
+            const mode = document.querySelector('input[name="fitur"]:checked')?.value || 'tambah';
+            const tambahan = parseInt(document.getElementById('tambahanCount').value) || 0;
+            const waktu = document.getElementById('waktu-select').value;
+            // jika ada waktu, ambil baseline lalu tambahkan/kurangi sesuai mode
+            if (waktu) {
+                const dataWaktu = filtered.filter(row => {
+                    const t = String(row[currentCols['Tanggal Bayar']] || '').trim();
+                    const m = t.match(/\b(\d{2}:\d{2}:\d{2})|\b(\d{2}:\d{2})/);
+                    const jm = m ? m[1] || m[2] : '';
+                    if (!jm) return false;
+                    return waktu === 'akhir' ? jm < '17:00' : jm >= '17:00';
+                });
+                if (tambahan > 0) {
+                    if (mode === 'tambah') {
+                        const lawan = getFilteredData().filter(row => {
+                            const t = String(row[currentCols['Tanggal Bayar']] || '').trim();
+                            const m = t.match(/\b(\d{2}:\d{2}:\d{2})|\b(\d{2}:\d{2})/);
+                            const jm = m ? m[1] || m[2] : '';
+                            if (!jm) return false;
+                            if (String(row[currentCols['Tanggal Bayar']]).substr(0, 10) !== document.getElementById('tanggal-select').value && document.getElementById('tanggal-select').value) return false;
+                            return waktu === 'akhir' ? jm >= '17:00' : jm < '17:00';
+                        });
+                        const added = waktu === 'akhir' ? sortByTanggalWaktu(lawan).slice(0, tambahan) : sortByTanggalWaktu(lawan).reverse().slice(0, tambahan).reverse();
+                        filtered = waktu === 'akhir' ? [...dataWaktu, ...added] : [...dataWaktu, ...added];
+                    } else {
+                        filtered = waktu === 'akhir' ? dataWaktu.slice(0, Math.max(0, dataWaktu.length - tambahan)) : dataWaktu.slice(Math.min(dataWaktu.length, tambahan));
+                    }
+                } else filtered = dataWaktu;
+            }
+            filtered = sortByTanggalWaktu(filtered);
+            lastFilteredDataPJDL = filtered.slice();
+            const expBtn = document.getElementById('exportPjdlBtn'); if (expBtn) expBtn.disabled = !(lastFilteredDataPJDL && lastFilteredDataPJDL.length > 0);
+            renderTable([headers].concat(filtered)); updateSummaryCards(filtered);
+            document.getElementById('jumlahData').textContent = `Jumlah Data : ${filtered.length}`;
+            const sc = document.getElementById('table-scroll-container');
+            if (sc) { if (document.querySelector('input[name="fitur"]:checked')?.value === 'kurangi' && waktu === 'akhir') setTimeout(() => sc.scrollTop = sc.scrollHeight, 0); else sc.scrollTop = 0; }
+        }
+
+        // Export (tetap)
+        function exportPJDLToExcel() {
+            if (!lastFilteredDataPJDL || lastFilteredDataPJDL.length === 0) { showCopyNotification('Tidak ada data untuk diekspor.'); return; }
+            const rows = lastFilteredDataPJDL.map(row => {
+                const g = (col) => row[currentCols[col]] !== undefined ? row[currentCols[col]] : '';
+                return {
+                    'Jenis Pajak': g('Jenis Pajak'),
+                    'Uraian Pajak': g('Uraian Pajak'),
+                    'Pokok (Rp)': num(g('Pokok (Rp)')),
+                    'Denda (Rp)': num(g('Denda (Rp)')),
+                    'Jumlah Bayar (Rp)': num(g('Jumlah Bayar (Rp)')),
+                    'Tanggal Bayar': g('Tanggal Bayar'),
+                    'Tempat Bayar': g('Tempat Bayar')
+                };
+            });
+            try {
+                const ws = XLSX.utils.json_to_sheet(rows);
+                const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'PJDL');
+                const now = new Date(); const fname = `SiRekonPJDL_Export_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}.xlsx`;
+                XLSX.writeFile(wb, fname);
+                showCopyNotification(`Berhasil mengekspor ${rows.length} baris.`);
+            } catch (e) { console.error(e); showCopyNotification('Gagal mengekspor data.'); }
+        }
+        document.getElementById('exportPjdlBtn')?.addEventListener('click', exportPJDLToExcel);
+
+        // rendering opsi (dipadatkan)
+        function renderJenisPajakOptions() {
+            const sel = document.getElementById('jenispajak-select'); sel.innerHTML = '<option value="">-- Semua Jenis Pajak --</option>';
+            const s = new Set(); unfilteredData.forEach(r => { const v = normalizeJenis(r[currentCols['Jenis Pajak']]); if (v) s.add(v); });
+            Array.from(s).sort().forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o); });
+        }
+
+        function renderTanggalOptions() {
+            const sel = document.getElementById('tanggal-select'); const prev = sel.value; sel.innerHTML = '<option value="">-- Semua Tanggal --</option>';
+            const jenis = document.getElementById('jenispajak-select').value;
+            const tempat = document.getElementById('tempatbayar-select').value;
+            const uraian = document.getElementById('uraianspajak-select').value;
+            const waktu = document.getElementById('waktu-select').value;
+            const set = new Set();
+            unfilteredData.forEach(row => {
+                if (jenis && normalizeJenis(row[currentCols['Jenis Pajak']]) !== jenis) return;
+                const tp = String(row[currentCols['Tempat Bayar']] || '').trim();
+                if (tempat) {
+                    if (tempat === 'PJDLU' && !['Bank BJB - Internet Banking', 'Bank BJB - Mobile Banking', 'Bank BJB - TELER', 'Bank BJB - Lainnya', 'Bank BJB - POS'].includes(tp)) return;
+                    if (tempat === 'PJDLQRIS' && tp !== 'Bank BJB - QRIS') return;
+                    if (tempat === 'PJDLVA' && tp !== 'Bank BJB - Virtual Account') return;
+                    if (tempat === 'POS' && tp !== 'PT. POS') return;
+                }
+                if (uraian) {
+                    const u = (typeof row[currentCols['Uraian Pajak']] === 'string') ? row[currentCols['Uraian Pajak']].trim() : String(row[currentCols['Uraian Pajak']] || '').trim();
+                    if (u !== uraian) return;
+                }
+                const t = String(row[currentCols['Tanggal Bayar']] || '').trim().substr(0, 10); if (!t) return;
+                // normalisasikan dd-mm-yyyy atau yyyy-mm-dd
+                if (/^\d{8}$/.test(t)) { const d = t.slice(0, 2), m = t.slice(2, 4), y = t.slice(4); set.add(`${d}-${m}-${y}`); }
+                else set.add(t);
+            });
+            Array.from(set).sort((a, b) => { const ta = a.split('-').reverse().join('-'); const tb = b.split('-').reverse().join('-'); return ta.localeCompare(tb); }).forEach(t => {
+                const o = document.createElement('option'); o.value = t; o.textContent = `${t}`; sel.appendChild(o);
+            });
+            sel.value = Array.from(sel.options).some(o => o.value === prev) ? prev : '';
+        }
+
+        function renderUraianPajakOptions() {
+            const sel = document.getElementById('uraianspajak-select'); sel.innerHTML = '<option value="">-- Semua Uraian Pajak --</option>';
+            const jenis = document.getElementById('jenispajak-select').value;
+            const tgl = document.getElementById('tanggal-select').value;
+            const tempat = document.getElementById('tempatbayar-select').value;
+            const waktu = document.getElementById('waktu-select').value;
+            let arr = unfilteredData.slice();
+            if (jenis) arr = arr.filter(r => normalizeJenis(r[currentCols['Jenis Pajak']]) === jenis);
+            if (tgl) arr = arr.filter(r => String(r[currentCols['Tanggal Bayar']] || '').substr(0, 10) === tgl);
+            if (tempat) arr = arr.filter(r => {
+                const tp = String(r[currentCols['Tempat Bayar']] || '').trim();
+                if (tempat === 'PJDLU') return ['Bank BJB - Internet Banking', 'Bank BJB - Mobile Banking', 'Bank BJB - TELER', 'Bank BJB - Lainnya', 'Bank BJB - POS'].includes(tp);
+                if (tempat === 'PJDLQRIS') return tp === 'Bank BJB - QRIS';
+                if (tempat === 'PJDLVA') return tp === 'Bank BJB - Virtual Account';
+                if (tempat === 'POS') return tp === 'PT. POS';
+                return true;
+            });
+            if (waktu) arr = arr.filter(r => {
+                const t = String(r[currentCols['Tanggal Bayar']] || '').trim(); const m = t.match(/\b(\d{2}:\d{2}:\d{2})|\b(\d{2}:\d{2})/);
+                const jm = m ? m[1] || m[2] : ''; if (!jm) return false; return waktu === 'akhir' ? jm < '17:00' : jm >= '17:00';
+            });
+            const s = new Set(); arr.forEach(r => { let u = r[currentCols['Uraian Pajak']]; if (typeof u !== 'string') u = String(u || '').trim(); if (u) s.add(u); });
+            Array.from(s).sort().forEach(u => { const o = document.createElement('option'); o.value = u; o.textContent = String(u).replace(/\s*-\s*/g, '-'); sel.appendChild(o); });
+        }
+
+        // render tabel (dipadatkan) tetap menampilkan header yang dibutuhkan
+        function renderTable(data) {
+            const table = document.getElementById('excel-table');
+            if (!data || data.length <= 1) { table.innerHTML = ''; return; }
+            table.innerHTML = '';
+            let displayHeaders = ['Jenis Pajak', 'Uraian Pajak', 'Pokok (Rp)', 'Denda (Rp)', 'Jumlah Bayar (Rp)', 'Tanggal Bayar', 'Tempat Bayar'];
+            const jenisSel = document.getElementById('jenispajak-select').value;
+            if (jenisSel && jenisSel.toLowerCase().includes('mineral')) displayHeaders = ['Jenis Pajak', 'Uraian Pajak', 'Pokok (Rp)', 'Denda (Rp)', 'Pokok Opsen (Rp)', 'Denda Opsen (Rp)', 'Jumlah Bayar (Rp)', 'Tanggal Bayar', 'Tempat Bayar'];
+            const thead = document.createElement('thead'), hr = document.createElement('tr');
+            displayHeaders.forEach(h => { const th = document.createElement('th'); th.textContent = h; th.className = "bg-gray-100 border-b font-semibold text-gray-700 px-3 py-2 text-left sticky top-0"; hr.appendChild(th); });
+            thead.appendChild(hr); table.appendChild(thead);
+            const tbody = document.createElement('tbody');
+            data.slice(1).forEach(row => {
+                const tr = document.createElement('tr');
+                displayHeaders.forEach(h => {
+                    const td = document.createElement('td'); td.className = "border-b px-3 py-1";
+                    let v = row[currentCols[h]] !== undefined ? row[currentCols[h]] : '';
+                    if (h.includes('(Rp)')) td.textContent = fmt(num(v));
+                    else if (h === 'Uraian Pajak') { let txt = String(v || '').trim().replace(/\s*-\s*/g, '-'); td.textContent = txt; td.classList.add('cursor-pointer', 'select-none'); td.title = 'Klik untuk menyalin uraian'; td.addEventListener('click', () => { copyText(txt); }); }
+                    else if (h === 'Tempat Bayar') { let k = row[currentCols['Keterangan']]; if (k && String(k).includes('VA')) v = 'Bank BJB - Virtual Account'; td.textContent = String(v || ''); }
+                    else td.textContent = String(v || '');
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            const sc = document.getElementById('table-scroll-container'); if (sc) { if (document.getElementById('waktu-select').value === 'akhir') setTimeout(() => sc.scrollTop = sc.scrollHeight, 0); else sc.scrollTop = 0; }
+        }
+
+        function copyText(txt) {
+            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(() => showCopyNotification('Uraian berhasil disalin!')).catch(() => showCopyNotification('Gagal menyalin uraian.'));
+            else { const ta = document.createElement('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); showCopyNotification('Uraian berhasil disalin!'); } catch (e) { showCopyNotification('Gagal menyalin uraian.'); } document.body.removeChild(ta); }
+        }
+
+        function updateSummaryCards(data) {
+            const jenisSel = document.getElementById('jenispajak-select').value;
+            const isMineral = jenisSel && jenisSel.toLowerCase().includes('mineral');
+            const summaryDiv = document.getElementById('summaryCards');
+            if (isMineral) { summaryDiv.classList.remove('md:grid-cols-3', 'lg:grid-cols-3'); summaryDiv.classList.add('md:grid-cols-4', 'lg:grid-cols-4'); } else { summaryDiv.classList.remove('md:grid-cols-4', 'lg:grid-cols-4'); summaryDiv.classList.add('md:grid-cols-3', 'lg:grid-cols-3'); }
+            let totalPokok = 0, totalDenda = 0, totalJumlah = 0, totalPokokOpsen = 0, totalDendaOpsen = 0;
+            data.forEach(r => {
+                totalPokok += num(r[currentCols['Pokok (Rp)']]);
+                totalDenda += num(r[currentCols['Denda (Rp)']]);
+                totalJumlah += num(r[currentCols['Jumlah Bayar (Rp)']]);
+                if (isMineral) {
+                    totalPokokOpsen += num(r[currentCols['Pokok Opsen (Rp)']]);
+                    totalDendaOpsen += num(r[currentCols['Denda Opsen (Rp)']]);
+                }
+            });
+            document.getElementById('total-pokok').textContent = fmt(totalPokok);
+            document.getElementById('total-denda').textContent = fmt(totalDenda);
+            document.getElementById('total-jumlah').textContent = fmt(totalJumlah);
+            if (isMineral) {
+                if (document.getElementById('total-pokok-opsen')) document.getElementById('total-pokok-opsen').textContent = fmt(totalPokokOpsen);
+                if (document.getElementById('total-denda-opsen')) document.getElementById('total-denda-opsen').textContent = fmt(totalDendaOpsen);
+            }
+        }
+
+        function sortByTanggalWaktu(data) {
+            const idx = currentCols['Tanggal Bayar'];
+            return data.filter(r => r && r.some(c => c !== undefined && String(c).trim() !== '')).sort((a, b) => {
+                const ta = String(a[idx] || '').trim(), tb = String(b[idx] || '').trim();
+                const norm = s => { const [d, t] = String(s || '').split(' '); if (/^\d{2}-\d{2}-\d{4}$/.test(d)) { const [dd, mm, yy] = d.split('-'); return `${yy}-${mm}-${dd}${t ? ' ' + t : ''}`; } return `${d || ''}${t ? ' ' + t : ''}`; };
+                return norm(ta).localeCompare(norm(tb));
+            });
+        }
+
+        // debounce
+        function debounce(fn, ms = 300) { let t; return function (...a) { clearTimeout(t); t = setTimeout(() => fn.apply(this, a), ms); }; }
+        const debouncedFilterAndRender = debounce(filterAndRender, 300);
+
+        // events pengontrol
+        ['change', 'input'].forEach(evt => {
+            document.getElementById('jenispajak-select').addEventListener('change', () => { renderTanggalOptions(); renderUraianPajakOptions(); debouncedFilterAndRender(); });
+            document.getElementById('tanggal-select').addEventListener('change', () => { renderUraianPajakOptions(); debouncedFilterAndRender(); });
+            document.getElementById('tempatbayar-select').addEventListener('change', () => { renderTanggalOptions(); renderUraianPajakOptions(); debouncedFilterAndRender(); });
+            document.getElementById('waktu-select').addEventListener('change', () => { renderTanggalOptions(); renderUraianPajakOptions(); debouncedFilterAndRender(); });
+            document.getElementById('uraianspajak-select').addEventListener('change', debouncedFilterAndRender);
+            document.getElementById('tambahanCount').addEventListener('input', debouncedFilterAndRender);
+        });
+
+        document.getElementById('fiturRadioGroup').addEventListener('change', () => { document.getElementById('tambahanCount').value = 0; debouncedFilterAndRender(); });
+
+        // paste-input logic tetap, ringkas
+        window.addEventListener('DOMContentLoaded', () => {
+            const pasteInput = document.getElementById('paste-input');
+            if (!pasteInput) return;
+            pasteInput.addEventListener('input', debounce(function () {
+                const txt = this.value.trim();
+                if (!txt) { ['tempatbayar-select', 'tanggal-select', 'jenispajak-select', 'uraianspajak-select', 'waktu-select'].forEach(id => document.getElementById(id).value = ''); filterAndRender(); return; }
+                const paymentTypeMatch = txt.match(/PJK\s+([A-Z]+)/i); const paymentType = paymentTypeMatch ? paymentTypeMatch[1].toUpperCase() : '';
+                const dateMatches = Array.from(txt.matchAll(/(\d{8})/g)).map(m => m[1]);
+                let waktuValue = 'akhir', formattedDate = '', taxRaw = '', origTaxRaw = '';
+                const taxSlashMatch = txt.match(/(\d{8})\/([A-Z0-9]+)/i);
+                if (taxSlashMatch) { origTaxRaw = taxSlashMatch[2]; taxRaw = origTaxRaw; } else { const anySlash = txt.match(/\/([A-Z]{3,})/i); origTaxRaw = anySlash ? anySlash[1] : ''; taxRaw = origTaxRaw; }
+                if (taxRaw && /PELIMPAHAN$/i.test(taxRaw)) {
+                    waktuValue = 'pelimpahan'; taxRaw = taxRaw.replace(/PELIMPAHAN$/i, '').trim(); let found = null;
+                    if (origTaxRaw) { const reBefore = new RegExp('(\\d{8})\\s*\\/\\s*' + origTaxRaw, 'i'); const m = reBefore.exec(txt); if (m) found = m[1]; }
+                    if (!found && taxRaw) { const reAfter = new RegExp(taxRaw + '\\s*(?:TGL\\s*)?(\\d{8})', 'i'); const m2 = reAfter.exec(txt); if (m2) found = m2[1]; }
+                    if (!found) { const m3 = txt.match(/PELIMPAHAN\s*TGL\s*(\d{8})/i); if (m3) found = m3[1]; }
+                    if (!found && dateMatches.length > 1) found = dateMatches[1]; if (!found && dateMatches.length === 1) found = dateMatches[0];
+                    formattedDate = found || '';
+                } else {
+                    const beforeSlash = txt.match(/(\d{8})\/[A-Z0-9]/i);
+                    if (beforeSlash) formattedDate = beforeSlash[1];
+                    else if (dateMatches.length > 0) formattedDate = dateMatches[0];
+                }
+                taxRaw = (taxRaw || '').replace(/[^A-Z0-9\s-]/ig, '').trim();
+                const bayarSelect = document.getElementById('tempatbayar-select');
+                if (bayarSelect) bayarSelect.value = paymentType ? (bayarSelect.querySelector(`option[value="${paymentType}"]`)?.value || '') : '';
+                const pajakSelect = document.getElementById('jenispajak-select');
+                if (pajakSelect) {
+                    let matched = '';
+                    if (taxRaw) for (let i = 0; i < pajakSelect.options.length; i++) { const v = pajakSelect.options[i].value || ''; if (v && (v.toLowerCase() === taxRaw.toLowerCase() || v.toLowerCase().includes(taxRaw.toLowerCase()))) { matched = pajakSelect.options[i].value; break; } }
+                    pajakSelect.value = matched;
+                }
+                document.getElementById('waktu-select').value = waktuValue;
+                renderTanggalOptions();
+                if (formattedDate && /^\d{8}$/.test(formattedDate)) {
+                    const d = formattedDate.slice(0, 2), m = formattedDate.slice(2, 4), y = formattedDate.slice(4);
+                    const asOpt = `${d}-${m}-${y}`;
+                    const tglSel = document.getElementById('tanggal-select');
+                    if (tglSel) tglSel.value = tglSel.querySelector(`option[value="${asOpt}"]`)?.value || '';
+                }
+                renderUraianPajakOptions(); filterAndRender();
+                const uraianSelect = document.getElementById('uraianspajak-select');
+                if (uraianSelect && uraianSelect.options.length === 2 && uraianSelect.options[1].value !== '') uraianSelect.value = uraianSelect.options[1].value;
+            }, 300));
+        });
+
+        // clipboard paste button
+        document.getElementById('btn-paste-text').addEventListener('click', async function () {
+            try { const text = await navigator.clipboard.readText(); document.getElementById('paste-input').value = text; document.getElementById('paste-input').dispatchEvent(new Event('input', { bubbles: true })); }
+            catch (e) { showCopyNotification("Gagal mengambil teks dari clipboard. Izinkan akses clipboard."); }
+        });
+
+        // reset
+        document.getElementById('btnResetPJDL').addEventListener('click', function () {
+            ['paste-input', 'jenispajak-select', 'tempatbayar-select', 'waktu-select', 'tanggal-select', 'uraianspajak-select'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('tambahanCount').value = 0;
+            document.querySelectorAll('input[name="fitur"]').forEach(r => r.checked = (r.value === 'tambah'));
+            // set tanggal mode ke single dan kosongkan date inputs
+            const radio = document.querySelector('input[name="tanggalMode"][value="single"]');
+            if (radio) radio.checked = true;
+            setTanggalModeUI('single');
+            document.getElementById('tanggal-single').value = '';
+            document.getElementById('tanggal-from').value = ''; document.getElementById('tanggal-to').value = '';
+            renderJenisPajakOptions(); renderTanggalOptions(); renderUraianPajakOptions();
+            document.getElementById('excel-table').innerHTML = '';
+            document.getElementById('jumlahData').textContent = 'Jumlah Data : 0';
+            updateSummaryCards([]);
+            const sc = document.getElementById('table-scroll-container'); if (sc) sc.scrollTop = 0;
+        });
+
+        // copy helpers
+        function copyTotal(id) {
+            const el = document.getElementById(id); if (!el) return;
+            const val = el.textContent.replace(/\./g, '').replace(/,/g, '.');
+            const tmp = document.createElement('input'); document.body.appendChild(tmp); tmp.value = val; tmp.select(); document.execCommand('copy'); document.body.removeChild(tmp);
+            showCopyNotification(`Nominal "${el.textContent}" berhasil disalin!`);
+        }
+        function showCopyNotification(msg) {
+            let n = document.getElementById('copy-notif'); if (!n) { n = document.createElement('div'); n.id = 'copy-notif'; n.className = 'fixed top-6 right-6 bg-green-500 text-white px-4 py-2 rounded-full shadow z-50 transition-opacity'; document.body.appendChild(n); }
+            n.textContent = msg; n.style.opacity = '1'; setTimeout(() => n.style.opacity = '0', 2000);
+        }
+
+        // helper konversi tanggal antara dd-mm-yyyy <-> yyyy-mm-dd
+        function optToISO(opt) { // dd-mm-yyyy OR yyyy-mm-dd -> yyyy-mm-dd
+            if (!opt) return '';
+            if (/^\d{2}-\d{2}-\d{4}$/.test(opt)) { const [d, m, y] = opt.split('-'); return `${y}-${m}-${d}`; }
+            if (/^\d{4}-\d{2}-\d{2}$/.test(opt)) return opt;
+            return '';
+        }
+        function isoToOpt(iso) { // yyyy-mm-dd -> dd-mm-yyyy
+            if (!iso) return '';
+            if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) { const [y, m, d] = iso.split('-'); return `${d}-${m}-${y}`; }
+            return iso;
+        }
+
+        // saat renderTanggalOptions selesai, set tanggal-single jika ada pilihan sebelumnya
+        const originalRenderTanggalOptions = renderTanggalOptions;
+        renderTanggalOptions = function () {
+            originalRenderTanggalOptions();
+            // sync tanggal-single with currently selected tanggal-select (if any)
+            const sel = document.getElementById('tanggal-select');
+            const single = document.getElementById('tanggal-single');
+            if (sel && single) {
+                const cur = sel.value;
+                single.value = optToISO(cur);
+            }
+        };
+
+        // radio mode handling + sync between single input and tanggal-select
+        function setTanggalModeUI(mode) {
+            const rangeDiv = document.getElementById('tanggal-range-inputs');
+            const singleInput = document.getElementById('tanggal-single');
+            if (mode === 'range') { rangeDiv.classList.remove('hidden'); singleInput.classList.add('hidden'); }
+            else { rangeDiv.classList.add('hidden'); singleInput.classList.remove('hidden'); document.getElementById('tanggal-from').value = ''; document.getElementById('tanggal-to').value = ''; }
+        }
+        // init
+        setTanggalModeUI(document.querySelector('input[name="tanggalMode"]:checked')?.value || 'single');
+
+        document.querySelectorAll('input[name="tanggalMode"]').forEach(r => {
+            r.addEventListener('change', function () {
+                setTanggalModeUI(this.value);
+                // jika pindah ke single, kosongkan range and set tanggal-select from single
+                if (this.value === 'single') {
+                    document.getElementById('tanggal-from').value = ''; document.getElementById('tanggal-to').value = '';
+                    // ensure tanggal-select reflects tanggal-single
+                    const iso = document.getElementById('tanggal-single').value;
+                    if (iso) document.getElementById('tanggal-select').value = isoToOpt(iso);
+                } else {
+                    // clear simple select so filter relies on range
+                    document.getElementById('tanggal-select').value = '';
+                }
+                debouncedFilterAndRender();
+            });
+        });
+
+        // when user changes single date, sync to tanggal-select (internal filter key)
+        document.getElementById('tanggal-single').addEventListener('change', function () {
+            const iso = this.value; // yyyy-mm-dd
+            document.getElementById('tanggal-select').value = isoToOpt(iso);
+            // clear range if any
+            document.getElementById('tanggal-from').value = ''; document.getElementById('tanggal-to').value = '';
+            debouncedFilterAndRender();
+        });
+
+        // update: remove old tanggal-range-toggle listeners (if present) and wire from/to changes
+        document.getElementById('tanggal-from').addEventListener('change', () => { if (document.querySelector('input[name="tanggalMode"]:checked')?.value === 'range') debouncedFilterAndRender(); });
+        document.getElementById('tanggal-to').addEventListener('change', () => { if (document.querySelector('input[name="tanggalMode"]:checked')?.value === 'range') debouncedFilterAndRender(); });
+
+        // adjust getFilteredData to respect tanggal mode: if single mode prefer tanggal-select (already synced)
+        const originalGetFilteredData = getFilteredData;
+        getFilteredData = function () {
+            // if range mode but from/to not set, fall back to original behavior
+            const mode = document.querySelector('input[name="tanggalMode"]:checked')?.value || 'single';
+            if (mode === 'range') {
+                // force tanggal-select to '' so original uses range branch
+                document.getElementById('tanggal-select').value = '';
+                // but original getFilteredData already reads tanggal-range inputs; just call it
+            } else {
+                // ensure tanggal-range inputs cleared to avoid accidental range filter
+                // (they may already be cleared by UI logic)
+            }
+            return originalGetFilteredData();
+        };
+
+        // reset: set mode back ke single dan kosongkan date inputs
+        const oldReset = document.getElementById('btnResetPJDL').onclick;
+        document.getElementById('btnResetPJDL').addEventListener('click', function () {
+            const radio = document.querySelector('input[name="tanggalMode"][value="single"]');
+            if (radio) radio.checked = true;
+            setTanggalModeUI('single');
+            document.getElementById('tanggal-single').value = '';
+            document.getElementById('tanggal-from').value = ''; document.getElementById('tanggal-to').value = '';
+        });
+    </script>
+</body>
+
+</html>

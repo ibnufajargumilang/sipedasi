@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SiNkronLRA | Sistem Sinkronisasi LRA</title>
+    <link rel="stylesheet" href="../assets/icons/bootstrap-icons.css">
+    <script src="../assets/xlsx.full.min.js"></script>
+    <script src="../assets/tailwind.js"></script>
+    <style>
+        :root {
+            --accent-1: #06b6d4;
+            --accent-2: #6366f1;
+            --muted: #6b7280;
+            --card-border: rgba(15, 23, 42, 0.06);
+            --process: #0b5cff;
+            /* lebih kontras pada background putih */
+            --mismatch-bg: rgba(255, 229, 230, 0.9);
+            --mismatch-bg-alt: rgba(255, 244, 230, 0.9);
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        /* header subtle shadow */
+        .neon-accent {
+            box-shadow: 0 4px 18px rgba(99, 102, 241, 0.05);
+        }
+
+        .glass-light {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(250, 250, 250, 0.98));
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .code-chip {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono", monospace;
+            font-size: 0.75rem;
+            padding: .25rem .5rem;
+            border-radius: .375rem;
+            background: #f8fafc;
+            border: 1px solid rgba(15, 23, 42, 0.04);
+            color: #0f172a;
+        }
+
+        /* compact table scroll inside main area */
+        .table-wrap {
+            max-height: calc(100vh - 320px);
+            overflow: auto;
+        }
+
+        /* remove horizontal gaps - full bleed containers */
+        .full-bleed {
+            width: 100%;
+            padding-left: 8px;
+            padding-right: 8px;
+            box-sizing: border-box;
+        }
+
+        .bleed-no-pad {
+            width: 100%;
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        /* process button */
+        .btn-process {
+            background: var(--process);
+            color: #fff;
+            border-radius: 0.5rem;
+            padding: .5rem .9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(11, 92, 255, 0.12);
+        }
+
+        .btn-process:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-process:hover:not(:disabled) {
+            filter: brightness(0.95);
+        }
+
+        /* mismatch row highlighting */
+        .row-mismatch {
+            background: linear-gradient(90deg, var(--mismatch-bg), var(--mismatch-bg-alt));
+        }
+
+        .selisih-positive {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        /* green */
+        .selisih-negative {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        /* red */
+        .selisih-zero {
+            color: var(--muted);
+        }
+
+        /* responsive: stack header actions and allow controls to wrap */
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .header-actions {
+                gap: 0.5rem;
+                justify-content: flex-end;
+            }
+
+            .full-bleed {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .code-chip {
+                display: none;
+            }
+
+            .btn-process {
+                padding: .45rem .7rem;
+            }
+
+            .table-wrap {
+                max-height: calc(100vh - 380px);
+            }
+        }
+
+        @media (max-width: 640px) {
+            header .full-bleed {
+                padding: 10px;
+            }
+
+            .header-actions {
+                justify-content: flex-end;
+                gap: 0.4rem;
+            }
+
+            .btn-process {
+                font-size: 0.9rem;
+            }
+
+            /* table mobile: allow horizontal scroll and reduce padding */
+            table th,
+            table td {
+                padding: .5rem .6rem;
+                font-size: .88rem;
+            }
+        }
+
+        /* table responsive container */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* subtle sticky header for table */
+        thead th {
+            position: sticky;
+            top: 0;
+            background: #fff;
+            z-index: 2;
+        }
+    </style>
+</head>
+
+<body class="bg-white text-gray-800 min-h-screen flex flex-col bleed-no-pad">
+    <!-- Header: full-bleed background, content full width -->
+    <header class="w-full sticky top-0 z-40 border-b border-gray-200 bg-white neon-accent bleed-no-pad">
+        <div class="full-bleed flex items-center justify-between gap-4" style="padding:12px 16px;">
+            <div class="flex items-center gap-4">
+                <!-- icon tanpa background -->
+                <i class="bi bi-shield-lock-fill text-2xl text-indigo-600" aria-hidden="true"></i>
+
+                <div>
+                    <h1 class="text-gray-900 text-lg md:text-xl font-extrabold tracking-wide">SiNkronLRA</h1>
+                    <p class="text-xs text-gray-500">Sistem Sinkronisasi LRA</p>
+                </div>
+
+                <div class="ml-4 flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-[var(--accent-1)]" title="Node A"></div>
+                    <div class="w-2 h-2 rounded-full bg-[var(--accent-2)]" title="Node B"></div>
+                    <div class="w-2 h-2 rounded-full bg-blue-400" title="Node C"></div>
+                </div>
+            </div>
+
+            <div class="header-actions w-full md:w-auto" style="justify-content:flex-end;">
+                <!-- Upload File Utama (REKON) -->
+                <div class="relative">
+                    <input type="file" id="utamaFile" accept=".xlsx, .xls" class="sr-only" />
+                    <label for="utamaFile"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[var(--accent-1)] to-[var(--accent-2)] rounded-lg shadow hover:opacity-95 cursor-pointer transition-colors">
+                        <i class="bi bi-upload text-lg" aria-hidden="true"></i>
+                        <span id="utamaFileName" class="truncate max-w-[12rem]">Upload File Utama (REKON)</span>
+                    </label>
+                </div>
+
+                <!-- Upload File Konsolidasi -->
+                <div class="relative">
+                    <input type="file" id="konsolidasiFile" accept=".xlsx, .xls" class="sr-only" />
+                    <label for="konsolidasiFile"
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-violet-500 rounded-lg shadow hover:opacity-95 cursor-pointer transition-colors">
+                        <i class="bi bi-upload text-lg" aria-hidden="true"></i>
+                        <span id="konsolidasiFileName" class="truncate max-w-[12rem]">Upload File Konsolidasi</span>
+                    </label>
+                </div>
+
+                <!-- Month Selector -->
+                <div class="relative">
+                    <select id="monthSelector"
+                        class="w-full md:w-auto bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-0 focus:border-[var(--accent-2)] block p-2.5">
+                        <option value="3">Januari</option>
+                        <option value="4">Februari</option>
+                        <option value="5">Maret</option>
+                        <option value="6">April</option>
+                        <option value="7">Mei</option>
+                        <option value="8">Juni</option>
+                        <option value="9">Juli</option>
+                        <option value="10">Agustus</option>
+                        <option value="11">September</option>
+                        <option value="12">Oktober</option>
+                        <option value="13">November</option>
+                        <option value="14">Desember</option>
+                    </select>
+                </div>
+
+                <!-- Input Jumlah Baris (default 300, lebar disesuaikan) -->
+                <div class="relative">
+                    <input type="number" id="rowCount"
+                        class="w-24 bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-0 focus:border-[var(--accent-2)] block p-2.5"
+                        placeholder="Jumlah baris" value="300" min="1">
+                </div>
+
+                <!-- Tombol Proses (teks hanya 'Proses') -->
+                <button id="processButton" class="btn-process" disabled>
+                    <i class="bi bi-gear-fill" aria-hidden="true"></i>
+                    <span>Proses</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Konten Utama (full bleed) -->
+    <main class="flex-grow w-full bleed-no-pad">
+        <div class="full-bleed" style="padding:20px 8px;">
+            <div id="output" class="p-6 rounded-xl glass-light border min-h-[280px]">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Hasil Perbandingan LRA (Rekening Detail)</h2>
+                        <p class="text-sm text-gray-500 mt-1">Unggah dua file lalu pilih bulan, sistem akan mencocokkan
+                            rekening detail.</p>
+                    </div>
+                    <div class="text-sm code-chip">
+                        Status: <span id="statusBadge" class="ml-2" style="color:var(--accent-2)">Menunggu file</span>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <p class="text-gray-600 text-center">Silakan unggah File Utama (REKON) dan File Konsolidasi, pilih
+                        bulan, lalu klik "Proses".</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Floating Summary Bar (full width with side padding) -->
+    <div id="summaryBar"
+        class="fixed bottom-6 left-0 right-0 mx-0 bg-white text-gray-800 shadow-2xl p-4 z-40 rounded-2xl border border-gray-200 hidden translate-y-8 transition-transform duration-300"
+        style="margin:0 8px; max-width:calc(100% - 16px);">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center relative items-center">
+            <div>
+                <h4 class="text-xs font-semibold text-gray-500 uppercase">Total Realisasi Utama</h4>
+                <p id="totalRealisasiUtama" class="text-xl font-bold">Rp 0</p>
+            </div>
+            <div>
+                <h4 class="text-xs font-semibold text-gray-500 uppercase">Total Realisasi Konsolidasi</h4>
+                <p id="totalRealisasiKonsolidasi" class="text-xl font-bold">Rp 0</p>
+            </div>
+            <div>
+                <h4 class="text-xs font-semibold text-gray-500 uppercase">Selisih</h4>
+                <p id="totalSelisih" class="text-xl font-bold text-amber-600">Rp 0</p>
+            </div>
+            <button id="closeSummary"
+                class="absolute -top-3 -right-3 text-gray-500 hover:text-gray-800 bg-white p-2 rounded-full border border-gray-100 shadow">
+                <i class="bi bi-x-circle-fill text-2xl" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+
+    <footer class="mt-8 py-6 w-full bleed-no-pad">
+        <div class="full-bleed" style="padding:0 8px; text-align:center;">
+            <p class="text-sm text-gray-500">&copy; 2024 SiNkronLRA. Dibuat untuk memudahkan sinkronisasi data. • UI:
+                Clean blockchain-inspired</p>
+        </div>
+    </footer>
+
+    <script>
+        // DOM Elements
+        const utamaFileInput = document.getElementById("utamaFile");
+        const konsolidasiFileInput = document.getElementById("konsolidasiFile");
+        const processButton = document.getElementById("processButton");
+        const outputDiv = document.getElementById("output");
+        const utamaFileNameSpan = document.getElementById("utamaFileName");
+        const konsolidasiFileNameSpan = document.getElementById("konsolidasiFileName");
+        const summaryBar = document.getElementById("summaryBar");
+        const closeSummaryButton = document.getElementById("closeSummary");
+        const monthSelector = document.getElementById("monthSelector");
+        const statusBadge = document.getElementById("statusBadge");
+
+        let utamaData = null;
+        let konsolidasiData = null;
+
+        const updateStatus = (text, color = "var(--accent-2)") => {
+            statusBadge.textContent = text;
+            statusBadge.style.color = color;
+        };
+
+        const checkFiles = () => {
+            processButton.disabled = !(utamaFileInput.files.length > 0 && konsolidasiFileInput.files.length > 0);
+            if (processButton.disabled) updateStatus("Menunggu file", "var(--accent-2)");
+            else updateStatus("Siap diproses", "var(--accent-1)");
+        };
+
+        utamaFileInput.addEventListener("change", (e) => {
+            handleFileUpload(e, "utama");
+            utamaFileNameSpan.textContent = e.target.files[0] ? e.target.files[0].name : "Upload File Utama (REKON)";
+            checkFiles();
+        });
+
+        konsolidasiFileInput.addEventListener("change", (e) => {
+            handleFileUpload(e, "konsolidasi");
+            konsolidasiFileNameSpan.textContent = e.target.files[0] ? e.target.files[0].name : "Upload File Konsolidasi";
+            checkFiles();
+        });
+
+        processButton.addEventListener("click", () => {
+            if (utamaData && konsolidasiData) {
+                updateStatus("Memproses...", "orange");
+                processData(utamaData, konsolidasiData);
+                updateStatus("Selesai", "var(--accent-2)");
+            } else {
+                alert("Mohon unggah kedua file terlebih dahulu.");
+            }
+        });
+
+        closeSummaryButton.addEventListener("click", () => {
+            summaryBar.classList.add("translate-y-8");
+            setTimeout(() => {
+                summaryBar.classList.add("hidden");
+            }, 300);
+        });
+
+        const handleFileUpload = (event, type) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {
+                    type: "array"
+                });
+
+                if (type === "utama") {
+                    const sheetName = "LRA";
+                    if (!workbook.SheetNames.includes(sheetName)) {
+                        alert(`File utama tidak memiliki sheet dengan nama "${sheetName}". Mohon periksa kembali file Anda.`);
+                        utamaFileInput.value = "";
+                        utamaFileNameSpan.textContent = "Upload File Utama (REKON)";
+                        checkFiles();
+                        return;
+                    }
+                    const worksheet = workbook.Sheets[sheetName];
+                    utamaData = XLSX.utils.sheet_to_json(worksheet, {
+                        header: 1
+                    });
+                } else {
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    konsolidasiData = XLSX.utils.sheet_to_json(worksheet, {
+                        header: 1
+                    });
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        const processData = (dataUtama, dataKonsolidasi) => {
+            const findStartRow = (data, keyword = "KODE REKENING") => {
+                for (let i = 0; i < data.length; i++) {
+                    if (data[i] && data[i].some(cell => typeof cell === 'string' && cell.toUpperCase().includes(keyword))) {
+                        return i + 1;
+                    }
+                }
+                return 0;
+            };
+
+            const startRowUtama = findStartRow(dataUtama);
+            const startRowKonsolidasi = findStartRow(dataKonsolidasi);
+            const selectedMonthIndex = parseInt(monthSelector.value);
+
+            const cleanAndMap = (data, startRow, type) => {
+                return data.slice(startRow)
+                    .map(row => {
+                        if (!row || !row[0] || !row[1]) return null;
+                        let realisasiValue = 0;
+                        if (type === 'konsolidasi') {
+                            realisasiValue = row[3] || 0;
+                        } else {
+                            realisasiValue = row[selectedMonthIndex] || 0;
+                        }
+                        return {
+                            kode: String(row[0]).trim(),
+                            uraian: String(row[1]).trim(),
+                            realisasi: realisasiValue,
+                        };
+                    })
+                    .filter(item => item && item.kode && item.uraian);
+            };
+
+            const mappedUtama = cleanAndMap(dataUtama, startRowUtama, 'utama');
+            const mappedKonsolidasi = cleanAndMap(dataKonsolidasi, startRowKonsolidasi, 'konsolidasi');
+
+            // --- PERUBAHAN LOGIKA ---
+            // Sekarang, kita beriterasi melalui file KONSOLIDASI sebagai sumber utama,
+            // lalu mencari data yang cocok di file UTAMA.
+            const mergedData = mappedKonsolidasi.map(konsolidasiItem => {
+                const utamaItem = mappedUtama.find(utamaItem => utamaItem.kode === konsolidasiItem.kode);
+                return {
+                    kode: konsolidasiItem.kode, // Diambil dari file Konsolidasi
+                    uraian: konsolidasiItem.uraian, // Diambil dari file Konsolidasi
+                    realisasiUtama: utamaItem ? utamaItem.realisasi : 0, // Cari padanannya di file Utama
+                    realisasiKonsolidasi: konsolidasiItem.realisasi,
+                };
+            });
+
+            const detailAccountRegex = /^\d\.\d\.\d{2}\.\d{2}\.\d{2}\.\d{4}$/;
+            const filteredData = mergedData.filter(item => detailAccountRegex.test(item.kode));
+
+            displayResult(filteredData);
+        };
+
+        const displayResult = (data) => {
+            const formatRupiah = (val) => {
+                return new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0
+                }).format(val);
+            };
+
+            if (data.length === 0) {
+                outputDiv.innerHTML = `<p class="text-gray-600 text-center">Tidak ada data rekening detail yang cocok ditemukan.</p>`;
+                summaryBar.classList.add("translate-y-8");
+                summaryBar.classList.add("hidden");
+                return;
+            }
+
+            let html = `
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Hasil Perbandingan LRA (Rekening Detail)</h3>
+                    <div class="text-sm code-chip">Menampilkan ${data.length} rekening</div>
+                </div>
+                <div class="rounded-lg border border-gray-100 table-wrap table-responsive">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-white text-gray-700 border-b border-gray-100">
+                        <tr>
+                            <th class="px-4 py-3 text-left">No</th>
+                            <th class="px-4 py-3 text-left">Kode Rekening</th>
+                            <th class="px-4 py-3 text-left">Uraian</th>
+                            <th class="px-4 py-3 text-right">Realisasi Utama</th>
+                            <th class="px-4 py-3 text-right">Realisasi Konsolidasi</th>
+                            <th class="px-4 py-3 text-right">Selisih</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white text-gray-800">
+            `;
+
+            const rowCount = parseInt(document.getElementById("rowCount").value) || data.length;
+            const slicedData = data.slice(0, rowCount);
+
+            const totals = slicedData.reduce((acc, item) => {
+                acc.realisasiUtama += Number(item.realisasiUtama) || 0;
+                acc.realisasiKonsolidasi += Number(item.realisasiKonsolidasi) || 0;
+                return acc;
+            }, {
+                realisasiUtama: 0,
+                realisasiKonsolidasi: 0
+            });
+            totals.selisih = totals.realisasiUtama - totals.realisasiKonsolidasi;
+
+            slicedData.forEach((item, i) => {
+                const realisasiUtamaNum = Number(item.realisasiUtama) || 0;
+                const realisasiKonsolidasiNum = Number(item.realisasiKonsolidasi) || 0;
+                const selisih = realisasiUtamaNum - realisasiKonsolidasiNum;
+                const mismatch = selisih !== 0;
+
+                let rowClass = mismatch ? "row-mismatch" : "bg-white";
+                let selisihClass = "selisih-zero";
+                if (selisih > 0) selisihClass = "selisih-positive";
+                else if (selisih < 0) selisihClass = "selisih-negative";
+
+                html += `
+                    <tr class="${rowClass}">
+                        <td class="px-4 py-3">${i + 1}</td>
+                        <td class="px-4 py-3 font-mono text-amber-600">${item.kode || ""}</td>
+                        <td class="px-4 py-3 text-gray-700">${item.uraian || ""}</td>
+                        <td class="px-4 py-3 text-right text-teal-600">${formatRupiah(realisasiUtamaNum)}</td>
+                        <td class="px-4 py-3 text-right text-indigo-600">${formatRupiah(realisasiKonsolidasiNum)}</td>
+                        <td class="px-4 py-3 text-right ${selisihClass}">${formatRupiah(selisih)}</td>
+                    </tr>`;
+            });
+
+            html += `</tbody></table></div>`;
+            outputDiv.innerHTML = html;
+
+            document.getElementById("totalRealisasiUtama").textContent = formatRupiah(totals.realisasiUtama);
+            document.getElementById("totalRealisasiKonsolidasi").textContent = formatRupiah(totals.realisasiKonsolidasi);
+            document.getElementById("totalSelisih").textContent = formatRupiah(totals.selisih);
+            summaryBar.classList.remove("hidden");
+            setTimeout(() => {
+                summaryBar.classList.remove("translate-y-8");
+            }, 10);
+        };
+    </script>
+</body>
+
+</html>
