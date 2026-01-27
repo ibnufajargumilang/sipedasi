@@ -1156,3 +1156,33 @@ function exportDataToExcel(data, filenamePrefix = "SiRekonPBB") {
     XLSX.writeFile(wb, fname);
     showToast("Data berhasil diekspor.", 'success');
 }
+
+// Global Copy Function
+// Global Copy Function
+window.copyNominal = (elementId) => {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    const originalText = element.textContent.trim();
+    // Remove dots and commas for raw number
+    const cleanText = originalText.replace(/[.,]/g, '');
+
+    // Copy logic
+    navigator.clipboard.writeText(cleanText).then(() => {
+        showToast(`Nominal "${cleanText}" berhasil disalin!`, 'success');
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+        // Fallback for older browsers or non-secure contexts
+        try {
+            const textArea = document.createElement("textarea");
+            textArea.value = cleanText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            showToast(`Nominal "${cleanText}" berhasil disalin!`, 'success');
+        } catch (e) {
+            showToast('Gagal menyalin teks.', 'error');
+        }
+    });
+};
