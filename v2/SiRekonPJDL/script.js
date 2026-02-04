@@ -460,7 +460,7 @@ function renderPage() {
                 const safeContent = rawContent.replace(/'/g, "\\'").replace(/"/g, "&quot;");
                 content = `
                     <div class="flex items-center justify-between gap-2 group min-w-[200px] cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/50 -mx-3 px-3 py-1.5 rounded-lg transition-colors select-none" onclick="copyText('${safeContent}')" title="Klik untuk menyalin">
-                         <span class="truncate text-slate-700 dark:text-slate-300 font-medium relative top-[1px]">${rawContent}</span>
+                         <span class="whitespace-normal text-slate-700 dark:text-slate-300 font-medium relative top-[1px]">${rawContent}</span>
                          <div class="w-6 h-6 rounded flex items-center justify-center text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 opacity-0 group-hover:opacity-100 transition-all transform scale-90 group-hover:scale-100 shadow-sm border border-indigo-100 dark:border-indigo-800">
                              <i class="bi bi-copy text-xs"></i>
                          </div>
