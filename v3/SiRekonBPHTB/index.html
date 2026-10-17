@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+
+<head>
+  <!-- SIPEDASI: redirect GitHub Pages visitors to the hosting site. -->
+  <script id="sipedasi-hosting-redirect">
+    if (window.location.hostname === 'ibnufajargumilang.github.io' &&
+        (window.location.pathname === '/sipedasi' || window.location.pathname.startsWith('/sipedasi/'))) {
+      window.location.replace('https://axe.goihub.net/');
+    }
+  </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiRekon BPHTB | Sistem Rekonsiliasi BPHTB</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="../assets/css/bootstrap-icons.css">
+    <link href="../assets/css/fonts.css" rel="stylesheet">
+    <link href="../assets/css/tom-select.bootstrap5.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <script src="../assets/js/tailwindcss.js"></script>
+    <script src="../assets/js/tom-select.complete.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#6366f1',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out forwards',
+                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="../assets/js/xlsx.full.min.js"></script>
+</head>
+
+<body
+    class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300 min-h-screen font-sans">
+
+    <div class="bg-mesh pointer-events-none"></div>
+
+    <div id="toast"
+        class="fixed bottom-5 right-5 px-6 py-4 rounded-xl shadow-xl opacity-0 transition-all duration-300 z-[60] transform translate-y-10 flex items-center gap-3 font-medium text-sm glass text-white bg-slate-800/90 pointer-events-none">
+        <span id="toastIcon"></span>
+        <span id="toastMsg"></span>
+    </div>
+
+    <button id="fabUpload"
+        class="fixed bottom-8 right-8 w-14 h-14 bg-pink-600 hover:bg-pink-700 text-white rounded-full shadow-lg shadow-pink-500/30 flex items-center justify-center z-40 transition-transform hover:scale-110 active:scale-95 group"
+        title="Upload Excel">
+        <i class="bi bi-cloud-upload text-2xl group-hover:animate-bounce"></i>
+    </button>
+
+    <div id="uploadModal"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity opacity-0">
+        <div
+            class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 transform scale-95 transition-transform duration-200 border border-slate-200 dark:border-slate-700">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-heading font-bold text-lg text-slate-800 dark:text-white">Upload Data BPHTB</h3>
+                <button id="closeModal"
+                    class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <i class="bi bi-x-lg text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="relative group cursor-pointer">
+                    <input type="file" id="fileMonitoring" accept=".xlsx, .xls, .csv"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                    <div id="uploadLabelMonitoring"
+                        class="flex flex-row items-center gap-4 p-4 border border-dashed border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-800/50 group-hover:bg-slate-100 dark:group-hover:bg-slate-800 group-hover:border-pink-400 transition-all">
+                        <div
+                            class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg flex-shrink-0">
+                            <i class="bi bi-file-earmark-bar-graph"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">File Monitoring</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Klik untuk pilih file</p>
+                        </div>
+                        <div class="text-xs font-medium px-2 py-1 bg-slate-200 dark:bg-slate-700 rounded text-slate-600 dark:text-slate-300"
+                            id="countMonitoring">0 Data</div>
+                    </div>
+                </div>
+
+                <div class="relative group cursor-pointer">
+                    <input type="file" id="fileData2" accept=".xlsx, .xls, .csv"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                    <div id="uploadLabelData2"
+                        class="flex flex-row items-center gap-4 p-4 border border-dashed border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-800/50 group-hover:bg-slate-100 dark:group-hover:bg-slate-800 group-hover:border-green-400 transition-all">
+                        <div
+                            class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center text-lg flex-shrink-0">
+                            <i class="bi bi-file-earmark-spreadsheet"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">File Data Ke-2</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Klik untuk pilih file</p>
+                        </div>
+                        <div class="text-xs font-medium px-2 py-1 bg-slate-200 dark:bg-slate-700 rounded text-slate-600 dark:text-slate-300"
+                            id="countData2">0 Data</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button id="btnCancelModal"
+                    class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <header
+        class="fixed top-0 w-full z-40 glass shadow-sm transition-all duration-300 dark:border-b dark:border-slate-800">
+        <div class="px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="../index.html"
+                    class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-colors shadow-sm border border-slate-200 dark:border-slate-700"
+                    title="Kembali ke Dashboard">
+                    <i class="bi bi-arrow-left text-lg"></i>
+                </a>
+                <div class="flex flex-col">
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="font-heading font-bold text-lg leading-tight text-slate-800 dark:text-white">SiRekon
+                            BPHTB</span>
+                        <span
+                            class="px-2 py-0.5 rounded-full bg-pink-100 dark:bg-pink-900/40 text-pink-700 dark:text-pink-300 text-[10px] font-bold border border-pink-200 dark:border-pink-800">v2.0</span>
+                    </div>
+                    <span
+                        class="text-[11px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">Sistem
+                        Rekonsiliasi Bea Perolehan Hak atas Tanah dan Bangunan</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button id="btnDeleteSelected"
+                    class="hidden px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-rose-500/30 flex items-center gap-2">
+                    <i class="bi bi-trash-fill"></i>
+                    <span>Hapus (<span id="selectedCount">0</span>)</span>
+                </button>
+
+                <button id="exportBtn" disabled
+                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-emerald-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                    <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+                    <span class="hidden sm:inline">Export Excel</span>
+                </button>
+                <button id="btnSaveResult" disabled
+                    class="hidden sm:flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition-colors shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
+                    <i class="bi bi-save"></i>
+                    <span>Simpan Hasil</span>
+                </button>
+                <button id="openSavedDataBtn"
+                    class="hidden sm:flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-colors shadow-lg shadow-blue-500/20 hover:-translate-y-0.5">
+                    <i class="bi bi-folder"></i>
+                    <span>Data Tersimpan</span>
+                </button>
+
+                <button id="themeToggle"
+                    class="w-10 h-10 rounded-xl flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-600 dark:text-yellow-400 overflow-hidden relative border border-slate-200 dark:border-slate-700"
+                    title="Ganti Tema">
+                    <i id="themeIcon" class="bi bi-moon-stars-fill text-lg transition-all duration-300 transform"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-col lg:flex-row min-h-screen pt-24 px-4 pb-6 gap-6 max-w-[1600px] mx-auto">
+
+        <aside
+            class="w-full lg:w-80 flex-shrink-0 flex flex-col gap-6 lg:sticky lg:top-24 lg:h-fit animate-fade-in z-30">
+            <div
+                class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-4">
+
+                <div class="flex items-center justify-between">
+                    <h3 class="font-heading font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2">
+                        <i class="bi bi-funnel text-pink-500"></i> Filter Data
+                    </h3>
+
+                    <button id="btnReset" disabled
+                        class="px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                        title="Reset Filter">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                </div>
+
+                <div class="space-y-2">
+                    <label
+                        class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Periode
+                        Tanggal</label>
+
+                    <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+                        <label class="flex-1 text-center cursor-pointer">
+                            <input type="radio" name="tanggalMode" value="single" checked class="hidden peer" />
+                            <span
+                                class="block py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 rounded-md peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-pink-600 dark:peer-checked:text-pink-300 peer-checked:shadow-sm transition-all">Satu
+                                Tanggal</span>
+                        </label>
+                        <label class="flex-1 text-center cursor-pointer">
+                            <input type="radio" name="tanggalMode" value="range" class="hidden peer" />
+                            <span
+                                class="block py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 rounded-md peer-checked:bg-white dark:peer-checked:bg-slate-700 peer-checked:text-pink-600 dark:peer-checked:text-pink-300 peer-checked:shadow-sm transition-all">Rentang</span>
+                        </label>
+                    </div>
+
+                    <div id="tanggalSingle">
+                        <div class="relative">
+                            <i class="bi bi-calendar-event absolute left-3 top-2.5 text-slate-400"></i>
+                            <select id="tglSelect" disabled
+                                class="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition-all disabled:opacity-60 disabled:cursor-not-allowed appearance-none dark:text-slate-200">
+                                <option value="">Pilih Tanggal...</option>
+                            </select>
+                            <i
+                                class="bi bi-chevron-down absolute right-3 top-3 text-slate-400 text-xs pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <div id="tanggalRange" class="hidden grid grid-cols-2 gap-2">
+                        <div>
+                            <span class="text-[10px] text-slate-400 dark:text-slate-500 mb-1 block">Dari</span>
+                            <input id="tglStart" type="date" disabled
+                                class="w-full px-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition-all disabled:opacity-60 dark:text-slate-200 dark:[color-scheme:dark]" />
+                        </div>
+                        <div>
+                            <span class="text-[10px] text-slate-400 dark:text-slate-500 mb-1 block">Sampai</span>
+                            <input id="tglEnd" type="date" disabled
+                                class="w-full px-2 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition-all disabled:opacity-60 dark:text-slate-200 dark:[color-scheme:dark]" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label
+                        class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Filter
+                        Waktu</label>
+                    <div class="relative">
+                        <i class="bi bi-clock-history absolute left-3 top-2.5 text-slate-400"></i>
+                        <select id="waktuSelect" disabled
+                            class="w-full pl-9 pr-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition-all disabled:opacity-60 disabled:cursor-not-allowed appearance-none dark:text-slate-200">
+                            <option value="semua">Semua Transaksi</option>
+                            <option value="kurang">Akhir Pembayaran (< 17:00)</option>
+                            <option value="lebih">Tgl Pelimpahan (>= 17:00)</option>
+                        </select>
+                        <i
+                            class="bi bi-chevron-down absolute right-3 top-3 text-slate-400 text-xs pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label
+                        class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Kategori
+                        Keterangan</label>
+                    <div class="relative">
+                        <select id="kategoriSelect"
+                            class="w-full pl-3 pr-8 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none transition-all appearance-none dark:text-slate-200"
+                            disabled>
+                            <option value="">-- Pilih Template Kategori --</option>
+                            <option value="hak_baru">BPHTB-Pemberian Hak Baru</option>
+                            <option value="pemindahan">BPHTB-Pemindahan Hak</option>
+                        </select>
+                        <i
+                            class="bi bi-chevron-down absolute right-3 top-3 text-slate-400 text-xs pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label
+                        class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Detail
+                        Keterangan</label>
+                    <div class="relative">
+                        <select id="detailSelect" placeholder="Pilih Detail Keterangan..." autocomplete="off" multiple>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col gap-6 animate-slide-up" style="animation-delay: 0.1s;">
+
+            <div id="summaryCards" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div
+                    class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                        <i class="bi bi-cash-stack text-4xl text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                        Total
+                        Pembayaran</p>
+                    <div class="flex items-end gap-2">
+                        <h2 id="totalPembayaran"
+                            class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">0</h2>
+                        <button onclick="copyNominal('totalPembayaran')"
+                            class="text-slate-300 hover:text-blue-500 transition-colors mb-1.5" title="Copy">
+                            <i class="bi bi-copy"></i>
+                        </button>
+                    </div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-1 mt-4 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-500 w-0 transition-all duration-1000" style="width: 0%">
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                        <i class="bi bi-exclamation-circle text-4xl text-amber-500"></i>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                        Total
+                        Denda</p>
+                    <div class="flex items-end gap-2">
+                        <h2 id="totalDenda" class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">0
+                        </h2>
+                        <button onclick="copyNominal('totalDenda')"
+                            class="text-slate-300 hover:text-amber-500 transition-colors mb-1.5" title="Copy">
+                            <i class="bi bi-copy"></i>
+                        </button>
+                    </div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-1 mt-4 rounded-full overflow-hidden">
+                        <div class="h-full bg-amber-500 w-0 transition-all duration-1000" style="width: 0%">
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
+                        <i class="bi bi-wallet2 text-4xl text-emerald-500"></i>
+                    </div>
+                    <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
+                        Total
+                        Mutasi Kredit</p>
+                    <div class="flex items-end gap-2">
+                        <h2 id="totalMutasi"
+                            class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 tracking-tight">0
+                        </h2>
+                        <button onclick="copyNominal('totalMutasi')"
+                            class="text-slate-300 hover:text-emerald-500 transition-colors mb-1.5" title="Copy">
+                            <i class="bi bi-copy"></i>
+                        </button>
+                    </div>
+                    <div class="w-full bg-slate-100 dark:bg-slate-800 h-1 mt-4 rounded-full overflow-hidden">
+                        <div class="h-full bg-emerald-500 w-0 transition-all duration-1000" style="width: 0%">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col flex-grow overflow-hidden relative">
+
+                <div
+                    class="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center bg-slate-50 dark:bg-slate-800 rounded-lg p-1 border border-slate-200 dark:border-slate-700"
+                            id="fiturRadioGroup">
+                            <label
+                                class="px-3 py-1.5 rounded-md cursor-pointer text-xs font-medium transition-colors has-[:checked]:bg-white dark:has-[:checked]:bg-slate-700 has-[:checked]:text-blue-600 dark:has-[:checked]:text-blue-400 has-[:checked]:shadow-sm text-slate-500 dark:text-slate-400">
+                                <input type="radio" name="fitur" value="tambah" checked class="hidden" disabled />
+                                Tambah
+                            </label>
+                            <label
+                                class="px-3 py-1.5 rounded-md cursor-pointer text-xs font-medium transition-colors has-[:checked]:bg-white dark:has-[:checked]:bg-slate-700 has-[:checked]:text-red-500 dark:has-[:checked]:text-red-400 has-[:checked]:shadow-sm text-slate-500 dark:text-slate-400">
+                                <input type="radio" name="fitur" value="kurangi" class="hidden" disabled />
+                                Kurangi
+                            </label>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Baris:</span>
+                            <input type="number" id="tambahanCount" value="0" min="0" disabled
+                                class="w-14 px-2 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-center focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none disabled:opacity-60 dark:text-slate-200" />
+                        </div>
+                    </div>
+
+                    <div class="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg"
+                        id="jumlahData">
+                        Data: 0
+                    </div>
+                </div>
+
+                <div class="flex-grow overflow-auto relative min-h-[400px]" id="table-scroll-container">
+                    <table id="excel-table" class="w-full text-sm text-left text-slate-600 dark:text-slate-300">
+                    </table>
+
+                    <div id="table-placeholder"
+                        class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 dark:text-slate-600 pointer-events-none">
+                        <i class="bi bi-table text-4xl mb-3 opacity-50"></i>
+                        <p class="text-sm">Silakan unggah kedua file untuk melihat hasil gabungan.</p>
+                    </div>
+                </div>
+
+                <div id="paginationControls"
+                    class="p-3 border-t border-slate-100 dark:border-slate-800 hidden flex justify-between items-center bg-white/50 dark:bg-slate-900/50 backdrop-blur">
+                    <div class="text-xs text-slate-500 dark:text-slate-400">
+                        Hal <span id="currentPageDisplay" class="font-bold">1</span> dari <span
+                            id="totalPagesDisplay">1</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="prevPageBtn"
+                            class="px-3 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-xs disabled:opacity-50 dark:text-slate-300"
+                            disabled>
+                            <i class="bi bi-chevron-left"></i> Prev
+                        </button>
+                        <button id="nextPageBtn"
+                            class="px-3 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-xs disabled:opacity-50 dark:text-slate-300"
+                            disabled>
+                            Next <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Saved Data Modal -->
+    <div id="savedDataModal"
+        class="fixed inset-0 z-[55] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity opacity-0">
+        <div
+            class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-4xl p-6 transform scale-95 transition-transform duration-200 border border-slate-200 dark:border-slate-700 max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center mb-4 flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <h3 class="font-heading font-bold text-lg text-slate-800 dark:text-white flex items-center gap-2">
+                        <i class="bi bi-folder2-open text-indigo-500"></i> Data Tersimpan
+                    </h3>
+                    <button id="btnDownloadAll"
+                        class="px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50 rounded-lg text-xs font-bold transition-colors flex items-center gap-2">
+                        <i class="bi bi-download"></i> Download Semua (.xlsx)
+                    </button>
+                    <button id="btnClearAll"
+                        class="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 dark:hover:bg-rose-900/50 rounded-lg text-xs font-bold transition-colors flex items-center gap-2">
+                        <i class="bi bi-trash"></i> Bersihkan Data
+                    </button>
+                </div>
+                <button id="closeSavedModal"
+                    class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <i class="bi bi-x-lg text-lg"></i>
+                </button>
+            </div>
+
+            <div class="flex-grow overflow-auto">
+                <table class="w-full text-sm text-left text-slate-600 dark:text-slate-300">
+                    <thead
+                        class="text-xs text-slate-500 dark:text-slate-400 uppercase bg-slate-50 dark:bg-slate-800 sticky top-0 z-10 shadow-sm">
+                        <tr>
+                            <th scope="col"
+                                class="px-6 py-3 font-semibold border-b border-slate-200 dark:border-slate-700">
+                                Nama
+                            </th>
+                            <th scope="col"
+                                class="px-6 py-3 font-semibold border-b border-slate-200 dark:border-slate-700 text-center">
+                                Tgl Simpan</th>
+                            <th scope="col"
+                                class="px-6 py-3 font-semibold border-b border-slate-200 dark:border-slate-700 text-center">
+                                Jml Data</th>
+                            <th scope="col"
+                                class="px-6 py-3 font-semibold border-b border-slate-200 dark:border-slate-700 text-right">
+                                Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="savedDataList"
+                        class="bg-white dark:bg-slate-900/50 divide-y divide-slate-100 dark:divide-slate-800">
+                        <!-- Items will be injected here -->
+                    </tbody>
+                </table>
+                <div id="emptySaved" class="hidden flex flex-col items-center justify-center py-10 text-slate-400">
+                    <i class="bi bi-inbox text-4xl mb-2 opacity-50"></i>
+                    <p class="text-sm">Belum ada data tersimpan.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

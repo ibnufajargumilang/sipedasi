@@ -1,246 +1,440 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sipedasi Portal</title>
+  <!-- SIPEDASI: redirect GitHub Pages visitors to the hosting site. -->
+  <script id="sipedasi-hosting-redirect">
+    if (window.location.hostname === 'ibnufajargumilang.github.io' &&
+        (window.location.pathname === '/sipedasi' || window.location.pathname.startsWith('/sipedasi/'))) {
+      window.location.replace('https://axe.goihub.net/');
+    }
+  </script>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIPEDASI — Portal Sistem Informasi</title>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Anti-Flicker Theme Script -->
+  <script>
+    if (localStorage.theme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
 
-    <!-- Custom Config & Styles -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            400: '#38bdf8',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            900: '#0c4a6e',
-                        },
-                        dark: {
-                            800: '#1e1e2e',
-                            900: '#11111b',
-                        }
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'blob': 'blob 7s infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': {
-                                transform: 'translateY(0)'
-                            },
-                            '50%': {
-                                transform: 'translateY(-20px)'
-                            },
-                        },
-                        blob: {
-                            '0%': {
-                                transform: 'translate(0px, 0px) scale(1)'
-                            },
-                            '33%': {
-                                transform: 'translate(30px, -50px) scale(1.1)'
-                            },
-                            '66%': {
-                                transform: 'translate(-20px, 20px) scale(0.9)'
-                            },
-                            '100%': {
-                                transform: 'translate(0px, 0px) scale(1)'
-                            },
-                        }
-                    }
-                }
+  <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            heading: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              300: '#a5b4fc',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+              950: '#1e1b4b',
+            },
+            cyanAccent: '#06b6d4',
+            emeraldAccent: '#10b981',
+            amberAccent: '#f59e0b',
+          },
+          animation: {
+            'float-slow': 'float 7s ease-in-out infinite',
+            'float-reverse': 'floatRev 8s ease-in-out infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            floatRev: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(8px)' },
             }
+          }
         }
-    </script>
+      }
+    }
+  </script>
 
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .glass {
-                @apply bg-white/10 backdrop-blur-lg border border-white/20 shadow-xl;
-            }
-            .glass-hover {
-                @apply hover:bg-white/20 hover:border-white/30 transition-all duration-300;
-            }
-        }
-        
-        body {
-            background-color: #0f172a;
-            color: #ffffff;
-            overflow-x: hidden;
-        }
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+      border: 2px solid #080c14;
+    }
+    .dark ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+      border: 2px solid #f8fafc;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
 
-        .bg-gradient-mesh {
-            background-color: hsla(220, 60%, 10%, 1);
-            background-image: 
-                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
-                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
-        }
-    </style>
+    /* Ambient Background Mesh - Light Mode */
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.07) 0, transparent 45%),
+        radial-gradient(at 50% 50%, rgba(139, 92, 246, 0.05) 0, transparent 60%),
+        radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.06) 0, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.04) 0, transparent 40%);
+      background-attachment: fixed;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Ambient Background Mesh - Dark Mode */
+    .dark body {
+      background-color: #080c14;
+      color: #f8fafc;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0, transparent 45%),
+        radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.12) 0, transparent 40%),
+        radial-gradient(at 50% 50%, rgba(139, 92, 246, 0.07) 0, transparent 60%),
+        radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.08) 0, transparent 45%),
+        radial-gradient(at 100% 100%, rgba(245, 158, 11, 0.06) 0, transparent 40%);
+    }
+
+    /* Glass Effect Utilities - Light Mode */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.03);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glass-card:hover {
+      background: rgba(255, 255, 255, 0.98);
+      border-color: rgba(99, 102, 241, 0.45);
+      transform: translateY(-6px);
+      box-shadow: 0 20px 35px -10px rgba(99, 102, 241, 0.12), 0 0 1px 1px rgba(99, 102, 241, 0.15);
+    }
+
+    /* Glass Effect Utilities - Dark Mode */
+    .dark .glass-panel {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    }
+
+    .dark .glass-card {
+      background: rgba(17, 24, 39, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: none;
+    }
+
+    .dark .glass-card:hover {
+      background: rgba(30, 41, 59, 0.85);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-6px);
+      box-shadow: 0 25px 35px -10px rgba(99, 102, 241, 0.18), 0 0 1px 1px rgba(99, 102, 241, 0.2);
+    }
+
+    /* Subtle Grid Pattern Overlay */
+    .bg-grid-pattern {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+    }
+    .dark .bg-grid-pattern {
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    }
+
+    .dark .text-glow {
+      text-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
+    }
+  </style>
 </head>
 
-<body
-    class="min-h-screen flex flex-col items-center justify-center relative selection:bg-brand-500 selection:text-white">
+<body class="min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white bg-grid-pattern relative">
 
-    <!-- Background Elements -->
-    <div class="fixed inset-0 z-0 bg-gradient-mesh">
-        <div
-            class="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob">
+  <!-- Ambient Decorative Light Blobs -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div class="absolute -top-32 left-1/4 w-96 h-96 bg-brand-500/15 dark:bg-brand-600/20 rounded-full blur-[110px] animate-float-slow"></div>
+    <div class="absolute top-1/3 -right-24 w-80 h-80 bg-cyanAccent/10 dark:bg-cyanAccent/15 rounded-full blur-[100px] animate-float-reverse"></div>
+    <div class="absolute bottom-10 left-10 w-96 h-96 bg-brand-400/10 dark:bg-brand-900/30 rounded-full blur-[120px]"></div>
+  </div>
+
+  <!-- ==================== TOP NAVIGATION ==================== -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-slate-200/80 dark:border-white/[0.07] px-4 sm:px-8 py-3.5 transition-colors duration-300">
+    <div class="max-w-6xl mx-auto flex items-center justify-between gap-4">
+      
+      <!-- Brand & Hub Name -->
+      <div class="flex items-center gap-3.5">
+        <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-cyan-500 shadow-lg shadow-brand-500/20 text-white font-extrabold text-lg">
+          <i class="fa-solid fa-shapes"></i>
+          <span class="absolute -bottom-1 -right-1 flex h-3 w-3">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-white dark:border-slate-900"></span>
+          </span>
         </div>
-        <div
-            class="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000">
+        <div>
+          <span class="font-heading font-extrabold text-base sm:text-lg tracking-tight text-slate-900 dark:text-white">SIPEDASI <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-cyan-500 dark:from-brand-400 dark:via-cyan-300 dark:to-emerald-400">PORTAL</span></span>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Sistem Informasi Pengelolaan Data dan Rekonsiliasi</p>
         </div>
-        <div
-            class="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000">
+      </div>
+
+      <!-- Right Controls: Theme Toggle & Status -->
+      <div class="flex items-center gap-2.5 sm:gap-3">
+        
+        <!-- Theme Toggle Button -->
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-sm" title="Ganti Mode Terang/Gelap">
+          <i id="themeIcon" class="fa-solid fa-moon text-amber-500 dark:text-amber-300 text-sm"></i>
+          <span id="themeLabel" class="hidden sm:inline">Mode Gelap</span>
+        </button>
+
+        <!-- Live Clock -->
+        <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-xs text-slate-600 dark:text-slate-300 font-mono">
+          <i class="fa-regular fa-clock text-cyan-600 dark:text-cyan-400"></i>
+          <span id="liveClock">--:--:-- WIB</span>
         </div>
+
+        <!-- Quick Status -->
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-semibold">
+          <i class="fa-solid fa-shield-halved text-[11px]"></i>
+          <span class="hidden sm:inline">Client-Side Engine</span>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT CONTAINER ==================== -->
+  <main class="relative z-10 flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-10 sm:py-16 flex flex-col justify-center space-y-12">
+
+    <!-- ==================== CLEAN TEXT INTRO ==================== -->
+    <div class="text-center max-w-2xl mx-auto space-y-3">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-700 dark:text-brand-300 text-xs font-semibold tracking-wide">
+        <i class="fa-solid fa-layer-group text-cyan-600 dark:text-cyan-400"></i>
+        <span>Select System Version</span>
+      </div>
+
+      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-heading font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
+        SIPEDASI <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-600 via-cyan-500 to-indigo-600 dark:from-white dark:via-cyan-200 dark:to-brand-300 text-glow">PORTAL</span>
+      </h1>
+
+      <p class="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed font-normal dark:font-light">
+        Sistem Informasi Pengelolaan Data dan Rekonsiliasi Penerimaan Pajak Daerah. Silakan pilih versi aplikasi di bawah ini untuk memulai.
+      </p>
     </div>
 
-    <!-- Main Content -->
-    <main class="z-10 w-full max-w-5xl px-4 py-16 text-center">
+    <!-- ==================== VERSION CARDS GRID (V3, V2, V1) ==================== -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
 
-        <!-- Header -->
-        <div class="mb-16 space-y-4 animate-float">
-            <div
-                class="inline-flex items-center justify-center p-3 mb-6 bg-white/5 rounded-2xl glass ring-1 ring-white/10">
-                <svg class="w-10 h-10 text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
+      <!-- Sipedasi V3 Card -->
+      <a href="v3/index.html" class="glass-card rounded-3xl p-7 sm:p-8 flex flex-col justify-between relative group border-t-2 border-t-cyan-500">
+        <div class="space-y-5">
+          <div class="flex items-center justify-between">
+            <div class="w-14 h-14 rounded-2xl bg-cyan-500/10 dark:bg-cyan-500/20 border border-cyan-500/20 dark:border-cyan-500/30 text-cyan-600 dark:text-cyan-400 group-hover:bg-cyan-500 group-hover:text-white dark:group-hover:text-slate-950 flex items-center justify-center text-2xl transition-all duration-300 shadow-md">
+              <i class="fa-solid fa-rocket"></i>
             </div>
-            <h1
-                class="text-5xl md:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-blue-100 to-blue-200 drop-shadow-sm">
-                SIPEDASI
-            </h1>
-            <p class="text-lg text-blue-200/80 font-light max-w-2xl mx-auto leading-relaxed">
-                Sistem Informasi Pengelolaan Data dan Sistem Informasi
-                <br>
-                <span class="text-sm uppercase tracking-widest opacity-60">Select System Version</span>
+            <span class="text-[10px] font-extrabold bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20 dark:border-cyan-500/30 px-2.5 py-1 rounded-full uppercase tracking-wider">
+              Latest Stable
+            </span>
+          </div>
+
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-heading font-extrabold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors">
+              SIPEDASI V3
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+              Dashboard generasi terbaru dengan visual modern, modul rekonsiliasi terintegrasi, dan performa optimal.
             </p>
+          </div>
         </div>
 
-        <!-- Version Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <div class="mt-8 pt-5 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+          <span class="text-xs text-slate-500 font-mono">Versi 3.0</span>
+          <span class="text-xs sm:text-sm font-bold text-cyan-600 dark:text-cyan-300 group-hover:translate-x-1.5 transition-transform flex items-center gap-2">
+            Buka Sistem <i class="fa-solid fa-arrow-right text-xs"></i>
+          </span>
+        </div>
+      </a>
 
-            <!-- V1 Card -->
-            <a href="v1/"
-                class="group relative glass rounded-3xl p-8 text-left transition-all duration-300 hover:scale-105 hover:-translate-y-2 hover:bg-white/15 border-t border-white/10 hover:border-brand-400/50 hover:shadow-brand-500/20">
-                <!-- Hover Glow Effect -->
-                <div
-                    class="absolute -inset-0.5 bg-gradient-to-r from-brand-500 to-purple-600 rounded-3xl opacity-0 group-hover:opacity-20 transition duration-500 blur-lg">
-                </div>
+      <!-- Sipedasi V2 Card -->
+      <a href="v2/index.html" class="glass-card rounded-3xl p-7 sm:p-8 flex flex-col justify-between relative group border-t-2 border-t-emerald-500">
+        <div class="space-y-5">
+          <div class="flex items-center justify-between">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/20 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white dark:group-hover:text-slate-950 flex items-center justify-center text-2xl transition-all duration-300 shadow-md">
+              <i class="fa-solid fa-cube"></i>
+            </div>
+            <span class="text-[10px] font-extrabold bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 dark:border-emerald-500/30 px-2.5 py-1 rounded-full uppercase tracking-wider">
+              Stable Classic
+            </span>
+          </div>
 
-                <div class="relative z-10 flex flex-col h-full justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-6">
-                            <div
-                                class="p-3 bg-white/5 rounded-xl border border-white/10 group-hover:bg-brand-500/20 group-hover:border-brand-400/30 transition-colors">
-                                <svg class="w-8 h-8 text-brand-300" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                        d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
-                                </svg>
-                            </div>
-                            <span
-                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 ring-1 ring-inset ring-white/10">
-                                Deprecated
-                            </span>
-                        </div>
-
-                        <h2
-                            class="text-3xl font-bold text-white mb-2 tracking-tight group-hover:text-brand-300 transition-colors">
-                            V1
-                        </h2>
-                        <p class="text-sm text-gray-400 line-clamp-2">
-                            Access the legacy V1 dashboard and modules.
-                        </p>
-                    </div>
-
-                    <div
-                        class="mt-8 flex items-center text-sm font-medium text-brand-300 group-hover:translate-x-2 transition-transform duration-300">
-                        Enter System
-                        <svg class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                    </div>
-                </div>
-            </a>
-
-            <!-- V2 Card -->
-            <a href="v2/"
-                class="group relative glass rounded-3xl p-8 text-left transition-all duration-300 hover:scale-105 hover:-translate-y-2 hover:bg-white/15 border-t border-white/10 hover:border-brand-400/50 hover:shadow-brand-500/20">
-                <!-- Hover Glow Effect -->
-                <div
-                    class="absolute -inset-0.5 bg-gradient-to-r from-brand-500 to-purple-600 rounded-3xl opacity-0 group-hover:opacity-20 transition duration-500 blur-lg">
-                </div>
-
-                <div class="relative z-10 flex flex-col h-full justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-6">
-                            <div
-                                class="p-3 bg-white/5 rounded-xl border border-white/10 group-hover:bg-brand-500/20 group-hover:border-brand-400/30 transition-colors">
-                                <svg class="w-8 h-8 text-brand-300" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                        d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
-                                </svg>
-                            </div>
-                            <span
-                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-300 ring-1 ring-inset ring-white/10">
-                                Latest Stable
-                            </span>
-                        </div>
-
-                        <h2
-                            class="text-3xl font-bold text-white mb-2 tracking-tight group-hover:text-brand-300 transition-colors">
-                            V2
-                        </h2>
-                        <p class="text-sm text-gray-400 line-clamp-2">
-                            Access the new V2 dashboard and modules.
-                        </p>
-                    </div>
-
-                    <div
-                        class="mt-8 flex items-center text-sm font-medium text-brand-300 group-hover:translate-x-2 transition-transform duration-300">
-                        Enter System
-                        <svg class="w-4 h-4 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                    </div>
-                </div>
-            </a>
-
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-heading font-extrabold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors">
+              SIPEDASI V2
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+              Versi klasik stabil yang memuat modul rekonsiliasi penerimaan pajak daerah dan sinkronisasi LRA.
+            </p>
+          </div>
         </div>
 
-    </main>
+        <div class="mt-8 pt-5 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+          <span class="text-xs text-slate-500 font-mono">Versi 2.0</span>
+          <span class="text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-300 group-hover:translate-x-1.5 transition-transform flex items-center gap-2">
+            Buka Sistem <i class="fa-solid fa-arrow-right text-xs"></i>
+          </span>
+        </div>
+      </a>
 
-    <!-- Footer -->
-    <footer class="absolute bottom-6 w-full text-center z-10">
-        <p class="text-xs text-slate-500 uppercase tracking-widest font-semibold">
-            &copy; <span id="year"></span> Sipedasi Corp. All rights reserved.
+      <!-- Sipedasi V1 Card -->
+      <a href="v1/index.html" class="glass-card rounded-3xl p-7 sm:p-8 flex flex-col justify-between relative group border-t-2 border-t-amber-500 opacity-90 hover:opacity-100">
+        <div class="space-y-5">
+          <div class="flex items-center justify-between">
+            <div class="w-14 h-14 rounded-2xl bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/20 dark:border-amber-500/30 text-amber-600 dark:text-amber-400 group-hover:bg-amber-500 group-hover:text-white dark:group-hover:text-slate-950 flex items-center justify-center text-2xl transition-all duration-300 shadow-md">
+              <i class="fa-solid fa-box-archive"></i>
+            </div>
+            <span class="text-[10px] font-bold bg-amber-500/10 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/20 dark:border-amber-500/30 px-2.5 py-1 rounded-full uppercase tracking-wider">
+              Deprecated
+            </span>
+          </div>
+
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-heading font-extrabold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors">
+              SIPEDASI V1
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+              Versi awal inisialisasi sistem SIPEDASI yang diarsipkan untuk keperluan referensi historis modul.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-5 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+          <span class="text-xs text-slate-500 font-mono">Versi 1.0</span>
+          <span class="text-xs sm:text-sm font-bold text-amber-600 dark:text-amber-300 group-hover:translate-x-1.5 transition-transform flex items-center gap-2">
+            Buka Sistem <i class="fa-solid fa-arrow-right text-xs"></i>
+          </span>
+        </div>
+      </a>
+
+    </div>
+
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="relative z-10 glass-panel border-t border-slate-200/80 dark:border-white/[0.07] py-6 px-4 sm:px-8 transition-colors duration-300">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+      <div>
+        <p class="text-xs font-bold text-slate-700 dark:text-slate-300">
+          SIPEDASI &copy; <span id="year">2026</span> All rights reserved.
         </p>
-    </footer>
+        <p class="text-[11px] text-slate-500 mt-0.5">
+          Sistem Informasi Pengelolaan Data dan Rekonsiliasi
+        </p>
+      </div>
 
-    <script>
-        document.getElementById('year').textContent = new Date().getFullYear();
-    </script>
+      <div class="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+        <span class="flex items-center gap-1.5">
+          <i class="fa-solid fa-shield-halved text-brand-600 dark:text-brand-400 text-[11px]"></i> Client-Side Processing
+        </span>
+        <span class="text-slate-300 dark:text-slate-600">•</span>
+        <span class="flex items-center gap-1.5">
+          <i class="fa-solid fa-laptop-code text-cyan-600 dark:text-cyan-400 text-[11px]"></i> Local Workspace
+        </span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== SCRIPT ==================== -->
+  <script>
+    // Live Clock WIB
+    function updateClock() {
+      const now = new Date();
+      const options = { timeZone: 'Asia/Jakarta', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+      const timeStr = now.toLocaleTimeString('id-ID', options);
+      const clockEl = document.getElementById('liveClock');
+      if (clockEl) clockEl.innerText = `${timeStr} WIB`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Auto Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Theme Toggle Logic
+    function updateThemeUI() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const icon = document.getElementById('themeIcon');
+      const label = document.getElementById('themeLabel');
+      
+      if (isDark) {
+        if (icon) icon.className = 'fa-solid fa-sun text-amber-300 text-sm';
+        if (label) label.innerText = 'Mode Terang';
+      } else {
+        if (icon) icon.className = 'fa-solid fa-moon text-indigo-600 text-sm';
+        if (label) label.innerText = 'Mode Gelap';
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
+        document.documentElement.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateThemeUI();
+    }
+
+    // Sync button on initial load
+    updateThemeUI();
+  </script>
 </body>
-
 </html>

@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+
+<head>
+  <!-- SIPEDASI: redirect GitHub Pages visitors to the hosting site. -->
+  <script id="sipedasi-hosting-redirect">
+    if (window.location.hostname === 'ibnufajargumilang.github.io' &&
+        (window.location.pathname === '/sipedasi' || window.location.pathname.startsWith('/sipedasi/'))) {
+      window.location.replace('https://axe.goihub.net/');
+    }
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIPEDASI V3 — Executive Suite</title>
+
+  <!-- Anti-Flicker Theme Script -->
+  <script>
+    if (localStorage.theme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+
+  <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            heading: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              300: '#a5b4fc',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+              950: '#1e1b4b',
+            },
+            cyanAccent: '#06b6d4',
+            emeraldAccent: '#10b981',
+            amberAccent: '#f59e0b',
+            roseAccent: '#f43f5e',
+            purpleAccent: '#a855f7',
+          },
+          animation: {
+            'float-slow': 'float 7s ease-in-out infinite',
+            'float-reverse': 'floatRev 8s ease-in-out infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            floatRev: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(8px)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 9999px;
+      border: 2px solid #080c14;
+    }
+    .dark ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+      border: 2px solid #f8fafc;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Ambient Background Mesh - Light Mode */
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.08) 0, transparent 45%),
+        radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.08) 0, transparent 40%),
+        radial-gradient(at 50% 50%, rgba(168, 85, 247, 0.05) 0, transparent 60%),
+        radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.07) 0, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(244, 63, 94, 0.04) 0, transparent 40%);
+      background-attachment: fixed;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Ambient Background Mesh - Dark Mode */
+    .dark body {
+      background-color: #080c14;
+      color: #f8fafc;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0, transparent 45%),
+        radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.12) 0, transparent 40%),
+        radial-gradient(at 50% 50%, rgba(168, 85, 247, 0.07) 0, transparent 60%),
+        radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.08) 0, transparent 45%),
+        radial-gradient(at 100% 100%, rgba(244, 63, 94, 0.06) 0, transparent 40%);
+    }
+
+    /* Glass Effect Utilities - Light Mode */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(226, 232, 240, 0.85);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.04);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.03);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .glass-card:hover {
+      background: rgba(255, 255, 255, 0.98);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 35px -10px rgba(99, 102, 241, 0.14), 0 0 1px 1px rgba(99, 102, 241, 0.18);
+    }
+
+    /* Glass Effect Utilities - Dark Mode */
+    .dark .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    }
+
+    .dark .glass-card {
+      background: rgba(17, 24, 39, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: none;
+    }
+
+    .dark .glass-card:hover {
+      background: rgba(30, 41, 59, 0.85);
+      transform: translateY(-4px);
+      box-shadow: 0 22px 35px -10px rgba(99, 102, 241, 0.2), 0 0 1px 1px rgba(99, 102, 241, 0.25);
+    }
+
+    /* List Mode Compact Styling */
+    .is-list-mode .module-card,
+    .is-list-mode .doc-card {
+      padding: 12px 18px !important;
+      border-radius: 18px !important;
+      display: flex !important;
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 12px !important;
+      min-height: auto !important;
+    }
+
+    .is-list-mode .card-icon-box {
+      width: 40px !important;
+      height: 40px !important;
+      border-radius: 12px !important;
+      font-size: 1.15rem !important;
+      flex-shrink: 0 !important;
+    }
+
+    .is-list-mode .card-title {
+      font-size: 0.95rem !important;
+      line-height: 1.25 !important;
+      margin-bottom: 0 !important;
+      white-space: nowrap !important;
+    }
+
+    .is-list-mode .card-desc,
+    .is-list-mode .card-badge,
+    .is-list-mode .card-tag-label,
+    .is-list-mode .card-btn-text,
+    .is-list-mode .card-footer-action {
+      display: none !important;
+    }
+
+    .is-list-mode .card-list-chevron {
+      display: flex !important;
+    }
+
+    /* Grid Background Subtle */
+    .bg-grid-pattern {
+      background-size: 32px 32px;
+      background-image: 
+        linear-gradient(to right, rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+    }
+    .dark .bg-grid-pattern {
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    }
+
+    .dark .text-glow {
+      text-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white bg-grid-pattern relative">
+
+  <!-- Ambient Light Blobs -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div class="absolute -top-32 left-1/4 w-[500px] h-[500px] bg-brand-500/15 dark:bg-brand-600/20 rounded-full blur-[120px] animate-float-slow"></div>
+    <div class="absolute top-1/3 -right-24 w-[400px] h-[400px] bg-cyanAccent/10 dark:bg-cyanAccent/15 rounded-full blur-[110px] animate-float-reverse"></div>
+    <div class="absolute bottom-10 left-10 w-[450px] h-[450px] bg-purpleAccent/10 dark:bg-brand-900/30 rounded-full blur-[130px]"></div>
+  </div>
+
+  <!-- ==================== TOP NAVIGATION ==================== -->
+  <header class="sticky top-0 z-50 glass-panel border-b border-slate-200/80 dark:border-white/[0.07] px-4 sm:px-8 lg:px-12 py-3 transition-colors duration-300">
+    <div class="w-full max-w-[1600px] mx-auto flex items-center justify-between gap-4">
+      
+      <!-- Brand & Hub Name -->
+      <div class="flex items-center gap-3.5">
+        <a href="../index.html" class="flex items-center gap-3.5 group" title="SIPEDASI V3">
+          <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-cyan-500 shadow-lg shadow-brand-500/20 text-white font-extrabold text-lg group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-shapes"></i>
+            <span class="absolute -bottom-1 -right-1 flex h-3 w-3">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-white dark:border-slate-900"></span>
+            </span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-heading font-extrabold text-base sm:text-lg tracking-tight text-slate-900 dark:text-white">
+                SIPEDASI <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-cyan-500 dark:from-brand-400 dark:via-cyan-300 dark:to-emerald-400">V3</span>
+              </span>
+              <span class="text-[10px] font-extrabold bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                Executive Suite
+              </span>
+            </div>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Sistem Informasi Pengelolaan Data dan Rekonsiliasi Terpadu</p>
+          </div>
+        </a>
+      </div>
+
+      <!-- Controls: Search Input, Single View Toggle, Single Theme Toggle, Clock -->
+      <div class="flex items-center gap-2.5 sm:gap-3">
+        
+        <!-- Live Module Search Input (Desktop) -->
+        <div class="relative hidden sm:block w-52 lg:w-72">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+          <input type="text" id="desktopSearchInput" oninput="handleSearch(this.value)" placeholder="Cari modul... (tekan '/')" class="w-full pl-9 pr-7 py-2 bg-slate-100/70 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all">
+          <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-mono hidden lg:inline">/</span>
+        </div>
+
+        <!-- View Switcher (Single Icon Toggle Button) -->
+        <button id="viewToggleBtn" onclick="toggleViewMode()" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 flex items-center justify-center transition-all shadow-sm active:scale-90" title="Ubah Tampilan (Grid / List)">
+          <i id="viewToggleIcon" class="fa-solid fa-list-ul text-sm"></i>
+        </button>
+
+        <!-- Theme Toggle Button (Icon Only) -->
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-200 flex items-center justify-center transition-all active:scale-90 shadow-sm" title="Ganti Mode Terang/Gelap">
+          <i id="themeIcon" class="fa-solid fa-moon text-amber-500 dark:text-amber-300 text-sm"></i>
+        </button>
+
+        <!-- Live Clock -->
+        <div class="hidden xl:flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs text-slate-600 dark:text-slate-300 font-mono">
+          <i class="fa-regular fa-clock text-cyan-600 dark:text-cyan-400"></i>
+          <span id="liveClock">--:--:-- WIB</span>
+        </div>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT CONTAINER (FULL WIDTH) ==================== -->
+  <main class="relative z-10 flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 pt-5 pb-8 sm:pt-6 sm:pb-10 space-y-6 sm:space-y-7">
+
+    <!-- ==================== CLEAN HERO INTRO ==================== -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-white/5">
+      <div class="space-y-1">
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-700 dark:text-brand-300 text-[11px] font-semibold tracking-wide">
+          <i class="fa-solid fa-rocket text-cyan-600 dark:text-cyan-400 text-[10px]"></i>
+          <span>Generasi 3.0 Terintegrasi</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-heading font-extrabold tracking-tight text-slate-900 dark:text-white">
+          SIPEDASI <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-600 via-cyan-500 to-indigo-600 dark:from-white dark:via-cyan-200 dark:to-brand-300 text-glow">V3 SUITE</span>
+        </h1>
+      </div>
+
+      <!-- Controls: Portal Hub Button, Quick Metrics & Mobile Search -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2.5 shrink-0">
+        
+        <!-- Mobile Search Input -->
+        <div class="relative sm:hidden w-full">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+          <input type="text" oninput="handleSearch(this.value)" placeholder="Cari modul..." class="w-full pl-8 pr-3 py-1.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-xs text-slate-900 dark:text-white">
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <!-- Back to Main Portal Hub Button -->
+          <a href="../index.html" class="px-3 py-2 rounded-xl bg-white/80 hover:bg-white dark:bg-white/10 dark:hover:bg-white/15 border border-slate-200 dark:border-white/15 text-slate-800 dark:text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm active:scale-95 group" title="Kembali ke Pilihan Versi / Portal Utama">
+            <i class="fa-solid fa-arrow-left text-brand-600 dark:text-cyan-400 group-hover:-translate-x-0.5 transition-transform text-[10px]"></i>
+            <span>Portal Hub</span>
+          </a>
+
+          <div class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-700 dark:text-slate-300 font-semibold shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span><b>5</b> Modul</span>
+          </div>
+          <div class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/70 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-700 dark:text-slate-300 font-semibold shadow-sm">
+            <i class="fa-solid fa-book-bookmark text-indigo-500 text-[11px]"></i>
+            <span><b>3</b> Docs</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SECTION 1: MODUL SISTEM ==================== -->
+    <div id="sectionSystems" class="space-y-3">
+      
+      <div class="flex items-center justify-between pb-0.5">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-[11px]">
+            <i class="fa-solid fa-cubes"></i>
+          </div>
+          <div>
+            <h2 class="text-sm sm:text-base font-heading font-bold text-slate-900 dark:text-white tracking-tight">
+              Modul Rekonsiliasi & Sistem Kerja
+            </h2>
+          </div>
+        </div>
+        <span class="text-[11px] text-slate-400 font-medium">Modul Utama</span>
+      </div>
+
+      <!-- Container: Modul Sistem (Grid / List Dynamic) -->
+      <div id="systemsContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+        <!-- 1. SiRekon PJDL -->
+        <a href="SiRekonPJDL" class="module-card app-item glass-card rounded-3xl p-6 sm:p-7 flex flex-col justify-between group border-t-2 border-t-indigo-500" data-search="sirekon pjdl pajak daerah lainnya hotel restoran hiburan reklame ppj parkir air tanah mblb">
+          <div class="card-top-content flex items-center gap-3.5">
+            <div class="card-icon-box w-13 h-13 rounded-2xl bg-indigo-500/10 dark:bg-indigo-500/20 border border-indigo-500/20 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-600 group-hover:text-white flex items-center justify-center text-2xl transition-all duration-300 shadow-md shrink-0">
+              <i class="fa-solid fa-cash-register"></i>
+            </div>
+            
+            <div class="card-text-body flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="card-title text-xl sm:text-2xl font-heading font-extrabold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors truncate">
+                  SiRekon PJDL
+                </h3>
+                <span class="card-badge text-[10px] font-extrabold bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 dark:border-indigo-500/30 px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0">
+                  PJDL
+                </span>
+              </div>
+              <p class="card-desc text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                Rekonsiliasi penerimaan Pajak Daerah Lainnya (Hotel, Restoran, Hiburan, Reklame, PPJ, Parkir, Air Tanah, MBLB).
+              </p>
+            </div>
+
+            <!-- List Mode Chevron -->
+            <div class="card-list-chevron hidden items-center justify-center text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors shrink-0">
+              <i class="fa-solid fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </div>
+
+          <div class="card-footer-action mt-6 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+            <span class="card-tag-label text-xs text-slate-500 font-mono">Modul Rekon</span>
+            <span class="card-btn-text text-xs sm:text-sm font-bold text-indigo-600 dark:text-indigo-400 group-hover:translate-x-1.5 transition-transform flex items-center gap-2">
+              Buka Modul <i class="fa-solid fa-arrow-right text-xs"></i>
+            </span>
+          </div>
+        </a>
+
+        <!-- 2. SiRekon PBB -->
+        <a href="SiRekonPBB" class="module-card app-item glass-card rounded-3xl p-6 sm:p-7 flex flex-col justify-between group border-t-2 border-t-blue-500" data-search="sirekon pbb pajak bumi bangunan perdesaan perkotaan pbb-p2 stts dpps">
+          <div class="card-top-content flex items-center gap-3.5">
+            <div class="card-icon-box w-13 h-13 rounded-2xl bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/20 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center text-2xl transition-all duration-300 shadow-md shrink-0">
+              <i class="fa-solid fa-building-columns"></i>
+            </div>
+            
+            <div class="card-text-body flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="card-title text-xl sm:text-2xl font-heading font-extrabold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors truncate">
+                  SiRekon PBB
+                </h3>
+                <span class="card-badge text-[10px] font-extrabold bg-blue-500/10 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/20 dark:border-blue-500/30 px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0">
+                  PBB-P2
+                </span>
+              </div>
+              <p class="card-desc text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                Rekonsiliasi transaksi pembayaran dan realisasi Pajak Bumi & Bangunan Perdesaan dan Perkotaan (STTS & DPPS).
+              </p>
+            </div>
+
+            <!-- List Mode Chevron -->
+            <div class="card-list-chevron hidden items-center justify-center text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors shrink-0">
+              <i class="fa-solid fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </div>
+
+          <div class="card-footer-action mt-6 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+            <span class="card-tag-label text-xs text-slate-500 font-mono">Modul Rekon</span>
+            <span class="card-btn-text text-xs sm:text-sm font-bold text-blue-600 dark:text-blue-400 group-hover:translate-x-1.5 transition-transform flex items-center gap-2">
+              Buka Modul <i class="fa-solid fa-arrow-right text-xs"></i>
+            </span>
+          </div>
+        </a>
+
+        <!-- 3. SiRekon BPHTB -->
+        <a href="SiRekonBPHTB" class="module-card app-item glass-card rounded-3xl p-6 sm:p-7 flex flex-col justify-between group border-t-2 border-t-rose-500" data-search="sirekon bphtb bea perolehan hak atas tanah dan bangunan notaris ppat validasi setoran">
+          <div class="card-top-content flex items-center gap-3.5">
+            <div class="card-icon-box w-13 h-13 rounded-2xl bg-rose-500/10 dark:bg-rose-500/20 border border-rose-500/20 dark:border-rose-500/30 text-rose-600 dark:text-rose-400 group-hover:bg-rose-600 group-hover:text-white flex items-center justify-center text-2xl transition-all duration-300 shadow-md shrink-0">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+            
+            <div class="card-text-body flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="card-title text-xl sm:text-2xl font-heading font-extrabold text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-300 transition-colors truncate">
+                  SiRekon BPHTB
+                </h3>
+                <span class="card-badge text-[10px] font-extrabold bg-rose-500/10 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/20 dark:border-rose-500/30 px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0">
+                  BPHTB
+                </span>
+              </div>
+              <p class="card-desc text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                Rekonsiliasi data penerimaan Bea Perolehan Hak atas Tanah dan Bangunan serta validasi setoran daerah.
+              </p>
+            </div>
+
+            <!-- List Mode Chevron -->
+            <div class="card-list-chevron hidden items-center justify-center text-slate-400 group-hover:text-rose-600 dark:group-hover:text-rose-300 transition-colors shrink-0">
+              <i class="fa-solid fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </div>
+
+          <div class="card-footer-action mt-6 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+            <span class="card-tag-label text-xs text-slate-500 font-mono">Modul Rekon</span>
+            <span class="card-btn-text text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400 group-hover:translate-x-1.5 transition-transform flex items-center gap-2">
+              Buka Modul <i class="fa-solid fa-arrow-right text-xs"></i>
+            </span>
+          </div>
+        </a>
+
+        <!-- 4. SiNkron LRA -->
+        <a href="SiNkronLRA" class="module-card app-item glass-card rounded-3xl p-6 sm:p-7 flex flex-col justify-between group border-t-2 border-t-emerald-500" data-search="sinkron lra laporan realisasi anggaran simda sipd akuntansi bpkad pendapatan">
+          <div class="card-top-content flex items-center gap-3.5">
+            <div class="card-icon-box w-13 h-13 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/20 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-600 group-hover:text-white flex items-center justify-center text-2xl transition-all duration-300 shadow-md shrink-0">
+              <i class="fa-solid fa-arrows-rotate"></i>
+            </div>
+            
+            <div class="card-text-body flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="card-title text-xl sm:text-2xl font-heading font-extrabold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors truncate">
+                  SiNkron LRA
+                </h3>
+                <span class="card-badge text-[10px] font-extrabold bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 dark:border-emerald-500/30 px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0">
+                  SYNC LRA
+                </span>
+              </div>
+              <p class="card-desc text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                Sinkronisasi data Laporan Realisasi Anggaran (LRA) penerimaan pendapatan pajak daerah secara terstruktur.
+              </p>
+            </div>
+
+            <!-- List Mode Chevron -->
+            <div class="card-list-chevron hidden items-center justify-center text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors shrink-0">
+              <i class="fa-solid fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </div>
+
+          <div class="card-footer-action mt-6 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+            <span class="card-tag-label text-xs text-slate-500 font-mono">Modul Sinkron</span>
+            <span class="card-btn-text text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 group-hover:translate-x-1.5 transition-transform flex items-center gap-2">
+              Buka Modul <i class="fa-solid fa-arrow-right text-xs"></i>
+            </span>
+          </div>
+        </a>
+
+        <!-- 5. SiTodolist -->
+        <a href="SiTodolist" class="module-card app-item glass-card rounded-3xl p-6 sm:p-7 flex flex-col justify-between group border-t-2 border-t-purple-500" data-search="sitodolist todolist catatan tugas agenda kerja harian asn reminder catatan kerja">
+          <div class="card-top-content flex items-center gap-3.5">
+            <div class="card-icon-box w-13 h-13 rounded-2xl bg-purple-500/10 dark:bg-purple-500/20 border border-purple-500/20 dark:border-purple-500/30 text-purple-600 dark:text-purple-400 group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center text-2xl transition-all duration-300 shadow-md shrink-0">
+              <i class="fa-solid fa-list-check"></i>
+            </div>
+            
+            <div class="card-text-body flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="card-title text-xl sm:text-2xl font-heading font-extrabold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors truncate">
+                  SiTodolist
+                </h3>
+                <span class="card-badge text-[10px] font-extrabold bg-purple-500/10 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/20 dark:border-purple-500/30 px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0">
+                  Tugas ASN
+                </span>
+              </div>
+              <p class="card-desc text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                Manajemen agenda kerja harian, to-do list tugas rekonsiliasi, dan pencatatan progres tim kerja.
+              </p>
+            </div>
+
+            <!-- List Mode Chevron -->
+            <div class="card-list-chevron hidden items-center justify-center text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors shrink-0">
+              <i class="fa-solid fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </div>
+
+          <div class="card-footer-action mt-6 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+            <span class="card-tag-label text-xs text-slate-500 font-mono">Modul Kerja</span>
+            <span class="card-btn-text text-xs sm:text-sm font-bold text-purple-600 dark:text-purple-400 group-hover:translate-x-1.5 transition-transform flex items-center gap-2">
+              Buka Modul <i class="fa-solid fa-arrow-right text-xs"></i>
+            </span>
+          </div>
+        </a>
+
+        <!-- 6. SiPatuPajak (SMAP1) -->
+        <a href="SiPatuPajak/index.html" class="module-card app-item glass-card rounded-3xl p-6 sm:p-7 flex flex-col justify-between group border-t-2 border-t-amber-500" data-search="sipatupajak smap smap1 monitoring analisis kepatuhan potensi wajib pajak pjdl">
+          <div class="card-top-content flex items-center gap-3.5">
+            <div class="card-icon-box w-13 h-13 rounded-2xl bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/20 dark:border-amber-500/30 text-amber-600 dark:text-amber-400 group-hover:bg-amber-500 group-hover:text-white flex items-center justify-center text-2xl transition-all duration-300 shadow-md shrink-0">
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
+            
+            <div class="card-text-body flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="card-title text-xl sm:text-2xl font-heading font-extrabold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors truncate">
+                  SiPatuPajak
+                </h3>
+                <span class="card-badge text-[10px] font-extrabold bg-amber-500/10 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/20 dark:border-amber-500/30 px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0">
+                  SMAP1
+                </span>
+              </div>
+              <p class="card-desc text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
+                Monitoring kepatuhan pembayaran, rekap masa pajak, dan estimasi potensi Wajib Pajak dari data PJDL.
+              </p>
+            </div>
+
+            <!-- List Mode Chevron -->
+            <div class="card-list-chevron hidden items-center justify-center text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors shrink-0">
+              <i class="fa-solid fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </div>
+
+          <div class="card-footer-action mt-6 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+            <span class="card-tag-label text-xs text-slate-500 font-mono">Modul Analisis</span>
+            <span class="card-btn-text text-xs sm:text-sm font-bold text-amber-600 dark:text-amber-400 group-hover:translate-x-1.5 transition-transform flex items-center gap-2">
+              Buka Modul <i class="fa-solid fa-arrow-right text-xs"></i>
+            </span>
+          </div>
+        </a>
+
+
+
+      </div>
+
+    </div>
+
+    <!-- ==================== SECTION 2: DOKUMENTASI & PANDUAN ==================== -->
+    <div id="sectionDocs" class="space-y-3 pt-2 border-t border-slate-200/80 dark:border-white/5">
+      
+      <div class="flex items-center justify-between pb-0.5">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center text-[11px]">
+            <i class="fa-solid fa-folder-open"></i>
+          </div>
+          <div>
+            <h2 class="text-sm sm:text-base font-heading font-bold text-slate-900 dark:text-white tracking-tight">
+              Pusat Informasi & Dokumen Panduan
+            </h2>
+          </div>
+        </div>
+        <span class="text-[11px] text-slate-400 font-medium">Referensi</span>
+      </div>
+
+      <!-- Container: Dokumen & Panduan (Grid / List Dynamic) -->
+      <div id="docsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+        <!-- 1. Dokumentasi Sistem Web -->
+        <a href="Documentation/" class="doc-card app-item glass-card rounded-3xl p-6 flex flex-col justify-between group border-t-2 border-t-teal-500" data-search="dokumentasi sistem juknis petunjuk teknis web online alur">
+          <div class="card-top-content flex items-center gap-3.5">
+            <div class="card-icon-box w-12 h-12 rounded-2xl bg-teal-500/10 dark:bg-teal-500/20 text-teal-600 dark:text-teal-400 group-hover:bg-teal-600 group-hover:text-white flex items-center justify-center text-xl transition-all duration-300 shadow-sm shrink-0">
+              <i class="fa-solid fa-book-open-reader"></i>
+            </div>
+            <div class="card-text-body flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="card-title text-base sm:text-lg font-heading font-bold text-slate-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-300 transition-colors truncate">
+                  Dokumentasi Sistem
+                </h3>
+                <span class="card-badge text-[10px] font-bold bg-teal-500/10 dark:bg-teal-500/20 text-teal-700 dark:text-teal-300 px-2 py-0.5 rounded-md font-mono shrink-0">WEB</span>
+              </div>
+              <p class="card-desc text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                Panduan interaktif & alur proses kerja sistem berbasis web.
+              </p>
+            </div>
+
+            <!-- List Mode Chevron -->
+            <div class="card-list-chevron hidden items-center justify-center text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-300 transition-colors shrink-0">
+              <i class="fa-solid fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </div>
+          <div class="card-footer-action mt-6 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-xs font-bold text-teal-600 dark:text-teal-400">
+            <span class="card-btn-text">Akses Web</span>
+            <i class="fa-solid fa-arrow-right text-[10px] group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- 2. Manual Book PDF -->
+        <a href="files/BUKU_PANDUAN.pdf" target="_blank" class="doc-card app-item glass-card rounded-3xl p-6 flex flex-col justify-between group border-t-2 border-t-cyan-500" data-search="manual book buku panduan pdf unduh download file petunjuk">
+          <div class="card-top-content flex items-center gap-3.5">
+            <div class="card-icon-box w-12 h-12 rounded-2xl bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 group-hover:bg-cyan-600 group-hover:text-white flex items-center justify-center text-xl transition-all duration-300 shadow-sm shrink-0">
+              <i class="fa-solid fa-file-pdf"></i>
+            </div>
+            <div class="card-text-body flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="card-title text-base sm:text-lg font-heading font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors truncate">
+                  Manual Book
+                </h3>
+                <span class="card-badge text-[10px] font-bold bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300 px-2 py-0.5 rounded-md font-mono shrink-0">PDF</span>
+              </div>
+              <p class="card-desc text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                Unduh Buku Panduan teknis lengkap penggunaan aplikasi (PDF).
+              </p>
+            </div>
+
+            <!-- List Mode Chevron -->
+            <div class="card-list-chevron hidden items-center justify-center text-slate-400 group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors shrink-0">
+              <i class="fa-solid fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </div>
+          <div class="card-footer-action mt-6 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-xs font-bold text-cyan-600 dark:text-cyan-400">
+            <span class="card-btn-text">Unduh PDF</span>
+            <i class="fa-solid fa-download text-[10px] group-hover:translate-y-0.5 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- 3. Materi Sosialisasi PDF -->
+        <a href="files/MATERI_SOSIALISASI.pdf" target="_blank" class="doc-card app-item glass-card rounded-3xl p-6 flex flex-col justify-between group border-t-2 border-t-purple-500" data-search="materi sosialisasi presentasi paparan ppt pdf unduh download">
+          <div class="card-top-content flex items-center gap-3.5">
+            <div class="card-icon-box w-12 h-12 rounded-2xl bg-purple-500/10 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center text-xl transition-all duration-300 shadow-sm shrink-0">
+              <i class="fa-solid fa-person-chalkboard"></i>
+            </div>
+            <div class="card-text-body flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="card-title text-base sm:text-lg font-heading font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors truncate">
+                  Materi Sosialisasi
+                </h3>
+                <span class="card-badge text-[10px] font-bold bg-purple-500/10 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-md font-mono shrink-0">PDF</span>
+              </div>
+              <p class="card-desc text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                Unduh bahan presentasi & paparan sosialisasi aplikasi (PDF).
+              </p>
+            </div>
+
+            <!-- List Mode Chevron -->
+            <div class="card-list-chevron hidden items-center justify-center text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors shrink-0">
+              <i class="fa-solid fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </div>
+          <div class="card-footer-action mt-6 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-xs font-bold text-purple-600 dark:text-purple-400">
+            <span class="card-btn-text">Unduh PDF</span>
+            <i class="fa-solid fa-download text-[10px] group-hover:translate-y-0.5 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- 4. Umpan Balik -->
+        <a href="https://forms.gle/bNz3gDBrHUubdjTv8" target="_blank" class="doc-card app-item glass-card rounded-3xl p-6 flex flex-col justify-between group border-t-2 border-t-amber-500" data-search="umpan balik feedback masukan kritik saran google form link">
+          <div class="card-top-content flex items-center gap-3.5">
+            <div class="card-icon-box w-12 h-12 rounded-2xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 group-hover:bg-amber-500 group-hover:text-white flex items-center justify-center text-xl transition-all duration-300 shadow-sm shrink-0">
+              <i class="fa-solid fa-comments"></i>
+            </div>
+            <div class="card-text-body flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <h3 class="card-title text-base sm:text-lg font-heading font-bold text-slate-900 dark:text-white group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors truncate">
+                  Umpan Balik
+                </h3>
+                <span class="card-badge text-[10px] font-bold bg-amber-500/10 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-md font-mono shrink-0">FORM</span>
+              </div>
+              <p class="card-desc text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                Kirim saran atau kendala pengembangan untuk SIPEDASI V3.
+              </p>
+            </div>
+
+            <!-- List Mode Chevron -->
+            <div class="card-list-chevron hidden items-center justify-center text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors shrink-0">
+              <i class="fa-solid fa-chevron-right text-xs group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </div>
+          <div class="card-footer-action mt-6 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-xs font-bold text-amber-600 dark:text-amber-400">
+            <span class="card-btn-text">Kirim Masukan</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"></i>
+          </div>
+        </a>
+
+      </div>
+
+    </div>
+
+    <!-- Search No Result Placeholder -->
+    <div id="noResults" class="hidden glass-card rounded-3xl p-10 text-center space-y-3">
+      <div class="w-12 h-12 bg-slate-100 dark:bg-white/5 rounded-2xl flex items-center justify-center mx-auto text-slate-400 text-xl">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </div>
+      <h3 class="text-base font-bold text-slate-800 dark:text-white">Tidak ada modul yang cocok</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400">Coba gunakan kata kunci lain seperti "PJDL", "PBB", "BPHTB", "LRA", atau "Todolist".</p>
+      <button onclick="resetSearch()" class="mt-2 px-4 py-1.5 rounded-xl bg-brand-600 text-white text-xs font-semibold hover:bg-brand-500 transition shadow">
+        Reset Pencarian
+      </button>
+    </div>
+
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="relative z-10 glass-panel border-t border-slate-200/80 dark:border-white/[0.07] py-6 px-4 sm:px-8 lg:px-12 mt-12 transition-colors duration-300">
+    <div class="w-full max-w-[1600px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+      <div>
+        <p class="text-xs font-bold text-slate-700 dark:text-slate-300">
+          SIPEDASI V3 Suite &copy; <span id="copyrightYear">2026</span> All rights reserved.
+        </p>
+        <p class="text-[11px] text-slate-500 mt-0.5">
+          Sistem Informasi Pengelolaan Data dan Rekonsiliasi Penerimaan Pajak Daerah
+        </p>
+      </div>
+
+      <div class="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+        <span class="flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-check text-emerald-500 text-[11px]"></i> Standalone Client Engine
+        </span>
+        <span class="text-slate-300 dark:text-slate-600">•</span>
+        <a href="../index.html" class="hover:text-brand-600 dark:hover:text-brand-400 transition-colors font-semibold flex items-center gap-1.5">
+          <i class="fa-solid fa-house text-[11px]"></i> Portal Hub
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script>
+    // Live Clock WIB
+    function updateRealtimeClock() {
+      const clockEl = document.getElementById('liveClock');
+      if (clockEl) {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('id-ID', {
+          timeZone: 'Asia/Jakarta',
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+        clockEl.textContent = `${timeString} WIB`;
+      }
+    }
+    setInterval(updateRealtimeClock, 1000);
+    updateRealtimeClock();
+
+    // Auto Copyright Year
+    document.getElementById('copyrightYear').textContent = new Date().getFullYear();
+
+    // Theme Toggle Logic (Icon Only)
+    function updateThemeUI() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const icon = document.getElementById('themeIcon');
+      const btn = document.getElementById('themeToggleBtn');
+      
+      if (isDark) {
+        if (icon) icon.className = 'fa-solid fa-sun text-amber-300 text-sm';
+        if (btn) btn.setAttribute('title', 'Ganti ke Mode Terang');
+      } else {
+        if (icon) icon.className = 'fa-solid fa-moon text-indigo-600 text-sm';
+        if (btn) btn.setAttribute('title', 'Ganti ke Mode Gelap');
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
+        document.documentElement.classList.remove('dark');
+        localStorage.theme = 'light';
+      } else {
+        document.documentElement.classList.add('dark');
+        localStorage.theme = 'dark';
+      }
+      updateThemeUI();
+    }
+    updateThemeUI();
+
+    // ==================== VIEW MODE SWITCHER (SINGLE ICON TOGGLE) ====================
+    let currentViewMode = localStorage.getItem('sipedasi_v3_view') || 'grid';
+
+    function toggleViewMode() {
+      const newMode = currentViewMode === 'grid' ? 'list' : 'grid';
+      setViewMode(newMode);
+    }
+
+    function setViewMode(mode) {
+      currentViewMode = mode;
+      localStorage.setItem('sipedasi_v3_view', mode);
+      applyViewModeUI();
+    }
+
+    function applyViewModeUI() {
+      const systemsContainer = document.getElementById('systemsContainer');
+      const docsContainer = document.getElementById('docsContainer');
+      const viewIcon = document.getElementById('viewToggleIcon');
+      const viewBtn = document.getElementById('viewToggleBtn');
+
+      if (currentViewMode === 'list') {
+        // In List mode, the toggle icon shows "Grid" to let user switch back to Grid
+        if (viewIcon) viewIcon.className = 'fa-solid fa-table-cells-large text-sm text-cyan-600 dark:text-cyan-400';
+        if (viewBtn) viewBtn.setAttribute('title', 'Ubah ke Tampilan Grid (Kartu Penuh)');
+
+        // Enable is-list-mode class
+        document.body.classList.add('is-list-mode');
+
+        // Apply Compact List Grid (Multi Column for Compact Bars)
+        if (systemsContainer) {
+          systemsContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-3.5';
+        }
+        if (docsContainer) {
+          docsContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5';
+        }
+
+      } else {
+        // In Grid mode, the toggle icon shows "List" to let user switch to List
+        if (viewIcon) viewIcon.className = 'fa-solid fa-list-ul text-sm text-slate-700 dark:text-slate-200';
+        if (viewBtn) viewBtn.setAttribute('title', 'Ubah ke Tampilan List (Ringkas Nama + Ikon)');
+
+        // Disable is-list-mode class
+        document.body.classList.remove('is-list-mode');
+
+        // Apply Standard Full Card Grid
+        if (systemsContainer) {
+          systemsContainer.className = 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6';
+        }
+        if (docsContainer) {
+          docsContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6';
+        }
+      }
+    }
+
+    // Initialize View Mode
+    applyViewModeUI();
+
+    // ==================== LIVE SEARCH LOGIC ====================
+    function handleSearch(query) {
+      const q = (query || '').toLowerCase().trim();
+      const items = document.querySelectorAll('.app-item');
+      let matchCount = 0;
+
+      items.forEach(item => {
+        const title = (item.querySelector('.card-title')?.innerText || '').toLowerCase();
+        const searchTags = (item.getAttribute('data-search') || '').toLowerCase();
+        const desc = (item.querySelector('.card-desc')?.innerText || '').toLowerCase();
+
+        if (!q || title.includes(q) || searchTags.includes(q) || desc.includes(q)) {
+          item.style.display = '';
+          matchCount++;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+      const sectionSystems = document.getElementById('sectionSystems');
+      const sectionDocs = document.getElementById('sectionDocs');
+      const noResults = document.getElementById('noResults');
+
+      const visibleSystems = sectionSystems ? sectionSystems.querySelectorAll('.app-item:not([style*="display: none"])').length : 0;
+      const visibleDocs = sectionDocs ? sectionDocs.querySelectorAll('.app-item:not([style*="display: none"])').length : 0;
+
+      if (sectionSystems) sectionSystems.style.display = visibleSystems > 0 ? '' : 'none';
+      if (sectionDocs) sectionDocs.style.display = visibleDocs > 0 ? '' : 'none';
+
+      if (matchCount === 0) {
+        if (noResults) noResults.classList.remove('hidden');
+      } else {
+        if (noResults) noResults.classList.add('hidden');
+      }
+    }
+
+    function resetSearch() {
+      const desktopInput = document.getElementById('desktopSearchInput');
+      if (desktopInput) desktopInput.value = '';
+      const mobileInputs = document.querySelectorAll('input[type="text"]');
+      mobileInputs.forEach(i => i.value = '');
+      handleSearch('');
+    }
+
+    // Keyboard shortcut '/' to search
+    window.addEventListener('keydown', (e) => {
+      const desktopInput = document.getElementById('desktopSearchInput');
+      if (e.key === '/' && document.activeElement !== desktopInput) {
+        e.preventDefault();
+        if (desktopInput) {
+          desktopInput.focus();
+          desktopInput.select();
+        }
+      }
+    });
+  </script>
+
+</body>
+
+</html>

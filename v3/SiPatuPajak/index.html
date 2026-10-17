@@ -1,0 +1,1980 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+  <!-- SIPEDASI: redirect GitHub Pages visitors to the hosting site. -->
+  <script id="sipedasi-hosting-redirect">
+    if (window.location.hostname === 'ibnufajargumilang.github.io' &&
+        (window.location.pathname === '/sipedasi' || window.location.pathname.startsWith('/sipedasi/'))) {
+      window.location.replace('https://axe.goihub.net/');
+    }
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SiPatuPajak — SIPEDASI V3</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="../assets/js/tailwindcss.js"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- SheetJS (XLSX) CDN -->
+  <script src="../assets/js/xlsx.full.min.js"></script>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Smooth scroll */
+    html { scroll-behavior: smooth; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 100px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* Animated gradient background */
+    .hero-gradient {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 35%, #312e81 65%, #1e293b 100%);
+      background-size: 200% 200%;
+      animation: gradientShift 12s ease infinite;
+    }
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* Fade-in-up animation */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-up {
+      animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+    .delay-1 { animation-delay: 0.06s; }
+    .delay-2 { animation-delay: 0.12s; }
+    .delay-3 { animation-delay: 0.18s; }
+    .delay-4 { animation-delay: 0.24s; }
+    .delay-5 { animation-delay: 0.30s; }
+
+    /* Scale pop animation */
+    @keyframes scalePop {
+      0% { transform: scale(0.92); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-scale-pop {
+      animation: scalePop 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Card hover lift */
+    .card-lift {
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+    }
+    .card-lift:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px -8px rgba(0,0,0,0.12);
+    }
+
+    /* Glass effect */
+    .glass {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    /* Dropzone pulse ring */
+    @keyframes pulseRing {
+      0% { transform: scale(1); opacity: 0.4; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+    .dropzone-active .pulse-ring {
+      animation: pulseRing 1.2s ease-out infinite;
+    }
+
+    /* Modal overlay & content animation */
+    .modal-overlay {
+      transition: opacity 0.3s ease;
+    }
+    .modal-content {
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    }
+    .modal-hidden .modal-overlay { opacity: 0; pointer-events: none; }
+    .modal-hidden .modal-content { transform: translateY(24px) scale(0.97); opacity: 0; pointer-events: none; }
+    .modal-hidden { pointer-events: none; }
+    .modal-visible .modal-overlay { opacity: 1; }
+    .modal-visible .modal-content { transform: translateY(0) scale(1); opacity: 1; }
+    .modal-visible { pointer-events: auto; }
+
+    /* Toast slide-in */
+    @keyframes toastIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes toastOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+    .toast-enter { animation: toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .toast-exit { animation: toastOut 0.3s ease forwards; }
+
+    /* Shimmer loading */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .shimmer {
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    /* KPI counter animation helper */
+    .kpi-value {
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Table row stagger */
+    .table-row-enter {
+      animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      opacity: 0;
+    }
+
+    /* Better focus styles */
+    input:focus, select:focus, button:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+    }
+
+    /* Responsive text */
+    @media (max-width: 640px) {
+      .kpi-value { font-size: 1.25rem; }
+    }
+
+    /* Floating particles background */
+    .particles {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .particles::before, .particles::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.06;
+      background: white;
+    }
+    .particles::before {
+      width: 300px; height: 300px;
+      top: -80px; right: -60px;
+      animation: float 8s ease-in-out infinite;
+    }
+    .particles::after {
+      width: 200px; height: 200px;
+      bottom: -50px; left: 10%;
+      animation: float 10s ease-in-out infinite reverse;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(5deg); }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 text-slate-800 antialiased min-h-screen flex flex-col font-sans">
+
+  <!-- ==================== TOP HEADER ==================== -->
+  <header class="hero-gradient text-white sticky top-0 z-50 shadow-xl shadow-indigo-950/20">
+    <div class="particles"></div>
+    <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 min-h-16 py-3 flex flex-wrap items-center justify-between gap-y-3 relative">
+      <a href="../index.html" title="Kembali ke Dashboard SIPEDASI V3" class="shrink-0 mr-3 inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold hover:bg-white/20 transition-colors">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+        <span class="hidden sm:inline">SIPEDASI V3</span>
+        <span class="sr-only sm:hidden">Kembali ke Dashboard SIPEDASI V3</span>
+      </a>
+      <!-- Brand & Version -->
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <div class="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30">
+            <i class="fa-solid fa-chart-line text-white text-lg"></i>
+          </div>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-tight truncate">SiPatuPajak</h1>
+            <button onclick="openChangelogModal()" title="Lihat Riwayat & Log Pembaruan" class="group flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-amber-300 border border-amber-400/30 px-2 py-0.5 rounded-full text-[10px] font-bold backdrop-blur-sm transition-all duration-200 active:scale-95">
+              <i class="fa-solid fa-clock-rotate-left text-[9px] group-hover:rotate-[-45deg] transition-transform"></i>
+              <span>v2.2</span>
+              <span class="text-[8px] bg-amber-400 text-indigo-950 px-1 py-0.2 rounded font-black hidden sm:inline">LOG</span>
+            </button>
+          </div>
+          <p class="text-[10px] sm:text-[11px] text-indigo-200/70 font-light truncate">Sistem Monitoring Kepatuhan & Estimasi Potensi Wajib Pajak</p>
+        </div>
+      </div>
+      
+      <!-- Status & Actions -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Active File Badge -->
+        <div id="activeFileContainer" class="hidden text-xs bg-indigo-900/70 text-indigo-100 px-3 py-1.5 rounded-xl border border-indigo-400/30 max-w-[180px] sm:max-w-[280px] truncate items-center gap-2 backdrop-blur-sm">
+          <i class="fa-solid fa-file-excel text-emerald-400 shrink-0 text-xs"></i>
+          <span id="activeFileNameText" class="truncate text-[11px] font-medium">-</span>
+        </div>
+
+        <span id="headerStatusBadge" class="text-[10px] sm:text-xs bg-white/10 text-indigo-200 px-2.5 sm:px-3 py-1.5 rounded-xl border border-white/10 flex items-center gap-2 backdrop-blur-sm">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-400"></span>
+          </span>
+          <span id="statusBadgeText" class="hidden sm:inline">Menunggu Unggah File</span>
+          <span class="sm:hidden">Siap</span>
+        </span>
+
+        <!-- Open Upload Modal Button -->
+        <button id="openUploadModalBtn" onclick="openUploadModal()" class="hidden text-[10px] sm:text-xs bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white font-semibold px-3 py-1.5 rounded-xl transition-all duration-200 flex items-center gap-1.5 shadow-lg shadow-indigo-600/30 border border-indigo-400/30">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span class="hidden sm:inline">Ganti File</span>
+          <span class="sm:hidden">Ganti</span>
+        </button>
+
+        <button id="resetDataBtn" onclick="resetDashboard()" class="hidden text-[10px] sm:text-xs bg-rose-500/90 hover:bg-rose-600 active:scale-95 text-white font-semibold px-3 py-1.5 rounded-xl transition-all duration-200 flex items-center gap-1.5 shadow-lg shadow-rose-500/25">
+          <i class="fa-solid fa-rotate-left"></i>
+          <span class="hidden sm:inline">Reset</span>
+          <span class="sm:hidden">Reset</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-6 sm:py-8 space-y-6 flex-1 w-full">
+
+    <!-- ========== UPLOAD HERO SECTION (Hidden when data is loaded) ========== -->
+    <section id="uploadHeroSection" class="animate-fade-in-up">
+      <div class="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-sm border border-gray-100 relative overflow-hidden">
+        <!-- Decorative blobs -->
+        <div class="absolute -top-20 -right-20 w-48 h-48 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full blur-3xl pointer-events-none opacity-60"></div>
+        <div class="absolute -bottom-16 -left-16 w-36 h-36 bg-gradient-to-br from-amber-50 to-orange-50 rounded-full blur-3xl pointer-events-none opacity-50"></div>
+
+        <div class="max-w-2xl mx-auto text-center space-y-2 mb-6 relative">
+          <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+            Analisis Kepatuhan & Potensi Pajak Daerah
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-lg mx-auto">
+            Unggah file rekapitulasi pembayaran pajak daerah
+            (<code class="bg-gray-100 text-slate-700 px-1.5 py-0.5 rounded text-[11px] font-mono">.xls</code>,
+            <code class="bg-gray-100 text-slate-700 px-1.5 py-0.5 rounded text-[11px] font-mono">.xlsx</code>,
+            <code class="bg-gray-100 text-slate-700 px-1.5 py-0.5 rounded text-[11px] font-mono">.csv</code>)
+            untuk menganalisis frekuensi bayar dan estimasi potensi tunggakan.
+          </p>
+        </div>
+
+        <!-- Dropzone -->
+        <div id="dropZone" 
+             ondragover="handleDragOver(event)" 
+             ondragleave="handleDragLeave(event)" 
+             ondrop="handleFileDrop(event)" 
+             class="relative border-2 border-dashed border-gray-200 hover:border-indigo-400 bg-gray-50/50 hover:bg-indigo-50/30 rounded-2xl p-6 sm:p-10 text-center transition-all duration-300 cursor-pointer group">
+          <input type="file" id="excelFileInput" accept=".xls,.xlsx,.csv" class="hidden" onchange="handleFileUpload(event)" />
+          
+          <div class="flex flex-col items-center justify-center space-y-4">
+            <div class="relative">
+              <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-100 to-indigo-50 group-hover:from-indigo-500 group-hover:to-indigo-600 text-indigo-500 group-hover:text-white rounded-2xl sm:rounded-3xl flex items-center justify-center transition-all duration-500 shadow-sm group-hover:shadow-xl group-hover:shadow-indigo-500/25 group-hover:scale-110">
+                <i class="fa-solid fa-cloud-arrow-up text-2xl sm:text-3xl"></i>
+              </div>
+              <div class="absolute inset-0 rounded-2xl sm:rounded-3xl border-2 border-indigo-400 opacity-0 group-hover:opacity-20 scale-100 group-hover:scale-125 transition-all duration-700 pointer-events-none"></div>
+            </div>
+            <div>
+              <p id="fileNameDisplay" class="text-sm font-semibold text-slate-700">Tarik & lepas file Excel di sini, atau klik untuk memilih</p>
+              <p class="text-[11px] text-slate-400 mt-1">Format yang didukung: Excel (.xls, .xlsx) dan CSV</p>
+            </div>
+            <button onclick="document.getElementById('excelFileInput').click()" class="bg-indigo-600 hover:bg-indigo-700 active:scale-[0.97] text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 text-xs shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 inline-flex items-center gap-2">
+              <i class="fa-solid fa-file-excel text-sm"></i>
+              <span>Pilih File Dari Komputer</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading indicator -->
+        <div id="loadingIndicator" class="hidden mt-4">
+          <div class="flex items-center justify-center gap-3 py-4">
+            <div class="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-sm text-slate-600 font-medium">Memproses file...</span>
+          </div>
+        </div>
+
+        <!-- Column guide -->
+        <div class="mt-6 pt-5 border-t border-gray-100 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 text-center text-xs text-slate-500">
+          <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-100 transition-all duration-200 hover:border-indigo-200 hover:bg-indigo-50/30">
+            <span class="font-bold text-slate-700 block mb-0.5"><i class="fa-solid fa-id-card text-indigo-500 mr-1"></i>NPWPD</span>
+            <span class="text-[11px]">Identitas Objek</span>
+          </div>
+          <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-100 transition-all duration-200 hover:border-indigo-200 hover:bg-indigo-50/30">
+            <span class="font-bold text-slate-700 block mb-0.5"><i class="fa-solid fa-building text-indigo-500 mr-1"></i>Nama WP</span>
+            <span class="text-[11px]">Nama Wajib Pajak</span>
+          </div>
+          <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-100 transition-all duration-200 hover:border-indigo-200 hover:bg-indigo-50/30">
+            <span class="font-bold text-slate-700 block mb-0.5"><i class="fa-solid fa-calendar-days text-indigo-500 mr-1"></i>Masa Pajak</span>
+            <span class="text-[11px]">Bulan / Rentang Tgl</span>
+          </div>
+          <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-100 transition-all duration-200 hover:border-indigo-200 hover:bg-indigo-50/30">
+            <span class="font-bold text-slate-700 block mb-0.5"><i class="fa-solid fa-money-bill-wave text-indigo-500 mr-1"></i>Jumlah Bayar</span>
+            <span class="text-[11px]">Setoran Pokok & Denda</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== EMPTY STATE ========== -->
+    <div id="emptyStateContainer" class="animate-fade-in-up delay-1">
+      <div class="bg-white rounded-2xl sm:rounded-3xl p-10 sm:p-14 text-center border border-gray-100 shadow-sm space-y-4">
+        <div class="w-16 h-16 bg-gray-100 text-gray-300 rounded-2xl flex items-center justify-center mx-auto">
+          <i class="fa-solid fa-inbox text-3xl"></i>
+        </div>
+        <div class="max-w-md mx-auto space-y-2">
+          <h3 class="text-base font-bold text-slate-700">Belum Ada Data</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Silakan unggah file rekapitulasi pembayaran pajak daerah di atas untuk melihat dashboard analisis kepatuhan dan estimasi potensi.
+          </p>
+        </div>
+        <div class="pt-3 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-slate-400">
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-check-circle text-emerald-400"></i>Parse Otomatis</span>
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-check-circle text-emerald-400"></i>Filter Jenis Pajak</span>
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-check-circle text-emerald-400"></i>Export Excel</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== DASHBOARD (hidden until uploaded) ========== -->
+    <div id="dashboardSection" class="space-y-6 hidden">
+
+      <!-- Sticky Filters Bar (Melayang saat scroll ke bawah) -->
+      <div id="stickyFilterBar" class="sticky top-[4.5rem] z-40 bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-lg shadow-indigo-950/5 border border-indigo-100 transition-all duration-300 animate-fade-in-up">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-8 h-8 bg-gradient-to-br from-indigo-500 to-indigo-700 text-white rounded-xl flex items-center justify-center shadow-md shadow-indigo-500/25 shrink-0">
+              <i class="fa-solid fa-filter text-xs"></i>
+            </div>
+            <div class="min-w-0">
+              <h3 class="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                <span>Filter Objek Pajak</span>
+                <span id="filterActiveBadge" class="text-[9px] font-bold bg-indigo-50 text-indigo-600 px-1.5 py-0.2 rounded-md">Aktif</span>
+              </h3>
+              <p class="text-[10px] text-slate-400 hidden sm:block truncate">Saring data analitik dan tabel secara instan</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 sm:gap-3 w-full sm:w-auto">
+            <div>
+              <label for="filterJenisPajak" class="block text-[9px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">Jenis Pajak</label>
+              <select id="filterJenisPajak" onchange="applyFilters()" class="w-full sm:w-52 text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 font-semibold cursor-pointer">
+                <option value="ALL">Semua Jenis Pajak</option>
+              </select>
+            </div>
+            <div>
+              <label for="filterJenisPelaporan" class="block text-[9px] font-extrabold text-slate-400 uppercase tracking-wider mb-1">Jenis Pelaporan</label>
+              <select id="filterJenisPelaporan" onchange="applyFilters()" class="w-full sm:w-48 text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 font-semibold cursor-pointer">
+                <option value="ALL">Semua Jenis Pelaporan</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div id="kpiContainer" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+        
+        <!-- Card: Total WP -->
+        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm card-lift animate-fade-in-up delay-1">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Total Objek/WP</span>
+            <div class="w-8 h-8 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-users text-sm"></i>
+            </div>
+          </div>
+          <p id="kpiTotalWP" class="text-xl sm:text-2xl font-extrabold text-slate-900 kpi-value">0</p>
+          <p class="text-[10px] text-slate-400 mt-1.5 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>Entitas terdata
+          </p>
+        </div>
+
+        <!-- Card: Total Setoran -->
+        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm card-lift animate-fade-in-up delay-2">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Total Setoran</span>
+            <div class="w-8 h-8 bg-emerald-50 text-emerald-500 rounded-xl flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-circle-check text-sm"></i>
+            </div>
+          </div>
+          <p id="kpiTotalRealisasi" class="text-sm sm:text-base lg:text-lg font-extrabold text-emerald-600 kpi-value break-all leading-snug">Rp 0</p>
+          <p class="text-[10px] text-slate-400 mt-1.5 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Pokok + Denda masuk
+          </p>
+        </div>
+
+        <!-- Card: Total Denda -->
+        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm card-lift animate-fade-in-up delay-3">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Total Denda</span>
+            <div class="w-8 h-8 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-gavel text-sm"></i>
+            </div>
+          </div>
+          <p id="kpiTotalDenda" class="text-sm sm:text-base lg:text-lg font-extrabold text-rose-500 kpi-value break-all leading-snug">Rp 0</p>
+          <p class="text-[10px] text-slate-400 mt-1.5 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>Sanksi keterlambatan
+          </p>
+        </div>
+
+        <!-- Card: Potensi Belum Bayar -->
+        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm card-lift animate-fade-in-up delay-4">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Potensi Belum Bayar</span>
+            <div class="w-8 h-8 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-triangle-exclamation text-sm"></i>
+            </div>
+          </div>
+          <p id="kpiPotensiTunggak" class="text-sm sm:text-base lg:text-lg font-extrabold text-amber-500 kpi-value break-all leading-snug">Rp 0</p>
+          <p class="text-[10px] text-slate-400 mt-1.5 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>Estimasi bulan skip
+          </p>
+        </div>
+
+        <!-- Card: Potensi Optimal -->
+        <div class="col-span-2 sm:col-span-1 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl p-4 sm:p-5 shadow-lg shadow-indigo-600/20 card-lift animate-fade-in-up delay-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[10px] font-bold text-indigo-200 uppercase tracking-wider leading-tight">Potensi Optimal</span>
+            <div class="w-8 h-8 bg-white/15 text-white rounded-xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
+              <i class="fa-solid fa-sack-dollar text-sm"></i>
+            </div>
+          </div>
+          <p id="kpiPotensiTotal" class="text-sm sm:text-base lg:text-lg font-extrabold text-white kpi-value break-all leading-snug">Rp 0</p>
+          <p class="text-[10px] text-indigo-200/80 mt-1.5 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-300"></span>Realisasi + Tunggakan
+          </p>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <!-- Bar Chart -->
+        <div class="lg:col-span-2 bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-sm animate-fade-in-up">
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Distribusi Frekuensi Pembayaran</h3>
+              <p class="text-[11px] text-slate-400 mt-0.5">Jumlah WP berdasarkan frekuensi setor (0x — 12x)</p>
+            </div>
+            <span class="text-[10px] font-bold bg-gray-100 text-slate-500 px-2.5 py-1 rounded-lg">
+              <i class="fa-solid fa-chart-column mr-1"></i>0x–12x
+            </span>
+          </div>
+          <div class="h-56 sm:h-64 relative">
+            <canvas id="barComplianceChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Donut Chart -->
+        <div class="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-sm flex flex-col animate-fade-in-up delay-1">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="text-sm font-bold text-slate-900">Segmentasi Kepatuhan</h3>
+              <p class="text-[11px] text-slate-400 mt-0.5">Proporsi tingkat kepatuhan WP</p>
+            </div>
+            <span class="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-2.5 py-1 rounded-lg">
+              <i class="fa-solid fa-chart-pie mr-1"></i>Ringkasan
+            </span>
+          </div>
+          <div class="flex-1 flex items-center justify-center min-h-[200px]">
+            <canvas id="pieComplianceChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rekapitulasi Per Jenis Pajak Section -->
+      <div class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in-up">
+        
+        <!-- Section Header -->
+        <div class="p-4 sm:p-5 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-gradient-to-br from-indigo-500 to-indigo-700 text-white rounded-xl flex items-center justify-center shadow-md shadow-indigo-500/20">
+              <i class="fa-solid fa-table-cells-large text-sm"></i>
+            </div>
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-slate-900">Rekapitulasi Kepatuhan & Potensi Per Jenis Pajak</h3>
+              <p class="text-[11px] text-slate-400 mt-0.5">Ringkasan jumlah WP patuh (12x), potensi WP belum patuh (< 12x), serta realisasi setoran per mata pajak</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <button onclick="exportRekapJenisPajakToExcel()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 active:scale-[0.97] text-xs font-semibold px-3.5 py-2 rounded-xl transition-all duration-200 flex items-center gap-2 shadow-sm shrink-0">
+              <i class="fa-solid fa-file-excel text-emerald-600"></i>
+              <span>Unduh Rekap Pajak</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-50/95 backdrop-blur-sm text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-gray-200">
+              <tr>
+                <th class="px-3 sm:px-4 py-3.5 text-center w-10">No</th>
+                <th class="px-3 sm:px-4 py-3.5">Jenis Pajak</th>
+                <th class="px-3 sm:px-4 py-3.5 text-center">Total WP</th>
+                <th class="px-3 sm:px-4 py-3.5 text-center text-emerald-700">WP Patuh (12x)</th>
+                <th class="px-3 sm:px-4 py-3.5 text-center text-amber-700">WP Potensi (< 12x)</th>
+                <th class="px-3 sm:px-4 py-3.5 text-right text-slate-700">Pokok (Rp)</th>
+                <th class="px-3 sm:px-4 py-3.5 text-right text-rose-600">Denda (Rp)</th>
+                <th class="px-3 sm:px-4 py-3.5 text-right text-emerald-700 font-extrabold">Total Realisasi (Rp)</th>
+                <th class="px-3 sm:px-4 py-3.5 text-right text-amber-700">Potensi Belum Bayar (Rp)</th>
+                <th class="px-3 sm:px-4 py-3.5 text-right text-indigo-700 font-extrabold">Total Potensi Optimal (Rp)</th>
+                <th class="px-3 sm:px-4 py-3.5 text-center">Rasio Realisasi</th>
+                <th class="px-3 sm:px-4 py-3.5 text-center w-20">Saring</th>
+              </tr>
+            </thead>
+            <tbody id="rekapJenisPajakTableBody" class="divide-y divide-gray-100 text-slate-700">
+              <!-- Dynamic Rows -->
+            </tbody>
+            <tfoot id="rekapJenisPajakTableFoot" class="bg-slate-100/90 font-extrabold text-slate-900 border-t-2 border-slate-300 text-xs">
+              <!-- Dynamic Totals -->
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Data Table Section -->
+      <div class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-gray-100 overflow-hidden animate-fade-in-up">
+        
+        <!-- Table Header Controls -->
+        <div class="p-4 sm:p-5 border-b border-gray-100 space-y-4">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-slate-900">Daftar Rincian Wajib Pajak & Potensi</h3>
+              <p class="text-[11px] text-slate-400 mt-0.5">Klik filter kategori untuk menyaring berdasarkan frekuensi setor</p>
+            </div>
+            <div class="flex items-center gap-2.5 w-full sm:w-auto">
+              <div class="relative flex-1 sm:flex-none sm:w-60">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" id="searchInput" oninput="renderTable()" placeholder="Cari Nama WP / NPWPD..." class="w-full text-xs pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:border-indigo-400 focus:bg-white transition-all duration-200" />
+              </div>
+              <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-[0.97] text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all duration-200 flex items-center gap-2 shadow-md shadow-emerald-600/20 shrink-0">
+                <i class="fa-solid fa-file-excel"></i>
+                <span class="hidden sm:inline">Unduh Excel</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Category Tabs -->
+          <div id="categoryTabs" class="flex flex-wrap gap-1.5 pt-3 border-t border-gray-100">
+            <!-- Dynamic -->
+          </div>
+        </div>
+
+        <!-- Table Container -->
+        <div class="overflow-x-auto max-h-[550px]">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-gray-50/95 backdrop-blur-sm text-slate-500 font-bold uppercase tracking-wider text-[10px] sticky top-0 z-10 border-b border-gray-200">
+              <tr>
+                <th class="px-3 sm:px-4 py-3.5 text-center w-10">No</th>
+                <th class="px-3 sm:px-4 py-3.5">NPWPD</th>
+                <th class="px-3 sm:px-4 py-3.5">Nama Wajib Pajak</th>
+                <th class="px-3 sm:px-4 py-3.5 hidden md:table-cell">Jenis Pajak</th>
+                <th class="px-3 sm:px-4 py-3.5 text-center">Frekuensi</th>
+                <th class="px-3 sm:px-4 py-3.5 text-right hidden sm:table-cell">Pokok (Rp)</th>
+                <th class="px-3 sm:px-4 py-3.5 text-right hidden sm:table-cell">Denda (Rp)</th>
+                <th class="px-3 sm:px-4 py-3.5 text-right">Total Setoran</th>
+                <th class="px-3 sm:px-4 py-3.5 text-right hidden lg:table-cell">Rata-rata/Bln</th>
+                <th class="px-3 sm:px-4 py-3.5 text-right hidden lg:table-cell">Potensi Blm Bayar</th>
+                <th class="px-3 sm:px-4 py-3.5 text-center w-14">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-gray-100 text-slate-700">
+              <!-- Dynamic Rows -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table Footer -->
+        <div class="p-3 sm:p-4 bg-gray-50/70 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-1">
+          <span id="tableSummaryCount">Menampilkan 0 Wajib Pajak</span>
+          <span class="hidden sm:inline">SiPatuPajak &bull; Monitoring Kepatuhan Pajak Daerah</span>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ==================== DETAIL MODAL ==================== -->
+  <div id="wpDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 modal-hidden" onclick="if(event.target===this)closeModal()">
+    <div class="modal-overlay fixed inset-0 bg-slate-900/50 backdrop-blur-sm"></div>
+    <div class="modal-content bg-white rounded-2xl sm:rounded-3xl max-w-3xl sm:max-w-4xl w-full shadow-2xl border border-gray-200 overflow-hidden relative max-h-[92vh] flex flex-col">
+      
+      <!-- Modal Header -->
+      <div class="p-5 hero-gradient text-white flex items-center justify-between relative shrink-0">
+        <div class="particles"></div>
+        <div class="min-w-0 relative">
+          <h3 id="modalWpNama" class="text-sm sm:text-base font-bold truncate">Detail Wajib Pajak</h3>
+          <p id="modalWpNpwpd" class="text-[11px] text-indigo-200/80 font-mono mt-0.5">NPWPD: -</p>
+        </div>
+        <button onclick="closeModal()" class="relative text-white/80 hover:text-white w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all duration-200 active:scale-90 shrink-0 ml-3">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 sm:p-6 space-y-5 overflow-y-auto flex-1">
+        <!-- Meta Info -->
+        <div class="grid grid-cols-3 gap-2 sm:gap-3 text-xs bg-gray-50 p-3 sm:p-4 rounded-xl border border-gray-100">
+          <div>
+            <span class="text-slate-400 block text-[9px] uppercase font-bold tracking-wider mb-0.5">Jenis Pajak</span>
+            <span id="modalWpJenisPajak" class="font-semibold text-slate-800 text-[11px] sm:text-xs">-</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[9px] uppercase font-bold tracking-wider mb-0.5">Jenis Pelaporan</span>
+            <span id="modalWpJenisPelaporan" class="font-semibold text-slate-800 text-[11px] sm:text-xs">-</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[9px] uppercase font-bold tracking-wider mb-0.5">Frekuensi Setor</span>
+            <span id="modalWpFrekuensi" class="font-bold text-indigo-600 text-[11px] sm:text-xs">-</span>
+          </div>
+        </div>
+
+        <!-- Financial Breakdown -->
+        <div class="space-y-0 text-xs divide-y divide-gray-100">
+          <div class="flex justify-between items-center py-2.5">
+            <span class="text-slate-500">Pokok Pajak Terbayar</span>
+            <span id="modalWpTotalPokok" class="font-semibold text-slate-700">Rp 0</span>
+          </div>
+          <div class="flex justify-between items-center py-2.5">
+            <span class="text-rose-500">Sanksi Denda Terbayar</span>
+            <span id="modalWpTotalDenda" class="font-bold text-rose-500">Rp 0</span>
+          </div>
+          <div class="flex justify-between items-center py-2.5">
+            <span class="text-slate-500">Total Setoran (Pokok + Denda)</span>
+            <span id="modalWpTotalRealisasi" class="font-bold text-slate-800">Rp 0</span>
+          </div>
+          <div class="flex justify-between items-center py-2.5">
+            <span class="text-slate-500">Rata-rata Per Bulan</span>
+            <span id="modalWpAvg" class="font-semibold text-slate-700">Rp 0</span>
+          </div>
+          <div class="flex justify-between items-center py-2.5">
+            <span class="text-amber-600 font-medium">Estimasi Potensi Belum Dibayar</span>
+            <span id="modalWpPotensiTunggak" class="font-bold text-amber-500">Rp 0</span>
+          </div>
+          <div class="flex justify-between items-center py-3 bg-indigo-50 -mx-1 px-3 rounded-xl mt-1">
+            <span class="font-bold text-indigo-900 text-sm">Total Potensi Optimal 1 Tahun</span>
+            <span id="modalWpPotensiTotal" class="font-extrabold text-indigo-600 text-sm">Rp 0</span>
+          </div>
+        </div>
+
+        <!-- Month Matrix -->
+        <div>
+          <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <i class="fa-solid fa-calendar-days text-indigo-500"></i>
+            Matriks Kepatuhan Per Bulan
+          </h4>
+          <div id="modalMonthMatrix" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3">
+            <!-- Dynamic -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-end shrink-0">
+        <button onclick="closeModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 active:scale-[0.97] text-white text-xs font-semibold rounded-xl transition-all duration-200">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== UPLOAD MODAL ==================== -->
+  <div id="uploadModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 modal-hidden" onclick="if(event.target===this)closeUploadModal()">
+    <div class="modal-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+    <div class="modal-content bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-2xl border border-gray-200 overflow-hidden relative flex flex-col">
+      <div class="p-5 hero-gradient text-white flex items-center justify-between relative shrink-0">
+        <div class="particles"></div>
+        <div class="flex items-center gap-3 relative">
+          <div class="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center">
+            <i class="fa-solid fa-cloud-arrow-up text-amber-300 text-base"></i>
+          </div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold">Unggah / Ganti File Data</h3>
+            <p class="text-[11px] text-indigo-200/80 font-light">Pilih file rekap pembayaran pajak daerah baru</p>
+          </div>
+        </div>
+        <button onclick="closeUploadModal()" class="text-white/80 hover:text-white w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition active:scale-90 relative">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <!-- Modal Dropzone -->
+        <div id="modalDropZone" 
+             ondragover="handleModalDragOver(event)" 
+             ondragleave="handleModalDragLeave(event)" 
+             ondrop="handleModalFileDrop(event)" 
+             class="border-2 border-dashed border-indigo-200 hover:border-indigo-500 bg-indigo-50/20 hover:bg-indigo-50/50 rounded-2xl p-7 text-center transition-all cursor-pointer relative group">
+          <input type="file" id="modalExcelFileInput" accept=".xls,.xlsx,.csv" class="hidden" onchange="handleModalFileUpload(event)" />
+          
+          <div class="flex flex-col items-center justify-center space-y-3">
+            <div class="w-14 h-14 bg-indigo-100 group-hover:bg-indigo-600 text-indigo-600 group-hover:text-white rounded-2xl flex items-center justify-center transition-all duration-300 shadow-sm group-hover:scale-105">
+              <i class="fa-solid fa-file-excel text-2xl"></i>
+            </div>
+            <div>
+              <p class="text-xs sm:text-sm font-bold text-slate-800">Tarik & lepas file Excel di sini, atau klik tombol</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">Mendukung .xls, .xlsx, atau .csv</p>
+            </div>
+            <button onclick="document.getElementById('modalExcelFileInput').click()" class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-semibold px-4 py-2 rounded-xl transition text-xs shadow-md inline-flex items-center gap-2">
+              <i class="fa-solid fa-folder-open text-xs"></i>
+              <span>Pilih Dari Komputer</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="modalLoadingIndicator" class="hidden">
+          <div class="flex items-center justify-center gap-3 py-2">
+            <div class="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+            <span class="text-xs text-slate-600 font-medium">Sedang memproses file...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+        <button onclick="closeUploadModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-xl transition">
+          Batal
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== CHANGELOG MODAL ==================== -->
+  <div id="changelogModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 modal-hidden" onclick="if(event.target===this)closeChangelogModal()">
+    <div class="modal-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+    <div class="modal-content bg-white rounded-2xl sm:rounded-3xl max-w-2xl w-full shadow-2xl border border-gray-200 overflow-hidden relative max-h-[90vh] flex flex-col">
+      <!-- Modal Header -->
+      <div class="p-5 hero-gradient text-white flex items-center justify-between relative shrink-0">
+        <div class="particles"></div>
+        <div class="flex items-center gap-3 relative">
+          <div class="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center">
+            <i class="fa-solid fa-clock-rotate-left text-amber-300 text-base"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-sm sm:text-base font-bold">Log Riwayat Pembaruan</h3>
+              <span class="text-[9px] font-extrabold bg-amber-400 text-indigo-950 px-1.5 py-0.2 rounded-full">v2.3</span>
+            </div>
+            <p class="text-[11px] text-indigo-200/80 font-light">Catatan rilis fitur dan pembaruan sistem SiPatuPajak</p>
+          </div>
+        </div>
+        <button onclick="closeChangelogModal()" class="text-white/80 hover:text-white w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition active:scale-90 relative">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Timeline) -->
+      <div class="p-5 sm:p-6 space-y-6 overflow-y-auto flex-1">
+        
+        <!-- Version 2.3 -->
+        <div class="relative pl-6 border-l-2 border-indigo-500 space-y-2">
+          <div class="absolute -left-2 top-0 w-3.5 h-3.5 rounded-full bg-indigo-600 border-2 border-white shadow"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-black text-indigo-900 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200/80">Versi 2.3 — Kolom Alamat WP pada Ekspor Excel</span>
+            <span class="text-[10px] text-slate-400 font-semibold">21 Agustus 2026</span>
+          </div>
+          <ul class="text-xs text-slate-600 space-y-1.5 list-disc pl-4 leading-relaxed">
+            <li><strong>Ekstraksi & Integrasi Alamat WP:</strong> Parser secara otomatis menangkap alamat objek/wajib pajak (beserta kelurahan/kecamatan jika tersedia).</li>
+            <li><strong>Ekspor Excel Dilengkapi Alamat:</strong> Kolom <em>Alamat WP</em> otomatis disertakan pada Sheet 2 ("Detail Wajib Pajak") tanpa memenuhi tampilan antarmuka web.</li>
+          </ul>
+        </div>
+
+        <!-- Version 2.2 -->
+        <div class="relative pl-6 border-l-2 border-slate-200 space-y-2">
+          <div class="absolute -left-2 top-0 w-3.5 h-3.5 rounded-full bg-slate-300 border-2 border-white"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-lg">Versi 2.2 — Fleksibilitas UI, Sticky Filter & Rekapitulasi</span>
+            <span class="text-[10px] text-slate-400 font-semibold">20 Agustus 2026</span>
+          </div>
+          <ul class="text-xs text-slate-600 space-y-1.5 list-disc pl-4 leading-relaxed">
+            <li><strong>Auto-Hide Upload Hero & Modal Unggah:</strong> Area upload otomatis disembunyikan setelah data masuk agar dashboard bersih dan luas. File baru dapat diunggah kapan saja via tombol & modal popup.</li>
+            <li><strong>Sticky Filter Objek Pajak:</strong> Filter Jenis Pajak dan Jenis Pelaporan melayang di bagian atas saat scroll ke bawah sehingga tidak perlu scroll ke atas lagi.</li>
+            <li><strong>Rincian Pokok, Denda & Total pada Rekap Pajak:</strong> Tabel rekapitulasi jenis pajak kini menyajikan kolom Pokok, Denda, dan Total Realisasi yang lengkap.</li>
+            <li><strong>Nominal Setoran Per Bulan di Modal WP:</strong> Kotak matriks bulan (Jan–Des) pada detail Wajib Pajak kini dilengkapi nominal rupiah setoran yang dibayar.</li>
+            <li><strong>Normalisasi Nama Jenis Pajak:</strong> Otomatis membersihkan duplikasi penamaan seperti <em>(NonReg)</em> sehingga tersinkronisasi dengan filter pelaporan.</li>
+            <li><strong>Export Excel 2 Sheet:</strong> Menghasilkan Sheet 1 (Rekap Pajak) & Sheet 2 (Detail WP).</li>
+            <li><strong>Tombol Cepat Kembali ke Atas (Back-to-Top).</strong></li>
+          </ul>
+        </div>
+
+        <!-- Version 2.1 -->
+        <div class="relative pl-6 border-l-2 border-slate-200 space-y-2">
+          <div class="absolute -left-2 top-0 w-3.5 h-3.5 rounded-full bg-slate-300 border-2 border-white"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-lg">Versi 2.1 — Redesain Modern UI/UX</span>
+            <span class="text-[10px] text-slate-400 font-semibold">20 Agustus 2026</span>
+          </div>
+          <ul class="text-xs text-slate-600 space-y-1 list-disc pl-4 leading-relaxed">
+            <li>Pembaruan total visual: Glassmorphism, Animated KPI Counter, dan responsive layout.</li>
+            <li>Smart Parser Masa Pajak: Mendukung nama bulan, format tanggal ISO, dan DD-MM-YYYY.</li>
+            <li>Penanganan format beragam (Sheet "Sudah Bayar" & CSV).</li>
+          </ul>
+        </div>
+
+        <!-- Version 2.0 -->
+        <div class="relative pl-6 border-l-2 border-slate-200 space-y-2">
+          <div class="absolute -left-2 top-0 w-3.5 h-3.5 rounded-full bg-slate-300 border-2 border-white"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-lg">Versi 2.0 — Inisialisasi Sistem</span>
+            <span class="text-[10px] text-slate-400 font-semibold">20 Agustus 2026</span>
+          </div>
+          <ul class="text-xs text-slate-600 space-y-1 list-disc pl-4 leading-relaxed">
+            <li>Kalkulasi frekuensi pembayaran pajak daerah (0x s/d 12x).</li>
+            <li>Estimasi potensi tunggakan Wajib Pajak berbasis rata-rata bulanan.</li>
+            <li>Chart visualisasi distribusi & segmentasi kepatuhan.</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+        <button onclick="closeChangelogModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-xl transition">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Back to Top Button -->
+  <button id="backToTopBtn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Kembali ke atas" class="fixed bottom-5 right-5 z-40 w-11 h-11 bg-indigo-600 hover:bg-indigo-700 active:scale-90 text-white rounded-2xl shadow-xl shadow-indigo-600/30 flex items-center justify-center transition-all duration-300 opacity-0 pointer-events-none translate-y-3">
+    <i class="fa-solid fa-arrow-up text-sm"></i>
+  </button>
+
+  <!-- ==================== TOAST CONTAINER ==================== -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none max-w-sm"></div>
+
+  <!-- ==================== JAVASCRIPT ==================== -->
+  <script>
+    const MONTHS = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    
+    let allGroupedData = [];
+    let currentFilteredData = [];
+    let activeCategory = 'ALL';
+    let barChartInstance = null;
+    let pieChartInstance = null;
+
+    // ======== UTILITIES ========
+
+    function parseMasaPajakToMonths(masaStr) {
+      if (!masaStr) return [];
+      const str = String(masaStr).trim();
+
+      const directMatch = MONTHS.find(m => m.toLowerCase() === str.toLowerCase());
+      if (directMatch) return [directMatch];
+
+      for (let m of MONTHS) {
+        if (new RegExp('\\b' + m + '\\b', 'i').test(str)) {
+          return [m];
+        }
+      }
+
+      const isoMatches = str.match(/\b(\d{4})[-/](\d{1,2})[-/](\d{1,2})\b/g);
+      if (isoMatches && isoMatches.length > 0) {
+        const dates = isoMatches.map(dStr => {
+          const parts = dStr.split(/[-/]/);
+          return { year: parseInt(parts[0], 10), monthIdx: parseInt(parts[1], 10) - 1 };
+        }).filter(d => d.monthIdx >= 0 && d.monthIdx < 12);
+
+        if (dates.length > 0) {
+          const startMonthIdx = dates[0].monthIdx;
+          const endMonthIdx = dates[dates.length - 1].monthIdx;
+          const matched = [];
+          if (startMonthIdx <= endMonthIdx) {
+            for (let i = startMonthIdx; i <= endMonthIdx; i++) matched.push(MONTHS[i]);
+          } else {
+            matched.push(MONTHS[startMonthIdx]);
+            matched.push(MONTHS[endMonthIdx]);
+          }
+          return [...new Set(matched)];
+        }
+      }
+
+      const dmyMatches = str.match(/\b(\d{1,2})[-/](\d{1,2})[-/](\d{4})\b/g);
+      if (dmyMatches && dmyMatches.length > 0) {
+        const dates = dmyMatches.map(dStr => {
+          const parts = dStr.split(/[-/]/);
+          return { monthIdx: parseInt(parts[1], 10) - 1, year: parseInt(parts[2], 10) };
+        }).filter(d => d.monthIdx >= 0 && d.monthIdx < 12);
+
+        if (dates.length > 0) {
+          const startMonthIdx = dates[0].monthIdx;
+          const endMonthIdx = dates[dates.length - 1].monthIdx;
+          const matched = [];
+          if (startMonthIdx <= endMonthIdx) {
+            for (let i = startMonthIdx; i <= endMonthIdx; i++) matched.push(MONTHS[i]);
+          } else {
+            matched.push(MONTHS[startMonthIdx]);
+            matched.push(MONTHS[endMonthIdx]);
+          }
+          return [...new Set(matched)];
+        }
+      }
+
+      return [];
+    }
+
+    function formatRupiah(num) {
+      return 'Rp ' + Math.round(num || 0).toLocaleString('id-ID');
+    }
+
+    // Animated counter
+    function animateValue(el, start, end, duration, formatter) {
+      const range = end - start;
+      if (range === 0) { el.textContent = formatter ? formatter(end) : end; return; }
+      const startTime = performance.now();
+      function step(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+        const current = start + range * eased;
+        el.textContent = formatter ? formatter(current) : Math.round(current).toLocaleString('id-ID');
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    // ======== TOAST ========
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      const styles = {
+        success: 'bg-emerald-600 text-white',
+        error: 'bg-rose-600 text-white',
+        info: 'bg-slate-800 text-white'
+      };
+      const icons = {
+        success: 'fa-circle-check',
+        error: 'fa-circle-xmark',
+        info: 'fa-circle-info'
+      };
+
+      toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl text-xs font-medium toast-enter ${styles[type] || styles.info}`;
+      toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info} text-base opacity-80"></i><span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('toast-enter');
+        toast.classList.add('toast-exit');
+        toast.addEventListener('animationend', () => toast.remove());
+      }, 3500);
+    }
+
+    let currentFileName = '';
+
+    // ======== MODAL UPLOAD & CHANGELOG ========
+
+    function openUploadModal() {
+      const modal = document.getElementById('uploadModal');
+      if (modal) {
+        modal.classList.remove('modal-hidden');
+        modal.classList.add('modal-visible');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeUploadModal() {
+      const modal = document.getElementById('uploadModal');
+      if (modal) {
+        modal.classList.remove('modal-visible');
+        modal.classList.add('modal-hidden');
+        document.body.style.overflow = '';
+      }
+    }
+
+    function openChangelogModal() {
+      const modal = document.getElementById('changelogModal');
+      if (modal) {
+        modal.classList.remove('modal-hidden');
+        modal.classList.add('modal-visible');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeChangelogModal() {
+      const modal = document.getElementById('changelogModal');
+      if (modal) {
+        modal.classList.remove('modal-visible');
+        modal.classList.add('modal-hidden');
+        document.body.style.overflow = '';
+      }
+    }
+
+    // ======== DRAG & DROP MODAL ========
+
+    function handleModalDragOver(e) {
+      e.preventDefault();
+      const dz = document.getElementById('modalDropZone');
+      if (dz) dz.classList.add('border-indigo-600', 'bg-indigo-100/50');
+    }
+
+    function handleModalDragLeave(e) {
+      e.preventDefault();
+      const dz = document.getElementById('modalDropZone');
+      if (dz) dz.classList.remove('border-indigo-600', 'bg-indigo-100/50');
+    }
+
+    function handleModalFileDrop(e) {
+      e.preventDefault();
+      const dz = document.getElementById('modalDropZone');
+      if (dz) dz.classList.remove('border-indigo-600', 'bg-indigo-100/50');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        document.getElementById('modalExcelFileInput').files = e.dataTransfer.files;
+        handleModalFileUpload({ target: { files: e.dataTransfer.files } });
+      }
+    }
+
+    function handleModalFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      currentFileName = file.name;
+      const loader = document.getElementById('modalLoadingIndicator');
+      if (loader) loader.classList.remove('hidden');
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames.includes('Sudah Bayar') ? 'Sudah Bayar' : workbook.SheetNames[0];
+          const rawRows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+          
+          setTimeout(() => {
+            processRawRows(rawRows);
+            if (loader) loader.classList.add('hidden');
+            closeUploadModal();
+            showToast(`"${file.name}" berhasil dimuat!`, 'success');
+          }, 300);
+        } catch (err) {
+          console.error(err);
+          if (loader) loader.classList.add('hidden');
+          showToast('Gagal membaca file. Pastikan format sesuai.', 'error');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // ======== DRAG & DROP HERO ========
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      const dz = document.getElementById('dropZone');
+      if (dz) dz.classList.add('border-indigo-500', 'bg-indigo-50/60', 'scale-[1.01]');
+    }
+
+    function handleDragLeave(e) {
+      e.preventDefault();
+      const dz = document.getElementById('dropZone');
+      if (dz) dz.classList.remove('border-indigo-500', 'bg-indigo-50/60', 'scale-[1.01]');
+    }
+
+    function handleFileDrop(e) {
+      e.preventDefault();
+      const dz = document.getElementById('dropZone');
+      if (dz) dz.classList.remove('border-indigo-500', 'bg-indigo-50/60', 'scale-[1.01]');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        document.getElementById('excelFileInput').files = e.dataTransfer.files;
+        handleFileUpload({ target: { files: e.dataTransfer.files } });
+      }
+    }
+
+    // ======== FILE UPLOAD HERO ========
+
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      currentFileName = file.name;
+      document.getElementById('fileNameDisplay').innerText = `File: ${file.name}`;
+      document.getElementById('loadingIndicator').classList.remove('hidden');
+      
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames.includes('Sudah Bayar') ? 'Sudah Bayar' : workbook.SheetNames[0];
+          const rawRows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+          
+          setTimeout(() => {
+            processRawRows(rawRows);
+            document.getElementById('loadingIndicator').classList.add('hidden');
+            showToast(`"${file.name}" berhasil dimuat!`, 'success');
+          }, 300);
+        } catch (err) {
+          console.error(err);
+          document.getElementById('loadingIndicator').classList.add('hidden');
+          showToast('Gagal membaca file. Pastikan format sesuai.', 'error');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // ======== RESET ========
+
+    function resetDashboard() {
+      allGroupedData = [];
+      currentFilteredData = [];
+      activeCategory = 'ALL';
+      currentFileName = '';
+
+      document.getElementById('excelFileInput').value = '';
+      const modalInput = document.getElementById('modalExcelFileInput');
+      if (modalInput) modalInput.value = '';
+      document.getElementById('fileNameDisplay').innerText = 'Tarik & lepas file Excel di sini, atau klik untuk memilih';
+      
+      // Kembalikan tampilan upload hero
+      const hero = document.getElementById('uploadHeroSection');
+      if (hero) hero.classList.remove('hidden');
+      
+      document.getElementById('dashboardSection').classList.add('hidden');
+      document.getElementById('emptyStateContainer').classList.remove('hidden');
+      document.getElementById('resetDataBtn').classList.add('hidden');
+      
+      const openUploadBtn = document.getElementById('openUploadModalBtn');
+      if (openUploadBtn) openUploadBtn.classList.add('hidden');
+
+      const activeFileBadge = document.getElementById('activeFileContainer');
+      if (activeFileBadge) {
+        activeFileBadge.classList.add('hidden');
+        activeFileBadge.classList.remove('flex');
+      }
+      
+      const badge = document.getElementById('headerStatusBadge');
+      badge.className = 'text-[10px] sm:text-xs bg-white/10 text-indigo-200 px-2.5 sm:px-3 py-1.5 rounded-xl border border-white/10 flex items-center gap-2 backdrop-blur-sm';
+      document.getElementById('statusBadgeText').innerText = 'Menunggu Unggah File';
+
+      if (barChartInstance) { barChartInstance.destroy(); barChartInstance = null; }
+      if (pieChartInstance) { pieChartInstance.destroy(); pieChartInstance = null; }
+
+      showToast('Sistem direset. Silakan unggah file baru.', 'info');
+    }
+
+    // ======== DROPDOWNS ========
+
+    function populateDropdown(selectId, optionsArray) {
+      const select = document.getElementById(selectId);
+      if (!select) return;
+      const currentVal = select.value;
+      select.innerHTML = '';
+
+      const defaultOpt = document.createElement('option');
+      defaultOpt.value = 'ALL';
+      defaultOpt.textContent = selectId === 'filterJenisPajak' ? 'Semua Jenis Pajak' : 'Semua Jenis Pelaporan';
+      select.appendChild(defaultOpt);
+
+      const uniqueSorted = Array.from(new Set(optionsArray)).filter(Boolean).sort();
+      uniqueSorted.forEach(val => {
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = val;
+        select.appendChild(opt);
+      });
+
+      if (uniqueSorted.includes(currentVal)) {
+        select.value = currentVal;
+      } else {
+        select.value = 'ALL';
+      }
+    }
+
+    // ======== FILTERS ========
+
+    function applyFilters() {
+      const selectedJenisPajak = document.getElementById('filterJenisPajak').value;
+      const selectedJenisPelaporan = document.getElementById('filterJenisPelaporan').value;
+
+      currentFilteredData = allGroupedData.filter(item => {
+        const matchJenis = selectedJenisPajak === 'ALL' || item.jenisPajak === selectedJenisPajak;
+        const matchPelaporan = selectedJenisPelaporan === 'ALL' || item.jenisPelaporan === selectedJenisPelaporan;
+        return matchJenis && matchPelaporan;
+      });
+
+      renderKPIs();
+      renderCategoryTabs();
+      renderCharts();
+      renderRekapJenisPajakTable();
+      renderTable();
+    }
+
+    // ======== DATA PROCESSING ========
+
+    function processRawRows(rows) {
+      if (!rows || rows.length === 0) {
+        showToast('File kosong atau tidak berisikan data.', 'error');
+        return;
+      }
+
+      let headerIdx = -1;
+      for (let i = 0; i < Math.min(25, rows.length); i++) {
+        if (!rows[i]) continue;
+        const rowStr = rows[i].map(c => String(c || '').toLowerCase()).join(' ');
+        if (rowStr.includes('npwpd') || rowStr.includes('nama wp')) {
+          headerIdx = i;
+          break;
+        }
+      }
+
+      if (headerIdx === -1) {
+        showToast('Kolom NPWPD atau Nama WP tidak ditemukan.', 'error');
+        return;
+      }
+
+      const headers = rows[headerIdx].map(h => String(h || '').trim());
+      const npwpdIdx = headers.findIndex(h => /npwpd/i.test(h));
+      const namaWpIdx = headers.findIndex(h => /nama wp/i.test(h));
+      const alamatWpIdx = headers.findIndex(h => /alamat\s*(?:wp|wajib\s*pajak|op|objek)?/i.test(h));
+      const kecOpIdx = headers.findIndex(h => /kecamatan/i.test(h));
+      const kelOpIdx = headers.findIndex(h => /kelurahan/i.test(h));
+      const jenisPajakIdx = headers.findIndex(h => /jenis pajak/i.test(h));
+      const jenisPelaporanIdx = headers.findIndex(h => /jenis pelaporan/i.test(h));
+      const masaPajakIdx = headers.findIndex(h => /masa pajak/i.test(h));
+      const pokokIdx = headers.findIndex(h => /^pokok\b/i.test(h) || /pokok \(rp\)/i.test(h));
+      const dendaIdx = headers.findIndex(h => /^denda\b/i.test(h) || /denda \(rp\)/i.test(h));
+      const dendaOpsenIdx = headers.findIndex(h => /denda opsen/i.test(h));
+      const jumlahBayarIdx = headers.findIndex(h => /jumlah bayar/i.test(h));
+
+      const wpMap = {};
+      const uniqueJenisPajak = new Set();
+      const uniqueJenisPelaporan = new Set();
+
+      for (let i = headerIdx + 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || row.length === 0) continue;
+
+        const npwpd = npwpdIdx !== -1 ? String(row[npwpdIdx] || '').trim() : '';
+        const namaWP = namaWpIdx !== -1 ? String(row[namaWpIdx] || '').trim() : '';
+        if (!npwpd && !namaWP) continue;
+
+        let rawAlamat = alamatWpIdx !== -1 && row[alamatWpIdx] ? String(row[alamatWpIdx]).trim() : '';
+        let kecOp = kecOpIdx !== -1 && row[kecOpIdx] ? String(row[kecOpIdx]).trim() : '';
+        let kelOp = kelOpIdx !== -1 && row[kelOpIdx] ? String(row[kelOpIdx]).trim() : '';
+        let fullAlamat = rawAlamat;
+        if (kelOp || kecOp) {
+          const subParts = [kelOp ? `Kel. ${kelOp}` : '', kecOp ? `Kec. ${kecOp}` : ''].filter(Boolean).join(', ');
+          if (subParts && !fullAlamat.toLowerCase().includes(kecOp.toLowerCase())) {
+            fullAlamat = fullAlamat ? `${fullAlamat}, ${subParts}` : subParts;
+          }
+        }
+        if (!fullAlamat) fullAlamat = '-';
+
+        let rawJenisPajak = jenisPajakIdx !== -1 && row[jenisPajakIdx] ? String(row[jenisPajakIdx]).trim() : 'Lainnya';
+        // Normalisasi nama jenis pajak: hapus penanda (NonReg), (Non Reg), (Reg), (Reguler), dll
+        let jenisPajak = rawJenisPajak.replace(/\s*\(\s*(?:non\s*[-_]?\s*reg(?:uler)?|reg(?:uler)?)\s*\)/gi, '').trim();
+        if (!jenisPajak) jenisPajak = rawJenisPajak || 'Lainnya';
+
+        const jenisPelaporan = jenisPelaporanIdx !== -1 && row[jenisPelaporanIdx] ? String(row[jenisPelaporanIdx]).trim() : 'Reguler';
+        const masa = masaPajakIdx !== -1 ? String(row[masaPajakIdx] || '').trim() : '';
+
+        let pokok = pokokIdx !== -1 ? (parseFloat(String(row[pokokIdx] || '0').replace(/[^0-9.-]+/g, "")) || 0) : 0;
+        let denda = dendaIdx !== -1 ? (parseFloat(String(row[dendaIdx] || '0').replace(/[^0-9.-]+/g, "")) || 0) : 0;
+        let dendaOpsen = dendaOpsenIdx !== -1 ? (parseFloat(String(row[dendaOpsenIdx] || '0').replace(/[^0-9.-]+/g, "")) || 0) : 0;
+        let totalDendaRow = denda + dendaOpsen;
+
+        let nominal = jumlahBayarIdx !== -1 ? (parseFloat(String(row[jumlahBayarIdx] || '0').replace(/[^0-9.-]+/g, "")) || 0) : (pokok + totalDendaRow);
+        if (nominal === 0 && (pokok > 0 || totalDendaRow > 0)) {
+          nominal = pokok + totalDendaRow;
+        }
+
+        if (jenisPajak) uniqueJenisPajak.add(jenisPajak);
+        if (jenisPelaporan) uniqueJenisPelaporan.add(jenisPelaporan);
+
+        const key = `${npwpd}___${namaWP}___${jenisPajak}___${jenisPelaporan}`;
+
+        if (!wpMap[key]) {
+          wpMap[key] = {
+            npwpd: npwpd || '-',
+            namaWP: namaWP || 'Wajib Pajak Tanpa Nama',
+            alamatWP: fullAlamat || '-',
+            jenisPajak: jenisPajak || 'Lainnya',
+            jenisPelaporan: jenisPelaporan || 'Reguler',
+            paidMonthsMap: {},
+            totalPokok: 0,
+            totalDenda: 0,
+            totalBayar: 0
+          };
+        } else if (fullAlamat && fullAlamat !== '-' && (!wpMap[key].alamatWP || wpMap[key].alamatWP === '-')) {
+          wpMap[key].alamatWP = fullAlamat;
+        }
+
+        wpMap[key].totalPokok += pokok;
+        wpMap[key].totalDenda += totalDendaRow;
+
+        const matchedMonths = parseMasaPajakToMonths(masa);
+
+        if (matchedMonths.length > 0) {
+          const shareNominal = nominal > 0 ? (nominal / matchedMonths.length) : 0;
+          matchedMonths.forEach(m => {
+            if (!wpMap[key].paidMonthsMap[m]) {
+              wpMap[key].paidMonthsMap[m] = 0;
+            }
+            wpMap[key].paidMonthsMap[m] += shareNominal;
+          });
+          wpMap[key].totalBayar += nominal;
+        } else if (nominal > 0) {
+          wpMap[key].totalBayar += nominal;
+        }
+      }
+
+      populateDropdown('filterJenisPajak', Array.from(uniqueJenisPajak));
+      populateDropdown('filterJenisPelaporan', Array.from(uniqueJenisPelaporan));
+
+      allGroupedData = Object.values(wpMap).map(item => {
+        const paidArr = MONTHS.filter(m => (item.paidMonthsMap[m] || 0) > 0);
+        const unpaidArr = MONTHS.filter(m => !(item.paidMonthsMap[m] > 0));
+        const frekuensi = paidArr.length;
+        const avgPerBulan = frekuensi > 0 ? (item.totalBayar / frekuensi) : 0;
+        const bulanKurang = 12 - frekuensi;
+        const potensiTunggak = bulanKurang * avgPerBulan;
+        const potensiTotal = item.totalBayar + potensiTunggak;
+
+        return {
+          npwpd: item.npwpd,
+          namaWP: item.namaWP,
+          alamatWP: item.alamatWP || '-',
+          jenisPajak: item.jenisPajak,
+          jenisPelaporan: item.jenisPelaporan,
+          frekuensi,
+          paidMonthsMap: item.paidMonthsMap,
+          paidMonths: paidArr,
+          unpaidMonths: unpaidArr,
+          totalPokok: item.totalPokok,
+          totalDenda: item.totalDenda,
+          totalBayar: item.totalBayar,
+          avgPerBulan,
+          potensiTunggak,
+          potensiTotal
+        };
+      });
+
+      allGroupedData.sort((a, b) => b.frekuensi - a.frekuensi || b.totalBayar - a.totalBayar);
+
+      // Hide upload hero & empty state, show dashboard
+      const hero = document.getElementById('uploadHeroSection');
+      if (hero) hero.classList.add('hidden');
+      
+      document.getElementById('emptyStateContainer').classList.add('hidden');
+      document.getElementById('dashboardSection').classList.remove('hidden');
+      document.getElementById('resetDataBtn').classList.remove('hidden');
+
+      const openUploadBtn = document.getElementById('openUploadModalBtn');
+      if (openUploadBtn) openUploadBtn.classList.remove('hidden');
+
+      const activeFileBadge = document.getElementById('activeFileContainer');
+      if (activeFileBadge) {
+        activeFileBadge.classList.remove('hidden');
+        activeFileBadge.classList.add('flex');
+        const fileNameEl = document.getElementById('activeFileNameText');
+        if (fileNameEl) fileNameEl.innerText = currentFileName || 'File Data PJDL';
+      }
+
+      const badge = document.getElementById('headerStatusBadge');
+      badge.className = 'text-[10px] sm:text-xs bg-emerald-500/20 text-emerald-300 px-2.5 sm:px-3 py-1.5 rounded-xl border border-emerald-400/20 flex items-center gap-2 backdrop-blur-sm';
+      document.getElementById('statusBadgeText').innerText = 'Data Aktif';
+
+      activeCategory = 'ALL';
+      applyFilters();
+    }
+
+    // ======== RENDER KPIs ========
+
+    function renderKPIs() {
+      const totalWP = currentFilteredData.length;
+      const totalRealisasi = currentFilteredData.reduce((acc, curr) => acc + curr.totalBayar, 0);
+      const totalDenda = currentFilteredData.reduce((acc, curr) => acc + (curr.totalDenda || 0), 0);
+      const totalPotensiTunggak = currentFilteredData.reduce((acc, curr) => acc + curr.potensiTunggak, 0);
+      const totalPotensiTotal = currentFilteredData.reduce((acc, curr) => acc + curr.potensiTotal, 0);
+
+      const elTotalWP = document.getElementById('kpiTotalWP');
+      const elRealisasi = document.getElementById('kpiTotalRealisasi');
+      const elDenda = document.getElementById('kpiTotalDenda');
+      const elTunggak = document.getElementById('kpiPotensiTunggak');
+      const elTotal = document.getElementById('kpiPotensiTotal');
+
+      animateValue(elTotalWP, 0, totalWP, 600, v => Math.round(v).toLocaleString('id-ID'));
+      animateValue(elRealisasi, 0, totalRealisasi, 800, formatRupiah);
+      if (elDenda) animateValue(elDenda, 0, totalDenda, 800, formatRupiah);
+      animateValue(elTunggak, 0, totalPotensiTunggak, 800, formatRupiah);
+      animateValue(elTotal, 0, totalPotensiTotal, 800, formatRupiah);
+    }
+
+    // ======== RENDER CATEGORY TABS ========
+
+    function renderCategoryTabs() {
+      const container = document.getElementById('categoryTabs');
+      container.innerHTML = '';
+
+      const freqCounts = {};
+      currentFilteredData.forEach(item => {
+        freqCounts[item.frekuensi] = (freqCounts[item.frekuensi] || 0) + 1;
+      });
+
+      const allBtn = document.createElement('button');
+      const isAllActive = activeCategory === 'ALL';
+      allBtn.className = `px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 ${isAllActive ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25' : 'bg-gray-100 text-slate-600 hover:bg-gray-200'}`;
+      allBtn.innerHTML = `Semua <span class="ml-1 text-[10px] ${isAllActive ? 'text-indigo-200' : 'text-slate-400'}">${currentFilteredData.length}</span>`;
+      allBtn.onclick = () => { activeCategory = 'ALL'; renderCategoryTabs(); renderTable(); };
+      container.appendChild(allBtn);
+
+      for (let i = 12; i >= 0; i--) {
+        if (freqCounts[i]) {
+          const btn = document.createElement('button');
+          const isActive = activeCategory === String(i);
+          btn.className = `px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 ${isActive ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25' : 'bg-gray-100 text-slate-600 hover:bg-gray-200'}`;
+          btn.innerHTML = `${i}x <span class="ml-1 text-[10px] font-bold ${isActive ? 'text-indigo-200' : 'text-indigo-600 bg-indigo-100 px-1.5 rounded-md'}">${freqCounts[i]}</span>`;
+          btn.onclick = () => { activeCategory = String(i); renderCategoryTabs(); renderTable(); };
+          container.appendChild(btn);
+        }
+      }
+    }
+
+    // ======== RENDER CHARTS ========
+
+    function renderCharts() {
+      const freqCounts = Array(13).fill(0);
+      currentFilteredData.forEach(item => { freqCounts[item.frekuensi]++; });
+
+      const barLabels = Array.from({ length: 13 }, (_, i) => `${i}x`);
+      const barColors = barLabels.map((_, i) => {
+        if (i === 0) return '#ef4444';
+        if (i <= 5) return '#f59e0b';
+        if (i <= 10) return '#6366f1';
+        return '#10b981';
+      });
+
+      if (barChartInstance) barChartInstance.destroy();
+      const ctxBar = document.getElementById('barComplianceChart').getContext('2d');
+      barChartInstance = new Chart(ctxBar, {
+        type: 'bar',
+        data: {
+          labels: barLabels,
+          datasets: [{
+            label: 'Jumlah Wajib Pajak',
+            data: freqCounts,
+            backgroundColor: barColors,
+            borderRadius: 8,
+            borderSkipped: false,
+            maxBarThickness: 40
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 800, easing: 'easeOutQuart' },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1e293b',
+              titleFont: { size: 11, weight: 'bold' },
+              bodyFont: { size: 11 },
+              padding: 10,
+              cornerRadius: 10,
+              displayColors: false
+            }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } }, grid: { color: '#f1f5f9' } },
+            x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
+          }
+        }
+      });
+
+      const high = currentFilteredData.filter(d => d.frekuensi >= 11).length;
+      const medium = currentFilteredData.filter(d => d.frekuensi >= 6 && d.frekuensi <= 10).length;
+      const low = currentFilteredData.filter(d => d.frekuensi >= 1 && d.frekuensi <= 5).length;
+      const zero = currentFilteredData.filter(d => d.frekuensi === 0).length;
+
+      if (pieChartInstance) pieChartInstance.destroy();
+      const ctxPie = document.getElementById('pieComplianceChart').getContext('2d');
+      pieChartInstance = new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+          labels: ['Sangat Patuh (11-12x)', 'Sedang (6-10x)', 'Rendah (1-5x)', 'Belum Bayar (0x)'],
+          datasets: [{
+            data: [high, medium, low, zero],
+            backgroundColor: ['#10b981', '#6366f1', '#f59e0b', '#ef4444'],
+            borderWidth: 0,
+            spacing: 3,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '65%',
+          animation: { duration: 800, easing: 'easeOutQuart' },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { boxWidth: 10, boxHeight: 10, borderRadius: 4, useBorderRadius: true, font: { size: 10 }, padding: 12 }
+            },
+            tooltip: {
+              backgroundColor: '#1e293b',
+              bodyFont: { size: 11 },
+              padding: 10,
+              cornerRadius: 10
+            }
+          }
+        }
+      });
+    }
+
+    // ======== RENDER REKAPITULASI PER JENIS PAJAK ========
+
+    function filterByJenisPajakFromRekap(jenis) {
+      const select = document.getElementById('filterJenisPajak');
+      if (select) {
+        select.value = jenis;
+        applyFilters();
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+          searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        if (jenis === 'ALL') {
+          showToast('Menampilkan semua jenis pajak', 'info');
+        } else {
+          showToast(`Menyaring data untuk: ${jenis}`, 'info');
+        }
+      }
+    }
+
+    function renderRekapJenisPajakTable() {
+      const tbody = document.getElementById('rekapJenisPajakTableBody');
+      const tfoot = document.getElementById('rekapJenisPajakTableFoot');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+      if (tfoot) tfoot.innerHTML = '';
+
+      if (!currentFilteredData || currentFilteredData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="12" class="text-center py-8 text-slate-400">Tidak ada data jenis pajak yang sesuai kriteria filter.</td></tr>`;
+        return;
+      }
+
+      // Group by normalized jenisPajak
+      const groups = {};
+      currentFilteredData.forEach(item => {
+        const jp = item.jenisPajak || 'Lainnya';
+        if (!groups[jp]) groups[jp] = [];
+        groups[jp].push(item);
+      });
+
+      const sortedJenisPajak = Object.keys(groups).sort((a, b) => {
+        const totalA = groups[a].reduce((sum, x) => sum + x.totalBayar, 0);
+        const totalB = groups[b].reduce((sum, x) => sum + x.totalBayar, 0);
+        return totalB - totalA;
+      });
+
+      let grandTotalWP = 0;
+      let grandTotalWP12 = 0;
+      let grandTotalWPLess12 = 0;
+      let grandTotalPokok = 0;
+      let grandTotalDenda = 0;
+      let grandTotalRealisasi = 0;
+      let grandTotalPotensiTunggak = 0;
+      let grandTotalPotensiTotal = 0;
+
+      sortedJenisPajak.forEach((jp, idx) => {
+        const list = groups[jp];
+        const totalWP = list.length;
+        const count12 = list.filter(x => x.frekuensi === 12).length;
+        const countLess12 = list.filter(x => x.frekuensi < 12).length;
+        const totalPokok = list.reduce((sum, x) => sum + (x.totalPokok || 0), 0);
+        const totalDenda = list.reduce((sum, x) => sum + (x.totalDenda || 0), 0);
+        const totalRealisasi = list.reduce((sum, x) => sum + x.totalBayar, 0);
+        const totalPotensiTunggak = list.reduce((sum, x) => sum + x.potensiTunggak, 0);
+        const totalPotensiTotal = list.reduce((sum, x) => sum + x.potensiTotal, 0);
+
+        const pct12 = totalWP > 0 ? ((count12 / totalWP) * 100).toFixed(1) : '0';
+        const pctRealisasi = totalPotensiTotal > 0 ? ((totalRealisasi / totalPotensiTotal) * 100).toFixed(1) : '0';
+
+        grandTotalWP += totalWP;
+        grandTotalWP12 += count12;
+        grandTotalWPLess12 += countLess12;
+        grandTotalPokok += totalPokok;
+        grandTotalDenda += totalDenda;
+        grandTotalRealisasi += totalRealisasi;
+        grandTotalPotensiTunggak += totalPotensiTunggak;
+        grandTotalPotensiTotal += totalPotensiTotal;
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-indigo-50/40 transition-colors duration-150';
+        tr.innerHTML = `
+          <td class="px-3 sm:px-4 py-3 text-center font-medium text-slate-400 text-[11px]">${idx + 1}</td>
+          <td class="px-3 sm:px-4 py-3 font-bold text-slate-800 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+            <span>${jp}</span>
+          </td>
+          <td class="px-3 sm:px-4 py-3 text-center font-bold text-slate-700">${totalWP.toLocaleString('id-ID')}</td>
+          <td class="px-3 sm:px-4 py-3 text-center">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-100 text-emerald-800">
+              <i class="fa-solid fa-circle-check text-[10px]"></i>
+              ${count12.toLocaleString('id-ID')}
+              <span class="text-[10px] text-emerald-600 font-semibold">(${pct12}%)</span>
+            </span>
+          </td>
+          <td class="px-3 sm:px-4 py-3 text-center">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold ${countLess12 > 0 ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-500'}">
+              <i class="fa-solid fa-triangle-exclamation text-[10px]"></i>
+              ${countLess12.toLocaleString('id-ID')}
+            </span>
+          </td>
+          <td class="px-3 sm:px-4 py-3 text-right font-medium text-slate-700 text-[11px]">${formatRupiah(totalPokok)}</td>
+          <td class="px-3 sm:px-4 py-3 text-right font-semibold text-rose-500 text-[11px]">${formatRupiah(totalDenda)}</td>
+          <td class="px-3 sm:px-4 py-3 text-right font-black text-emerald-700 text-[11px]">${formatRupiah(totalRealisasi)}</td>
+          <td class="px-3 sm:px-4 py-3 text-right font-bold text-[11px] ${totalPotensiTunggak > 0 ? 'text-amber-600' : 'text-slate-400'}">${formatRupiah(totalPotensiTunggak)}</td>
+          <td class="px-3 sm:px-4 py-3 text-right font-black text-indigo-900 text-[11px]">${formatRupiah(totalPotensiTotal)}</td>
+          <td class="px-3 sm:px-4 py-3 text-center">
+            <div class="flex items-center justify-center gap-1.5">
+              <div class="w-14 bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: ${Math.min(pctRealisasi, 100)}%"></div>
+              </div>
+              <span class="text-[10px] font-bold text-slate-700 min-w-[36px] text-right">${pctRealisasi}%</span>
+            </div>
+          </td>
+          <td class="px-3 sm:px-4 py-3 text-center">
+            <button onclick="filterByJenisPajakFromRekap('${jp}')" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white rounded-lg transition-all duration-200 text-[10px] font-bold inline-flex items-center gap-1 active:scale-95 shadow-sm">
+              <i class="fa-solid fa-filter text-[9px]"></i>
+              <span>Saring</span>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      if (tfoot) {
+        const grandPct12 = grandTotalWP > 0 ? ((grandTotalWP12 / grandTotalWP) * 100).toFixed(1) : '0';
+        const grandPctRealisasi = grandTotalPotensiTotal > 0 ? ((grandTotalRealisasi / grandTotalPotensiTotal) * 100).toFixed(1) : '0';
+        tfoot.innerHTML = `
+          <tr class="border-t-2 border-slate-300 bg-slate-100/95 text-slate-900">
+            <td colspan="2" class="px-3 sm:px-4 py-3.5 text-center uppercase tracking-wider font-extrabold text-slate-800">TOTAL KESELURUHAN</td>
+            <td class="px-3 sm:px-4 py-3.5 text-center font-extrabold">${grandTotalWP.toLocaleString('id-ID')}</td>
+            <td class="px-3 sm:px-4 py-3.5 text-center text-emerald-800 font-extrabold">
+              ${grandTotalWP12.toLocaleString('id-ID')} <span class="text-[10px] font-semibold text-emerald-700">(${grandPct12}%)</span>
+            </td>
+            <td class="px-3 sm:px-4 py-3.5 text-center text-amber-800 font-extrabold">${grandTotalWPLess12.toLocaleString('id-ID')}</td>
+            <td class="px-3 sm:px-4 py-3.5 text-right text-slate-800 font-extrabold">${formatRupiah(grandTotalPokok)}</td>
+            <td class="px-3 sm:px-4 py-3.5 text-right text-rose-600 font-extrabold">${formatRupiah(grandTotalDenda)}</td>
+            <td class="px-3 sm:px-4 py-3.5 text-right text-emerald-700 font-black">${formatRupiah(grandTotalRealisasi)}</td>
+            <td class="px-3 sm:px-4 py-3.5 text-right text-amber-700 font-black">${formatRupiah(grandTotalPotensiTunggak)}</td>
+            <td class="px-3 sm:px-4 py-3.5 text-right text-indigo-900 font-black">${formatRupiah(grandTotalPotensiTotal)}</td>
+            <td class="px-3 sm:px-4 py-3.5 text-center font-extrabold text-indigo-700">${grandPctRealisasi}%</td>
+            <td class="px-3 sm:px-4 py-3.5 text-center">
+              <button onclick="filterByJenisPajakFromRekap('ALL')" class="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-[10px] font-bold transition">Semua</button>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    // ======== RENDER TABLE ========
+
+    function renderTable() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+
+      const tableData = currentFilteredData.filter(item => {
+        const matchCat = activeCategory === 'ALL' || item.frekuensi === parseInt(activeCategory, 10);
+        const matchSearch = item.namaWP.toLowerCase().includes(search) || item.npwpd.toLowerCase().includes(search);
+        return matchCat && matchSearch;
+      });
+
+      document.getElementById('tableSummaryCount').innerText = `Menampilkan ${tableData.length} dari ${currentFilteredData.length} Objek Pajak`;
+
+      if (tableData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11" class="text-center py-12 text-slate-400">
+          <div class="flex flex-col items-center gap-2">
+            <i class="fa-solid fa-search text-2xl text-slate-300"></i>
+            <span>Tidak ada data yang sesuai kriteria filter</span>
+          </div>
+        </td></tr>`;
+        return;
+      }
+
+      tableData.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-indigo-50/40 transition-colors duration-150 table-row-enter';
+        tr.style.animationDelay = `${Math.min(idx * 15, 300)}ms`;
+
+        let badgeClass = 'bg-rose-100 text-rose-700';
+        if (item.frekuensi === 12) badgeClass = 'bg-emerald-100 text-emerald-700';
+        else if (item.frekuensi >= 8) badgeClass = 'bg-indigo-100 text-indigo-700';
+        else if (item.frekuensi > 0) badgeClass = 'bg-amber-100 text-amber-700';
+
+        tr.innerHTML = `
+          <td class="px-3 sm:px-4 py-3 text-center font-medium text-slate-400 text-[11px]">${idx + 1}</td>
+          <td class="px-3 sm:px-4 py-3 font-mono text-[10px] font-semibold text-slate-500">${item.npwpd}</td>
+          <td class="px-3 sm:px-4 py-3 font-semibold text-slate-900 text-[11px]">${item.namaWP}</td>
+          <td class="px-3 sm:px-4 py-3 text-slate-500 text-[11px] hidden md:table-cell">${item.jenisPajak}</td>
+          <td class="px-3 sm:px-4 py-3 text-center">
+            <span class="inline-flex items-center justify-center min-w-[36px] px-2 py-1 rounded-lg text-[10px] font-bold ${badgeClass}">${item.frekuensi}x</span>
+          </td>
+          <td class="px-3 sm:px-4 py-3 text-right font-medium text-slate-600 text-[11px] hidden sm:table-cell">${formatRupiah(item.totalPokok)}</td>
+          <td class="px-3 sm:px-4 py-3 text-right font-semibold text-rose-500 text-[11px] hidden sm:table-cell">${formatRupiah(item.totalDenda)}</td>
+          <td class="px-3 sm:px-4 py-3 text-right font-bold text-slate-900 text-[11px]">${formatRupiah(item.totalBayar)}</td>
+          <td class="px-3 sm:px-4 py-3 text-right text-slate-500 text-[11px] hidden lg:table-cell">${formatRupiah(item.avgPerBulan)}</td>
+          <td class="px-3 sm:px-4 py-3 text-right font-bold text-[11px] hidden lg:table-cell ${item.potensiTunggak > 0 ? 'text-amber-500' : 'text-slate-300'}">${formatRupiah(item.potensiTunggak)}</td>
+          <td class="px-3 sm:px-4 py-3 text-center">
+            <button onclick="openModal('${item.npwpd}', '${encodeURIComponent(item.namaWP)}', '${encodeURIComponent(item.jenisPajak)}', '${encodeURIComponent(item.jenisPelaporan)}')" class="w-7 h-7 bg-indigo-50 hover:bg-indigo-600 text-indigo-500 hover:text-white rounded-lg transition-all duration-200 text-xs inline-flex items-center justify-center active:scale-90">
+              <i class="fa-solid fa-eye text-[10px]"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ======== MODAL ========
+
+    function openModal(npwpd, namaWpEnc, jenisPajakEnc, jenisPelaporanEnc) {
+      const namaWP = decodeURIComponent(namaWpEnc);
+      const jenisPajak = decodeURIComponent(jenisPajakEnc);
+      const jenisPelaporan = decodeURIComponent(jenisPelaporanEnc);
+
+      const item = allGroupedData.find(d => d.npwpd === npwpd && d.namaWP === namaWP && d.jenisPajak === jenisPajak && d.jenisPelaporan === jenisPelaporan);
+      if (!item) return;
+
+      document.getElementById('modalWpNama').innerText = item.namaWP;
+      document.getElementById('modalWpNpwpd').innerText = `NPWPD: ${item.npwpd}`;
+      document.getElementById('modalWpJenisPajak').innerText = item.jenisPajak;
+      document.getElementById('modalWpJenisPelaporan').innerText = item.jenisPelaporan;
+      document.getElementById('modalWpFrekuensi').innerText = `${item.frekuensi}x / 12 Bulan`;
+
+      document.getElementById('modalWpTotalPokok').innerText = formatRupiah(item.totalPokok);
+      document.getElementById('modalWpTotalDenda').innerText = formatRupiah(item.totalDenda);
+      document.getElementById('modalWpTotalRealisasi').innerText = formatRupiah(item.totalBayar);
+      document.getElementById('modalWpAvg').innerText = formatRupiah(item.avgPerBulan);
+      document.getElementById('modalWpPotensiTunggak').innerText = formatRupiah(item.potensiTunggak);
+      document.getElementById('modalWpPotensiTotal').innerText = formatRupiah(item.potensiTotal);
+
+      const matrixContainer = document.getElementById('modalMonthMatrix');
+      if (matrixContainer) {
+        matrixContainer.innerHTML = '';
+        MONTHS.forEach((m, idx) => {
+          const nominalBulan = item.paidMonthsMap[m] || 0;
+          const isPaid = nominalBulan > 0;
+          const div = document.createElement('div');
+          div.className = `p-3 rounded-2xl border text-center transition-all duration-300 flex flex-col justify-between gap-1.5 animate-scale-pop ${isPaid ? 'bg-emerald-50/90 border-emerald-200/90 shadow-sm' : 'bg-rose-50/80 border-rose-200/80'}`;
+          div.style.animationDelay = `${idx * 30}ms`;
+          div.innerHTML = `
+            <div class="flex items-center justify-between w-full border-b ${isPaid ? 'border-emerald-200/60 pb-1.5' : 'border-rose-200/60 pb-1.5'}">
+              <span class="text-[11px] font-extrabold uppercase tracking-wider ${isPaid ? 'text-emerald-800' : 'text-rose-800'}">${m.substring(0, 3)}</span>
+              <span class="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-md ${isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-700'}">
+                <i class="fa-solid ${isPaid ? 'fa-circle-check text-[9px]' : 'fa-circle-xmark text-[9px]'}"></i>
+                ${isPaid ? 'LUNAS' : 'SKIP'}
+              </span>
+            </div>
+            <div class="pt-1 pb-0.5 w-full text-center">
+              <span class="block text-xs font-black tracking-tight ${isPaid ? 'text-emerald-700' : 'text-rose-400'}">
+                ${isPaid ? formatRupiah(nominalBulan) : 'Rp 0'}
+              </span>
+            </div>
+          `;
+          matrixContainer.appendChild(div);
+        });
+      }
+
+      const modal = document.getElementById('wpDetailModal');
+      modal.classList.remove('modal-hidden');
+      modal.classList.add('modal-visible');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('wpDetailModal');
+      modal.classList.remove('modal-visible');
+      modal.classList.add('modal-hidden');
+      document.body.style.overflow = '';
+    }
+
+    // Close modal on Escape
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        closeModal();
+        closeUploadModal();
+        closeChangelogModal();
+      }
+    });
+
+    // Scroll listener for Floating Back to Top Button
+    window.addEventListener('scroll', () => {
+      const btn = document.getElementById('backToTopBtn');
+      if (btn) {
+        if (window.scrollY > 280) {
+          btn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-3');
+          btn.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+        } else {
+          btn.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+          btn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-3');
+        }
+      }
+    });
+
+    // ======== EXPORT ========
+
+    function exportRekapJenisPajakToExcel() {
+      if (!currentFilteredData || currentFilteredData.length === 0) {
+        showToast('Tidak ada data untuk diunduh.', 'error');
+        return;
+      }
+
+      const groups = {};
+      currentFilteredData.forEach(item => {
+        const jp = item.jenisPajak || 'Lainnya';
+        if (!groups[jp]) groups[jp] = [];
+        groups[jp].push(item);
+      });
+
+      const sortedJenisPajak = Object.keys(groups).sort((a, b) => {
+        const totalA = groups[a].reduce((sum, x) => sum + x.totalBayar, 0);
+        const totalB = groups[b].reduce((sum, x) => sum + x.totalBayar, 0);
+        return totalB - totalA;
+      });
+
+      const exportRekapRows = sortedJenisPajak.map((jp, idx) => {
+        const list = groups[jp];
+        const totalWP = list.length;
+        const count12 = list.filter(x => x.frekuensi === 12).length;
+        const countLess12 = list.filter(x => x.frekuensi < 12).length;
+        const totalPokok = list.reduce((sum, x) => sum + (x.totalPokok || 0), 0);
+        const totalDenda = list.reduce((sum, x) => sum + (x.totalDenda || 0), 0);
+        const totalRealisasi = list.reduce((sum, x) => sum + x.totalBayar, 0);
+        const totalPotensiTunggak = list.reduce((sum, x) => sum + x.potensiTunggak, 0);
+        const totalPotensiTotal = list.reduce((sum, x) => sum + x.potensiTotal, 0);
+        const pct12 = totalWP > 0 ? `${((count12 / totalWP) * 100).toFixed(1)}%` : '0%';
+        const pctRealisasi = totalPotensiTotal > 0 ? `${((totalRealisasi / totalPotensiTotal) * 100).toFixed(1)}%` : '0%';
+
+        return {
+          'No': idx + 1,
+          'Jenis Pajak': jp,
+          'Total WP': totalWP,
+          'WP Patuh (12x)': count12,
+          '% WP Patuh': pct12,
+          'WP Potensi (< 12x)': countLess12,
+          'Pokok Pajak (Rp)': totalPokok,
+          'Sanksi Denda (Rp)': totalDenda,
+          'Total Realisasi (Rp)': totalRealisasi,
+          'Potensi Belum Bayar (Rp)': totalPotensiTunggak,
+          'Total Potensi Optimal (Rp)': totalPotensiTotal,
+          'Rasio Realisasi Terhadap Optimal': pctRealisasi
+        };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(exportRekapRows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Rekap Jenis Pajak");
+      XLSX.writeFile(wb, "Rekapitulasi_Potensi_Per_Jenis_Pajak.xlsx");
+      showToast('Rekap Jenis Pajak berhasil diunduh!', 'success');
+    }
+
+    function exportToExcel() {
+      if (!currentFilteredData || currentFilteredData.length === 0) {
+        showToast('Tidak ada data untuk diunduh.', 'error');
+        return;
+      }
+
+      const wb = XLSX.utils.book_new();
+
+      // Sheet 1: Rekap Jenis Pajak
+      const groups = {};
+      currentFilteredData.forEach(item => {
+        const jp = item.jenisPajak || 'Lainnya';
+        if (!groups[jp]) groups[jp] = [];
+        groups[jp].push(item);
+      });
+
+      const sortedJenisPajak = Object.keys(groups).sort((a, b) => {
+        const totalA = groups[a].reduce((sum, x) => sum + x.totalBayar, 0);
+        const totalB = groups[b].reduce((sum, x) => sum + x.totalBayar, 0);
+        return totalB - totalA;
+      });
+
+      const exportRekapRows = sortedJenisPajak.map((jp, idx) => {
+        const list = groups[jp];
+        const totalWP = list.length;
+        const count12 = list.filter(x => x.frekuensi === 12).length;
+        const countLess12 = list.filter(x => x.frekuensi < 12).length;
+        const totalPokok = list.reduce((sum, x) => sum + (x.totalPokok || 0), 0);
+        const totalDenda = list.reduce((sum, x) => sum + (x.totalDenda || 0), 0);
+        const totalRealisasi = list.reduce((sum, x) => sum + x.totalBayar, 0);
+        const totalPotensiTunggak = list.reduce((sum, x) => sum + x.potensiTunggak, 0);
+        const totalPotensiTotal = list.reduce((sum, x) => sum + x.potensiTotal, 0);
+        const pct12 = totalWP > 0 ? `${((count12 / totalWP) * 100).toFixed(1)}%` : '0%';
+        const pctRealisasi = totalPotensiTotal > 0 ? `${((totalRealisasi / totalPotensiTotal) * 100).toFixed(1)}%` : '0%';
+
+        return {
+          'No': idx + 1,
+          'Jenis Pajak': jp,
+          'Total WP': totalWP,
+          'WP Patuh (12x)': count12,
+          '% WP Patuh': pct12,
+          'WP Potensi (< 12x)': countLess12,
+          'Pokok Pajak (Rp)': totalPokok,
+          'Sanksi Denda (Rp)': totalDenda,
+          'Total Realisasi (Rp)': totalRealisasi,
+          'Potensi Belum Bayar (Rp)': totalPotensiTunggak,
+          'Total Potensi Optimal (Rp)': totalPotensiTotal,
+          'Rasio Realisasi Terhadap Optimal': pctRealisasi
+        };
+      });
+      const wsRekap = XLSX.utils.json_to_sheet(exportRekapRows);
+      XLSX.utils.book_append_sheet(wb, wsRekap, "Rekap Jenis Pajak");
+
+      // Sheet 2: Detail Wajib Pajak
+      const exportRows = currentFilteredData.map((item, idx) => ({
+        'No': idx + 1,
+        'NPWPD': item.npwpd,
+        'Nama Wajib Pajak': item.namaWP,
+        'Alamat WP': item.alamatWP || '-',
+        'Jenis Pajak': item.jenisPajak,
+        'Jenis Pelaporan': item.jenisPelaporan,
+        'Frekuensi Setor': item.frekuensi,
+        'Bulan Dibayar': item.paidMonths.join(', ') || 'Tidak Ada',
+        'Bulan Skip/Belum': item.unpaidMonths.join(', ') || 'Lengkap',
+        'Pokok Pajak (Rp)': item.totalPokok,
+        'Sanksi Denda (Rp)': item.totalDenda,
+        'Total Setoran (Rp)': item.totalBayar,
+        'Rata-rata Setoran/Bulan (Rp)': item.avgPerBulan,
+        'Potensi Belum Bayar (Rp)': item.potensiTunggak,
+        'Total Potensi Optimal (Rp)': item.potensiTotal
+      }));
+      const wsDetail = XLSX.utils.json_to_sheet(exportRows);
+      XLSX.utils.book_append_sheet(wb, wsDetail, "Detail Wajib Pajak");
+
+      XLSX.writeFile(wb, "Analisis_Potensi_Kepatuhan_Wajib_Pajak.xlsx");
+      showToast('Laporan Excel 2 Sheet (Rekap & Detail dengan Alamat WP) berhasil diunduh!', 'success');
+    }
+  </script>
+</body>
+</html>

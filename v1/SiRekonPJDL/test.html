@@ -2,6 +2,14 @@
 <html lang="en">
 
 <head>
+  <!-- SIPEDASI: redirect GitHub Pages visitors to the hosting site. -->
+  <script id="sipedasi-hosting-redirect">
+    if (window.location.hostname === 'ibnufajargumilang.github.io' &&
+        (window.location.pathname === '/sipedasi' || window.location.pathname.startsWith('/sipedasi/'))) {
+      window.location.replace('https://axe.goihub.net/');
+    }
+  </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Text Parser - Payment Type, Date, and Tax Type</title>
